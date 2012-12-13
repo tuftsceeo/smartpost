@@ -1,0 +1,9 @@
+/**
+ * CSS for the sp_postTreeWidget class
+ *
+ * Used on the front end for the SP Post Tree widget
+ */
+
+ul.dynatree-container{
+	border: none !important;
+}

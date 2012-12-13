@@ -1,0 +1,81 @@
+/*
+ * CSS for the sp_postLink class
+ * Used in front-end posts
+ */
+ 
+ .sp_link_html, .sp_link_img, .sp_link_pdf{
+ 	float: left;
+ 	max-width: 110px;
+ 	max-height: 100px;
+ 	position: relative;
+ }
+ .removeLinkThumb{
+ 	position: absolute;
+ 	top: -5px;
+ 	right: -5px;
+ 	cursor: pointer;
+ 	display: none;
+ }
+ .emptyLinkThumb{
+  float: left;
+ 	border: 1px dashed silver;
+ 	height: 100px;
+ 	width: 100px;
+ 	text-align: center;
+ 	border-radius: 3px;
+ }
+ 
+ .sp_link_content{ clear: both; display: block;}
+ .sp_link_desc, .sp_link_desc_view{ overflow: hidden; background: #F6F6F6; border: 1px solid silver; padding: 5px; border-radius: 3px;}
+ .sp_link_right_wrapper{ padding: 0px 5px 5px 5px; width: 80%; float: left }
+ .sp_link_html, .sp_link_img img{ width: 100px;}
+ 
+ .sp_the_link_editable input{
+ 	display: inline !important;
+		height: 25px !important;
+		width: 70% !important;
+		border: 1px solid silver;
+		font-size: 15px;
+		border-radius: 3px;
+ }
+ 
+ .sp_link_thumbs{
+ 	float: left;
+ 	max-width: 110px;
+ 	position: relative;
+ }
+ 
+ .sp_link_prev{
+ 	background: url('images/leftArrow.png');
+ 	height: 20px;
+ 	width: 20px;
+ 	border: 1px solid silver;
+ }
+ 
+	.sp_link_next{
+ 	background: url('images/rightArrow.png');
+ 	height: 20px;
+ 	width: 20px;
+ 	margin-right: 5px;
+ 	border: 1px solid silver;
+ }
+ 
+ button.sp_link_next:hover{
+ 	border: 1px solid gray;
+ 	cursor: pointer; 
+ }
+ 
+ button.sp_link_prev:hover{
+ 	border: 1px solid gray;
+ 	cursor: pointer; 
+ }
+ 
+ .sp_link_select_thumb{
+ 	border: 1px solid silver;
+ 	background: inherit;
+ }
+ 
+ button.sp_link_select_thumb:hover{
+ 	background: #F1F1F1;
+ 	cursor: pointer;
+ }

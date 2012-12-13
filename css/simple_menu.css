@@ -1,0 +1,52 @@
+/*
+ * source: www.webchief.co.uk/blog/simple-jquery-dropdown-menu/finishedMenu.html
+ */
+
+.simpleMenu {
+	margin:0;
+	padding:0;
+	float: right;
+	background-color: inherit;
+}
+
+.simpleMenu li {
+	list-style:none;
+	float:left;
+	font:12px Arial, Helvetica, sans-serif #111;
+}
+
+.simpleMenu li a:link, .simpleMenu li a:visited {
+	display:block;
+	text-decoration:none;
+	padding: 0em .2em;
+	margin:0;
+	color:#111;
+}
+
+
+/*style the sub menu*/
+.simpleMenu li ul {
+	position:absolute;
+	visibility:hidden;
+	padding: .5em .5em;	
+	background: white;
+	margin:0;
+}
+
+.simpleMenu li ul li {
+	display:inline;
+	float:none;
+}
+
+.simpleMenu li ul li a:link, .simpleMenu li ul li a:visited {
+	background: white;
+	width:auto;
+}
+
+.simpleMenu li ul li a:hover {
+	text-decoration: underline;
+}
+
+.simpleMenu li ul:hover {
+	border: 1px solid gray;
+}

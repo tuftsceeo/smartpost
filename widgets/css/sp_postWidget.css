@@ -1,0 +1,60 @@
+/*
+ * CSS for the sp_admin class
+ * Used in the dashboard/admin page
+ */
+ 
+ .sp_myPosts{
+ 	margin-top: 5px;
+ 	border: 1px solid silver !important;
+ 	border-radius: 3px;
+ 	background: inherit;
+ }
+ 
+ .sp_myPosts ul{ 
+ 	clear: none;
+ 	margin-top: 10px;
+ 	background: inherit;
+ 	border-top: none;
+ 	border-left: none;
+ 	border-right: none;
+ 	border-bottom-right-radius: 0px;
+ 	border-bottom-left-radius: 0px;
+ }
+ .tab_header li{ 
+ 	width: auto !important; 
+ 	clear: none !important;  
+ }
+ 
+ .sp_myPosts li a:hover {
+ 	color: green;
+ }
+ 
+ .catComponentWidget{
+		border: 1px solid	silver;
+		border-radius: 3px;
+		-moz-border-radius: 3px;
+		-webkit-border-radius: 3px;
+	 	margin-top: 5px;
+	 text-align: left;
+	 padding-left: 5px;
+	 cursor: move;
+	 background-color: white;
+	 max-width: 300px;
+	 min-width: 100px;
+ }
+ 
+ div.catComponentWidget:hover{
+ 	background-color: #F1F1F1;
+ }
+ .sp_widgetSubHeader{
+	 margin-bottom: 0px; font-weight: bold;
+ }
+ 
+ #customFeaturedImage{
+  border: 2px dotted silver;
+  border-radius: 3px;
+  min-height: 100px;
+ }
+ 
+ #customFeaturedImage > p{ font-weight: bold; margin-top: 35px; }
+ #sp_featuredImg{ text-align: center; }

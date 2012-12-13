@@ -1,0 +1,24 @@
+/*
+ * CSS for the sp_admin class
+ * Used in the dashboard/admin page
+ */
+
+ #compFormWrapper{ display: none; }
+ #postComponents{ padding-top: 10px; } 
+ #categories_sidebar{	float: left;	width: 20%;	margin-right: 5px;	padding: 5px; }
+ #category_settings{	float: left;	width: 70%;	padding: 5px; }
+
+	.cat_title, .wp_cat_title {	cursor: pointer;	padding: 5px;	font-size: 15px; } 
+ .expandArrow{ padding-top: 5px; cursor: pointer; }
+ .postCompTitle, .category_title { display: inline; }
+ .category_icon{ float: left;	padding: 7px; }
+ .categories_list {	padding: 5px;	background: #ECECEC; }
+	.stuffbox{	margin-bottom: 5px; }
+ .categories_list li{
+		padding: 10px;
+		padding-bottom: 10px;
+ 	text-align: center;
+ 	cursor: move;
+ 	background: white;
+ }	
+	.contCatTable{ margin-top: 10px; }

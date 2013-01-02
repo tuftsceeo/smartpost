@@ -1,6 +1,6 @@
 <?php
 global $sp_db_version;
-$sp_db_version = "1.0";
+$sp_db_version = "2.0";
 
 if (!class_exists("sp_install")) {
 	

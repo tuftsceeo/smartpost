@@ -1,86 +1,33 @@
 <?php
-require_once('ajax/sp_adminAJAX.php');
 if (!class_exists("sp_admin")) {
+
+/**
+ * sp_admin class handles many of the features
+ * and functions in the WordPress administrative
+ * dashboard.
+ *
+ * @version 2.0
+ * @author Rafi Yagudin <rafi.yagudin@tufts.edu>
+ * @project SmartPost
+ */	
 	class sp_admin{
 		
-		/******************************
-		 *  Administrative Functions  *
-		 ******************************/
-		
+		/**
+		 * Includes dependent classes and registers various admin hooks.
+		 * Gets called when the plugin is initialized.
+		 * @params none
+		 */
 		static function init(){
+				require_once('ajax/sp_adminAJAX.php');		
 				add_action('newSPCat', array('sp_admin', 'newSPCat'));
 				add_action('admin_menu', array('sp_admin','sp_admin_add_page') );
-				add_action('admin_notices', array('sp_admin', 'checkForBadPosts') );
-				add_action( 'delete_category', array('sp_category', 'deleteCategory'));
-				require_once('ajax/sp_adminAJAX.php');
+				add_action('delete_category', array('sp_category', 'deleteCategory'));
 				sp_adminAJAX::init();
 		}
 		
-		function dashboardPostNotice(){
-			$post = (int)$_GET['post'];
-			$action = $_GET['action'];
-			if(sp_post::isSPPost($post) && $action && is_admin()){
-			?>
-			 <div class="error">
-			 		<p>Warning: You are attempting to edit a SmartPost post. The current version of SmartPost
-			 		does not support editing posts from the dashboard.
-			 		</p>
-			 		<p>
-			 		Any changes made here	will still be added to your post but you will not be able to add, 
-			 		remove or update any post components.
-			 		</p>
-			 		<p>Click <a href="<?php echo get_permalink($post) ?>">here</a> to edit the post from the front end.</p>
-			 	</h3>
-			 </div>
-			<?php
-			}
-		}
-				
-		//Checks all SP categories for "bad" posts
-		//(i.e. posts that are part of > 1 categories)
-		//and returns an array of distinct "bad" post IDs
-		function checkAllSPCategories(){
-			$sp_categories = get_option("sp_categories");
-			$badPosts 					= array();
-			if( !empty($sp_categories) ){
-				foreach($sp_categories as $catID){
-					$badPosts += self::checkCategory($catID);
-				}
-			}
-			return $badPosts;
-		}
-		
-		//takes in a catID and returns an array of "bad" post ID's
-		//(i.e. posts that are part of > 1 categories)
-		function checkCategory($catID){
-					$category 	= get_category($catID);
-					$badPosts 	= array();
-					$posts 				= get_posts( array('category' => $category->term_id, 'post_status' => 'publish|draft') );
-					foreach($posts as $post){
-						$categories = get_the_category($post->ID);
-						if( count($categories) > 1 ){
-							if(!in_array($post->ID, $badPosts)){
-								array_push($badPosts, $post->ID); 
-							}
-						}
-					}
-					return $badPosts;
-		}
-		
-		function enableCategory($catID){
-			$isBad = self::checkCategory($catID);
-			if( count($isBad) > 0 ){
-				return new WP_Error('broke', ("There are post(s) under this category" . 
-																																	 " that belong to other categories." .
-																																	 " Please make sure all SP Posts belong".
-																																	 " to just one category!" ));
-			}else{
-				$sp_categories = get_option("sp_categories");
-				array_push($sp_categories, $catID);
-				return update_option("sp_categories", $sp_categories);
-			}
-		}
-		
+		/**
+		 * 
+		 */
 		function newSPCat($title, $description){
 	 	return new sp_category($title, $description);
 		}
@@ -362,50 +309,19 @@ if (!class_exists("sp_admin")) {
 						<p style="color: red">* Required</p>
 				</div>
 			<?php
-		}		
-		
-		/*******************************
-		 *			Admin Page GUI Functions  *
-		 *******************************/
-				 
-		//returns html list of bad posts in SP-Enabled categories
-		function checkForBadPosts(){
-			if($_GET['page'] == 'smartpost'){
-				$badPosts = self::checkAllSPCategories();
-				if( count($badPosts) > 0 ){?>
-					<div class="error">
-						<p>
-							The following posts are part of multiple categories.
-							Please limit each post to one (1) SmartPost category.
-						</p>
-						<ul>
-					<?php
-							foreach($badPosts as $postID){
-								$post = get_post($postID);
-					?>
-							<li>
-								<a href="<?php echo get_edit_post_link($post->ID); ?>">
-									<?php echo empty($post->post_title) ? 'No title' : $post->post_title; ?>
-								</a>
-							</li>
-					<?php }?>
-						</ul>
-					</div>
-					<?php
-				}
-			}
 		}
 		
+		/**
+		 * Used in the WordPress action hook 'add_menu'.
+		 * Adds a top-level menu item to the Dashboard called SmartPost
+		 */
 		function sp_admin_add_page() {
-			add_menu_page( 'SmartPost', 'SmartPost', 'edit_users', 'smartpost', $function, $icon_url, $position );
-			add_options_page('SmartPost', 'IEL Categories', 'manage_options', 'smartpost', array('sp_admin','smartpost_admin_page'));
-			add_action('admin_init', array('sp_admin', 'register_sp_settings'));
-		}		
-
-		function register_sp_settings() {
-			add_settings_section('sp_categories', NULL, NULL, 'smartpost');
+			add_menu_page( PLUGIN_NAME, 'SmartPost', 'edit_users', 'smartpost', array('sp_admin','smartpost_admin_page'), $icon_url, $position );
 		}
 		
+		/**
+		 * HTML <ul> of all the SmartPost categories.
+		 */
 		function listSPCategories(){
 			$nulls = false;
 			$sp_categories = get_option("sp_categories");?>
@@ -436,7 +352,11 @@ if (!class_exists("sp_admin")) {
 			</ul>	
 			<?php
 		}
-
+	
+		/**
+		 * HTML <ul> of all the strictly WordPress categories.
+		 * i.e. Categories that are not SmartPost-enabled.
+		 */
 		function listWPCategories(){
 			$sp_categories = get_option("sp_categories");
 			if(!empty($sp_categories)){
@@ -475,7 +395,7 @@ if (!class_exists("sp_admin")) {
 			?>
 			<div class="wrap">
 				<div id="sp_errors"></div>
-				<h2>SmartPost</h2>
+				<h2><?php echo PLUGIN_NAME . ' Settings' ?></h2>
 				<div id="categories_sidebar" class="postbox">
 						<?php self::listSPCategories(); ?>
 						<?php self::listWPCategories(); ?>

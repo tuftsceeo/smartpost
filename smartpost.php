@@ -3,17 +3,13 @@
 Plugin Name: SmartPost
 Plugin URI: http://www.rafisoft.com/smartpost.php
 Description: 
-Version: 1.0
+Version: 2.0
 Author: Tufts CEEO
 Author URI: http://www.rafisoft.com 
 */
 
-if($_SERVER['SERVER_NAME']=='localhost'){;
-	require_once($_SERVER['DOCUMENT_ROOT'].'/iel-dev/wp-includes/pluggable.php');
-}else{
-	require_once ($_SERVER['DOCUMENT_ROOT'].'/wp-includes/pluggable.php');
-}
-
+require_once(ABSPATH . 'wp-includes/pluggable.php');
+define("PLUGIN_NAME", "SmartPost");
 define("IMAGE_PATH", plugins_url('/images', __FILE__));
 define("PLUGIN_PATH", plugins_url('/', __FILE__));
 
@@ -28,9 +24,9 @@ if (!class_exists("smartpost")) {
 			$this->sp_init();
 			
 			require_once('components/component/sp_catComponent.php');
-			require_once('components/component/sp_postComponent.php');			
+			require_once('components/component/sp_postComponent.php');
 			sp_catComponent::initCatComponent();
-			sp_postComponent::initPostComponent();			
+			sp_postComponent::initPostComponent();
 			self::findClasses(dirname(__FILE__) . "/components/");
 		 
 		 require_once( 'sp_category.php' );
@@ -51,10 +47,8 @@ if (!class_exists("smartpost")) {
 		 */
 		function sp_init(){
 			get_currentuserinfo();
-
 			self::enqueueCSS();
 			self::enqueueJS();
-			
 			if(is_admin()){
 				self::enqueueAdminCSS();
 				self::enqueueAdminJS();

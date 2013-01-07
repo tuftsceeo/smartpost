@@ -1,26 +1,26 @@
 <?php
-/* Core functions used in various classes in SmartPost:
+if (!class_exists("sp_core")) {
+/* Core (mostly static) functions used in various classes in SmartPost:
  * -Upload files
  * -Access table data
  */
-
-if (!class_exists("sp_core")) {
-	class sp_core{
-		
-		//Returns all types in sp_compTypes as a $wpdb object
+	class sp_core{		
+		/**
+		 * Returns all types in sp_compTypes as a $wpdb object
+		 */
 		function getTypes(){
 			global $wpdb;
 			$tableName = $wpdb->prefix . 'sp_compTypes';
-			$sql = "SELECT * FROM $tableName;";
-			return $wpdb->get_results($wpdb->prepare($sql));
+			return $wpdb->get_results("SELECT * FROM $tableName;");
 		}
 		
-		//returns a formatted array of array('typeName' => 'typeID)
+		/**
+		 * returns a formatted array of array('typeName' => 'typeID)
+		 */
 		function getTypesAndIDs(){
 			global $wpdb;
 			$tableName = $wpdb->prefix . 'sp_compTypes';
-			$sql = "SELECT * FROM $tableName;";
-			$types = $wpdb->get_results($wpdb->prepare($sql));
+			$types = $wpdb->get_results("SELECT * FROM $tableName;");
 
 			$typesAndIDs = array();			
 			foreach($types as $type){
@@ -44,8 +44,7 @@ if (!class_exists("sp_core")) {
 			if(!empty($typeID)){
 				global $wpdb;
 				$tableName = $wpdb->prefix . 'sp_compTypes';
-				$sql = "SELECT name FROM $tableName where id = $typeID;";
-				return $wpdb->get_var($wpdb->prepare($sql));
+				return $wpdb->get_var("SELECT name FROM $tableName where id = $typeID;");
 			}else{
 				return "";
 			}
@@ -55,8 +54,7 @@ if (!class_exists("sp_core")) {
 			if(!empty($name)){
 				global $wpdb;
 				$tableName = $wpdb->prefix . 'sp_compTypes';
-				$sql = "SELECT id FROM $tableName where name = '$name';";
-				return $wpdb->get_var($wpdb->prepare($sql));
+				return $wpdb->get_var("SELECT id FROM $tableName where name = '$name';");
 			}else{
 				return new WP_Error('broke', ('Name not supplied.'));
 			}		

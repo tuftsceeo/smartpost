@@ -116,8 +116,8 @@ if (!class_exists("sp_catComponent")) {
 				$this-> errors = new WP_Error ('broke', __("Invalid Component ID"));
 			}else{
 			 $sp_catComponentsTable = $wpdb->prefix . "sp_catComponents";
-				$component = $wpdb->get_row($wpdb->prepare("SELECT * FROM $sp_catComponentsTable " . 
-									  		"WHERE id = $compID;"));
+				$component = $wpdb->get_row("SELECT * FROM $sp_catComponentsTable " . 
+									  		"WHERE id = $compID;");
 				if( !empty($component) ){
 					$this->ID          = $component->id;
 					$this->catID       = $component->catID;					

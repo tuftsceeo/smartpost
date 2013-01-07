@@ -19,37 +19,51 @@ if (!class_exists("sp_admin")) {
 		 */
 		static function init(){
 				require_once('ajax/sp_adminAJAX.php');		
-				add_action('newSPCat', array('sp_admin', 'newSPCat'));
 				add_action('admin_menu', array('sp_admin','sp_admin_add_page') );
 				add_action('delete_category', array('sp_category', 'deleteCategory'));
+				self::enqueueJS();
+				self::enqueueCSS();
 				sp_adminAJAX::init();
 		}
 		
 		/**
-		 * 
+		 * Loads all the necessary JS for the admin pages
 		 */
-		function newSPCat($title, $description){
-	 	return new sp_category($title, $description);
+		function enqueueJS(){
+			wp_register_style( 'sp_admin_css', plugins_url('/css/sp_admin.css', __FILE__));
+			wp_enqueue_style( 'sp_admin_css' );		 
 		}
 		
-		function updateSPCat($catID, $title, $description){
-			$sp_category = new sp_category(null, null, $catID);
-			if( !empty($title) ){
-				$sp_category->setTitle($title);
-			}
-			$sp_category->setDescription($description);
-			return $sp_category;
+		/**
+		 * Loads all the necessary CSS for the admin pages
+		 */
+		function enqueueCSS(){
+				wp_register_script( 'sp-jquery-form',   plugins_url('/js/jquery.form.js', __FILE__), array( 'jquery' ));					
+				wp_register_script( 'sp_admin_globals', plugins_url('/js/sp_admin_globals.js', __FILE__), array( 'jquery'));
+				wp_register_script( 'sp_admin_js', plugins_url('/js/sp_admin.js', __FILE__, array('sp-jquery-form')));
+
+				wp_enqueue_script( 'jquery-ui-sortable' );
+				wp_enqueue_script( 'sp-jquery-form', null, array( 'jquery'));
+				wp_enqueue_script( 'sp_admin_globals' );
+				wp_enqueue_script( 'sp_admin_js' );
+				wp_enqueue_style( 'buttons' );
+				wp_enqueue_style( 'wp-admin' );				
+				wp_localize_script( 'sp_admin_js', 'sp_admin', array(
+						'adminNonce' => wp_create_nonce( 'sp_admin_nonce'),
+						'adminurl'			=> admin_url( 'admin.php'),
+						'PLUGIN_PATH'=> PLUGIN_PATH,
+						'IMAGE_PATH' => IMAGE_PATH )
+				);			
 		}
 		
-		/*******************************
-			*  Cat Component Functions    *
-			*******************************/
+		/**
+		 * Renders a new component form for a given category.
+		 * @param int $catID The ID of the category
+		 */
 		function newCompForm($catID){
 		?>
-				<button type="button" class="button-secondary" id="addNewComponent" name="addNewComponent">
-					Add New Component
-				</button>
-				<?php self::componentForm($catID, null); ?>
+				Add a new <?php self::listCompTypes() ?> component
+
 				<button type="submit" class="button-primary" id="addComponent" name="addComponent">
 					Add Component
 				</button>
@@ -61,8 +75,11 @@ if (!class_exists("sp_admin")) {
 			<?php
 		}
 		
-		/* Takes in a $catID and $component and fills in the
-		 * componentForm() wiwth $component's settings
+		/** 
+		 * Takes in a $catID and $component and fills in the
+		 * componentForm() with $component's settings
+		 * @param int $catID The category ID
+		 * @param object $component The component object
 		 */
 		function loadCompForm($catID, $component){
 		?>
@@ -75,7 +92,9 @@ if (!class_exists("sp_admin")) {
 		<?php
 		}
 		
-		//Pre-condition: used inside newCompForm() or loadCompForm()
+		/**
+		 * Pre-condition: used inside newCompForm() or loadCompForm()
+		 */ 
 		function componentForm($catID, $component = null){
 			?>
 			<div id="compFormWrapper" <?php echo is_object($component) ? 'style="display:inline;"' : '' ?>>
@@ -131,7 +150,7 @@ if (!class_exists("sp_admin")) {
 		}
 		
 		
-		function listCompTypes(){
+		public static function listCompTypes(){
 			$types = sp_core::getTypes();
 			?>
 						<select id="sp_compTypes" name="sp_compTypes">
@@ -149,7 +168,6 @@ if (!class_exists("sp_admin")) {
 				<div id="catComponentList">
 						<?php 
 							$catComponents = $sp_category->getComponents();
-							//print_r($catComponents);
 							if(!empty($catComponents)){
 								foreach($catComponents as $component){
 									$component->renderSettings();
@@ -171,10 +189,10 @@ if (!class_exists("sp_admin")) {
 		<?php
 		}
 		
-		/*******************************
-			*			Category GUI Functions    *
-			*******************************/
-		
+		/**
+		 * Given a category, renders the settings for that category.
+		 * @param object $sp_category The sp_category object instance.
+		 */
 		function renderSPCatSettings($sp_category){
 			if(is_wp_error($sp_category->errors)){
 				?>
@@ -385,6 +403,10 @@ if (!class_exists("sp_admin")) {
 			<?php		
 		}
 		
+		/** 
+		 * Renders the dashboard admin page for the SmartPost plugin.
+		 * @see sp_admin::sp_admin_add_page()
+		 */
 		function smartpost_admin_page(){
 			if (!current_user_can('manage_options'))  {
 				wp_die( __('You do not have sufficient permissions to access this page.') );
@@ -396,10 +418,12 @@ if (!class_exists("sp_admin")) {
 			<div class="wrap">
 				<div id="sp_errors"></div>
 				<h2><?php echo PLUGIN_NAME . ' Settings' ?></h2>
+				
 				<div id="categories_sidebar" class="postbox">
 						<?php self::listSPCategories(); ?>
 						<?php self::listWPCategories(); ?>
 				</div><!-- end #categories_sidebar -->
+				
 				<div id="category_settings" class="postbox">
 					<div id="setting_errors"></div>
 					<div id="the_settings">
@@ -413,13 +437,12 @@ if (!class_exists("sp_admin")) {
 								echo self::renderSPCatSettings($sp_category);
 							}
 					?>
-					</div>
-				</div><!-- end #category_settings -->
-				<div class="clear"></div>
-			</div>
+						<div class="clear"></div>
+					</div><!-- end #the_settings -->
+					<div class="clear"></div>
+				</div><!-- end #category_settings -->				
 			<?php
 		}
-		
 	}
 }
 ?>

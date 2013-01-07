@@ -13,8 +13,8 @@ if (!class_exists("sp_category")) {
 		private $iconID;
 		public 	$errors; //!TO-DO: make this an array of errors
 		
-		function __construct($title, $description, $catID = 0){
-			if( $catID > 0 ){
+		function __construct($title, $description, $catID = null){
+			if( !is_null($catID) ){
 				self::load($catID);
 			}else{
 				if( !empty($title) ){
@@ -66,8 +66,8 @@ if (!class_exists("sp_category")) {
 					
 					//load cat components
 					$sp_catComponentsTable = $wpdb->prefix . "sp_catComponents";
-					$componentResults 	= $wpdb->get_results($wpdb->prepare(
-						"SELECT * FROM $sp_catComponentsTable where catID = $catID order by compOrder ASC;"));
+					$componentResults 	= $wpdb->get_results(
+						"SELECT * FROM $sp_catComponentsTable where catID = $catID order by compOrder ASC;");
 					  
 					if( !empty($componentResults) ){
 						foreach($componentResults as $componentRow){
@@ -445,27 +445,6 @@ if (!class_exists("sp_category")) {
 			return new WP_Error ('notFound', __("Could not find a component by the ID: " .
 									$id));
 		}
-		
-		/**
-		 * Sets the new component order
-		 * 
-		 * @param  array       $compOrder an array of the form [ 0 => compID1, 1 => compID2]
-		 * @return bool|object Returns a WP_Error object on failure, otherwise true on success
-		 */
-		function setCompOrder($compOrder){
-			global $wpdb;
-			$numOfComps = (int) self::getCompCount();
-			if(count($compOrder) !== $numOfComps){
-				return new WP_Error('broke', ('Number of components do not match.'));
-			}else{
-				$newOrder = array_values($compOrder);
-				foreach($newOrder as $order => $compID){
-					$component = $this->getComponentByID($compID);
-					$component->setCompOrder($order);
-				}
-			}
-			return true;
-	 }
 	 
 	 private function getNextOrder(){
 			global $wpdb;
@@ -481,11 +460,28 @@ if (!class_exists("sp_category")) {
 			$sql = "SELECT COUNT(*) FROM $tableName where catID = $this->ID";
 			return $wpdb->get_var($wpdb->prepare($sql));
 		}
-		
-		/***********************************
-		 *  Contribution Category Methods  *
-		 ***********************************/
 
+		/**
+		 * Sets the new component order
+		 * 
+		 * @param  array       $compOrder an array of the form [ 0 => compID1, 1 => compID2]
+		 * @return bool|object Returns a WP_Error object on failure, otherwise true on success
+		 */
+		public function setCompOrder($compOrder){
+			global $wpdb;
+			$numOfComps = (int) self::getCompCount();
+			if(count($compOrder) !== $numOfComps){
+				return new WP_Error('broke', ('Number of components do not match.'));
+			}else{
+				$newOrder = array_values($compOrder);
+				foreach($newOrder as $order => $compID){
+					$component = $this->getComponentByID($compID);
+					$component->setCompOrder($order);
+				}
+			}
+			return true;
+	 } 
+		
 		/***********************************
 		 *  GUI Category Methods  									*
 		 ***********************************/

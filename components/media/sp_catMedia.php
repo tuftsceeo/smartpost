@@ -69,7 +69,7 @@ if (!class_exists("sp_catMedia")) {
 			require_once('ajax/sp_catMediaAJAX.php');
 			sp_catMediaAJAX::init();
 			wp_register_script( 'sp_catMediaJS', plugins_url('js/sp_catMedia.js', __FILE__), array( 'sp_admin_globals' ) );
-			wp_enqueue_script( 'sp_catMediaJS' );
+			//wp_enqueue_script( 'sp_catMediaJS' );
 		}
 
 		/**

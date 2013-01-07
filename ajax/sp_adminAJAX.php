@@ -2,6 +2,10 @@
 if (!class_exists("sp_adminAJAX")) {
 	class sp_adminAJAX{
 		
+		/**
+		 * Called on plugin initialization. Adds necessary action hooks to handle
+		 * AJAX requests.
+		 */
 		function init(){
 			add_action('wp_ajax_catFormAJAX', array('sp_adminAJAX', 'catFormAJAX'));
 			add_action('wp_ajax_newSPCatAJAX', array('sp_adminAJAX', 'newSPCatAJAX'));
@@ -16,8 +20,9 @@ if (!class_exists("sp_adminAJAX")) {
 	 **********************************/				
 		
 		/**
-		 * "Enables" a wordpress category, or "disables" a SP category,
-		 * depending on the input.
+		 * "Enables" a wordpress category, or "disables" a SP category.
+		 * If $_POST['isSPCat'] is true, it will remove $_POST['catID'] 
+		 * from global WP option 'sp_cateogories', otherwise it will add it.
 		 */
 		function switchCategoryAJAX(){
 				$nonce = $_POST['nonce'];
@@ -60,7 +65,11 @@ if (!class_exists("sp_adminAJAX")) {
 				exit;
 		}
 		
-		//Returns a category form
+		/**
+		 * Returns an HTML category form.
+		 * @uses sp_admin::newCatForm()
+		 * @uses sp_admin::catForm()
+		 */ 
 		function catFormAJAX(){
 				$nonce = $_POST['nonce'];
 				if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
@@ -78,7 +87,10 @@ if (!class_exists("sp_adminAJAX")) {
 				exit;
 		}
 		
-		//Creates a new smartpost category
+		/**
+		 * Creates a new smartpost category via an AJAX request.
+		 * Requires $_POST variables 'cat_name'
+		 */ 
 		function newSPCatAJAX(){
 				$nonce = $_POST['nonce'];
 				if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
@@ -117,7 +129,7 @@ if (!class_exists("sp_adminAJAX")) {
 						}
 						
 						//Create a new category
-						$sp_category = sp_admin::newSPCat($name, $desc);
+						$sp_category = new sp_category($name, $desc);
 						$sp_category->setIconID($iconID);
 						
 						//Check for any creation errors
@@ -141,7 +153,10 @@ if (!class_exists("sp_adminAJAX")) {
 				exit;
 		}		
 		
-		//Loads the category settings (Post Components, Contribution Categories, Root Permissions)
+		/**
+		 * Renders HTML category settings
+		 * @uses sp_admin::renderSPCatSettings()
+		 */ 
 		function renderSPCatSettingsAJAX(){
 				$nonce = $_POST['nonce'];
 				if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
@@ -161,6 +176,10 @@ if (!class_exists("sp_adminAJAX")) {
 				exit;
 		}
 		
+		/**
+		 * Handles updating a SP Category via AJAX request.
+		 * Requires $_POST variables 'catID' - the ID of the category.
+		 */
 		function updateSPCatAJAX(){
 				$nonce = $_POST['nonce'];
 				if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
@@ -240,7 +259,10 @@ if (!class_exists("sp_adminAJAX")) {
 				exit;
 		}
 
-
+		/**
+		 * Updates a SP Category's response categories via an AJAX request.
+		 * Requires $_POST variables 'catID' - the category being updated.
+		 */
 		function responseCatAJAX(){
 				$nonce = $_POST['nonce'];
 				if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
@@ -253,12 +275,6 @@ if (!class_exists("sp_adminAJAX")) {
 				}
 					
 				$catID = $_POST['catID'];
-
-				//Cannot have catID be empty
-				if(empty($_POST['catID'])){
-					header("HTTP/1.0 409 Could not find catID");
-					exit;
-				}
 				
 				//If everything checks out, update the cateogry
 				$sp_category = new sp_category(null, null, $catID);

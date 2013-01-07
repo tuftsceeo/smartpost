@@ -49,7 +49,7 @@ if (!class_exists("sp_catContent")) {
 		
 		static function enqueueJS(){
 			wp_register_script( 'sp_catContentJS', plugins_url('/js/sp_catContent.js', __FILE__));
-			wp_enqueue_script( 'sp_catContentJS', array('jquery', 'sp_admin_globals', 'sp_admin_js', 'sp_catComponentJS') );
+			//wp_enqueue_script( 'sp_catContentJS', array('jquery', 'sp_admin_globals', 'sp_admin_js', 'sp_catComponentJS') );
 		}
 
 		/**

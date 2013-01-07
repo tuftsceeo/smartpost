@@ -282,7 +282,7 @@ if (!class_exists("sp_catComponent")) {
 		function renderSettings(){
 			?>
 			<div id="comp-<?php echo $this->ID ?>" data-compid="<?php echo $this->ID ?>" class="stuffbox sp_componentBox">
-				<h3 class="componentHandle"></h3>
+				<h4 class="componentHandle"></h3>
 				<?php $this->componentMenu() ?>
 				<div class="requiredAndDefault">
 					<label for="isDefault<?php echo '-' . $this->ID ?>">Default</label>

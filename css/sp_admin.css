@@ -5,9 +5,8 @@
 
  #compFormWrapper{ display: none; }
  #postComponents{ padding-top: 10px; } 
- #categories_sidebar{	float: left;	width: 20%;	margin-right: 5px;	padding: 5px; }
- #category_settings{	float: left;	width: 70%;	padding: 5px; }
-
+ #categories_sidebar{	float: right;	width: 280px;	margin-right: 5px; }
+ #category_settings{	float: left;	width: 780px;	padding: 5px; }
 	.cat_title, .wp_cat_title {	cursor: pointer;	padding: 5px;	font-size: 15px; } 
  .expandArrow{ padding-top: 5px; cursor: pointer; }
  .postCompTitle, .category_title { display: inline; }
@@ -20,5 +19,6 @@
  	text-align: center;
  	cursor: move;
  	background: white;
- }	
+ }
+	.nav-tab-active{ border-color: #CCC #CCC #F9F9F9 !important; } 
 	.contCatTable{ margin-top: 10px; }

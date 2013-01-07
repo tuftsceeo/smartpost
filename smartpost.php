@@ -39,7 +39,7 @@ if (!class_exists("smartpost")){
 			
 			sp_post::init();
 
-			self::initClasses(dirname(__FILE__) . "/widgets");
+			//self::initClasses(dirname(__FILE__) . "/widgets");
 		}
 	
 		/**
@@ -101,6 +101,8 @@ if (!class_exists("smartpost")){
 		}
 		
 		static function enqueueJS(){
+			wp_enqueue_script( 'jquery' );
+			
 			wp_register_script( 'sp_globals', plugins_url('/js/sp_globals.js', __FILE__), array( 'jquery' ));
 			wp_register_script( 'simple-menu', plugins_url('/js/simple_menu.js', __FILE__), array( 'jquery' ));
 			wp_register_script( 'strip_tags', plugins_url('/js/strip_tags.js', __FILE__), array( 'jquery' ));
@@ -145,10 +147,11 @@ if(isset($new_smartpost)){
 	register_activation_hook(__FILE__, array('sp_install','smartpost_install') );
 	
 	//Add the widgets
+	/*
 	add_action('widgets_init', create_function('', 'return register_widget("sp_postTreeWidget");'));
 	add_action('widgets_init', create_function('', 'return register_widget("sp_postWidget");'));
 	add_action('widgets_init', create_function('', 'return register_widget("sp_quickPostWidget");'));
 	add_action('widgets_init', create_function('', 'return register_widget("sp_myPostsWidget");'));
-		
+	*/
 }
 ?>

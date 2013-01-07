@@ -21,33 +21,47 @@ if (!class_exists("sp_admin")) {
 				require_once('ajax/sp_adminAJAX.php');		
 				add_action('admin_menu', array('sp_admin','sp_admin_add_page') );
 				add_action('delete_category', array('sp_category', 'deleteCategory'));
-				self::enqueueJS();
+				add_action( 'admin_enqueue_scripts', array('sp_admin', 'enqueueJS'));
+				//self::enqueueJS();
 				self::enqueueCSS();
 				sp_adminAJAX::init();
-		}
-		
-		/**
-		 * Loads all the necessary JS for the admin pages
-		 */
-		function enqueueJS(){
-			wp_register_style( 'sp_admin_css', plugins_url('/css/sp_admin.css', __FILE__));
-			wp_enqueue_style( 'sp_admin_css' );		 
 		}
 		
 		/**
 		 * Loads all the necessary CSS for the admin pages
 		 */
 		function enqueueCSS(){
+			wp_register_style( 'sp_admin_css', plugins_url('/css/sp_admin.css', __FILE__));
+			wp_enqueue_style( 'sp_admin_css' );
+			wp_enqueue_style( 'wp-admin' );
+			//Default WP styles
+			wp_enqueue_style( 'buttons' );
+			wp_enqueue_style( 'wp-admin' );
+		}
+		
+		/**
+		 * Loads all the necessary JS for the admin pages
+		 */
+		function enqueueJS($hook){
+				if('toplevel_page_smartpost' != $hook){
+					return;
+				}
+				
 				wp_register_script( 'sp-jquery-form',   plugins_url('/js/jquery.form.js', __FILE__), array( 'jquery' ));					
 				wp_register_script( 'sp_admin_globals', plugins_url('/js/sp_admin_globals.js', __FILE__), array( 'jquery'));
 				wp_register_script( 'sp_admin_js', plugins_url('/js/sp_admin.js', __FILE__, array('sp-jquery-form')));
-
-				wp_enqueue_script( 'jquery-ui-sortable' );
+				
+				//Default WP scripts
+				wp_enqueue_script( 'jquery-ui-core', null, array( 'jquery') );
+				wp_enqueue_script( 'jquery-ui-widget', null, array( 'jquery') );
+				wp_enqueue_script( 'jquery-ui-sortable', null, array( 'jquery-ui-core') );
+				wp_enqueue_script( 'postbox' );
+				wp_enqueue_script( 'post' );
+				
+				//SmartPost Scripts
 				wp_enqueue_script( 'sp-jquery-form', null, array( 'jquery'));
 				wp_enqueue_script( 'sp_admin_globals' );
-				wp_enqueue_script( 'sp_admin_js' );
-				wp_enqueue_style( 'buttons' );
-				wp_enqueue_style( 'wp-admin' );				
+				wp_enqueue_script( 'sp_admin_js' );				
 				wp_localize_script( 'sp_admin_js', 'sp_admin', array(
 						'adminNonce' => wp_create_nonce( 'sp_admin_nonce'),
 						'adminurl'			=> admin_url( 'admin.php'),
@@ -62,14 +76,8 @@ if (!class_exists("sp_admin")) {
 		 */
 		function newCompForm($catID){
 		?>
-				Add a new <?php self::listCompTypes() ?> component
-
-				<button type="submit" class="button-primary" id="addComponent" name="addComponent">
-					Add Component
-				</button>
-				<button type="button" class="button-secondary" id="cancelCompForm" name="cancelCompForm">
-					Cancel
-				</button>
+				<h3 style="cursor: default;"> Add a new <?php self::listCompTypes() ?> component </h3>
+				<br />
 				</form> <!-- end #componentForm -->
 			</div><!-- end #compFormWrapper -->
 			<?php
@@ -222,7 +230,7 @@ if (!class_exists("sp_admin")) {
 							$active_tab = 'postComps';
 						}
 				?>
-				<h2 class="nav-tab-wrapper">  
+				<h2 class="nav-tab-wrapper" style="padding-bottom: 0px;">
 				    <a href="?page=smartpost&catID=<?php echo $sp_category->getID() ?>&tab=postComps" class="nav-tab <?php echo $active_tab == "postComps" ? 'nav-tab-active' : '' ?>">Post Components</a>  
 				    <a href="?page=smartpost&catID=<?php echo $sp_category->getID() ?>&tab=responseCats" class="nav-tab <?php echo $active_tab == "responseCats" ? 'nav-tab-active' : '' ?>" >Response Categories</a>		    
 				</h2>
@@ -343,8 +351,6 @@ if (!class_exists("sp_admin")) {
 		function listSPCategories(){
 			$nulls = false;
 			$sp_categories = get_option("sp_categories");?>
-			<h2>SmartPost Categories</h2>
-			<button id="newSPCatForm" class="button">Add a new SP Category</button>
 			<ul id="sp_cats" class="categories_list">			
 			<?php
 			if( !empty($sp_categories) ){
@@ -384,7 +390,6 @@ if (!class_exists("sp_admin")) {
 				array('orderby' => 'name','order' => 'ASC', 
 					  'exclude' => $sp_categories, 'hide_empty' => 0));
 			?>
-			<h2>WordPress Categories</h2>
 			<ul id="non_sp_cats" class="categories_list">
 			<?php foreach($categories as $category){?>
 				<li class="stuffbox" wpcat_id="<?php echo $category->term_id ?>">
@@ -395,11 +400,7 @@ if (!class_exists("sp_admin")) {
 					</span>
 				</li>
 			<?php } ?>
-			</ul>
-			<p>
-				Drag a WP Category to the SmartPost Categories 
-				list to enable it
-			</p>					
+			</ul>			
 			<?php		
 		}
 		
@@ -415,32 +416,54 @@ if (!class_exists("sp_admin")) {
 			$sp_categories = get_option('sp_categories');
 			
 			?>
+			
+
+			
 			<div class="wrap">
 				<div id="sp_errors"></div>
 				<h2><?php echo PLUGIN_NAME . ' Settings' ?></h2>
 				
-				<div id="categories_sidebar" class="postbox">
-						<?php self::listSPCategories(); ?>
-						<?php self::listWPCategories(); ?>
-				</div><!-- end #categories_sidebar -->
+				<button id="newSPCatForm" class="button">Add a new SP Category</button>
 				
-				<div id="category_settings" class="postbox">
-					<div id="setting_errors"></div>
-					<div id="the_settings">
-					<?php 
-							if( empty($sp_categories) ){
-								echo self::newCatForm();
-							}else{
-								if( empty($_GET['catID'])){
-									$sp_category = new sp_category(null, null, $sp_categories[0]);
+				<div id="poststuff">
+					<div id="categories_sidebar">
+							
+							<div id="sp_cat_list" class="postbox" style="display: block;">
+								<div class="handlediv" title="Click to toggle"><br></div><h3 class="hndle"><span>SmartPost Categories</span></h3>
+								<div class="inside">
+										<?php self::listSPCategories(); ?>
+								</div>
+							</div><!-- end sp_cat_list -->
+							
+							<div id="wp_cat_list" class="postbox" style="display: block;">
+								<div class="handlediv" title="Click to toggle"><br></div><h3 class="hndle"><span>WordPress Categories</span></h3>
+								<div class="inside">							
+									<?php self::listWPCategories(); ?>
+								</div>
+							</div><!-- end #wp_cat_list -->
+							
+							<div class="clear"></div>
+					</div><!-- end #categories_sidebar -->
+				
+					<div id="category_settings" class="postbox">
+						<div id="setting_errors"></div>
+							<div id="the_settings">
+							<?php 
+								if( empty($sp_categories) ){
+									echo self::newCatForm();
+								}else{
+									if( empty($_GET['catID'])){
+										$sp_category = new sp_category(null, null, $sp_categories[0]);
+									}
+									echo self::renderSPCatSettings($sp_category);
 								}
-								echo self::renderSPCatSettings($sp_category);
-							}
-					?>
-						<div class="clear"></div>
-					</div><!-- end #the_settings -->
+							?>
+							<div class="clear"></div>
+						</div><!-- end #the_settings -->
 					<div class="clear"></div>
-				</div><!-- end #category_settings -->				
+					</div><!-- end #category_settings -->
+					
+				</div><!-- end #poststuff -->			
 			<?php
 		}
 	}

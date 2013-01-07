@@ -67,7 +67,6 @@
 		})
 	
 		var updateSettings = function(updateAction, compID, value){
-			console.log('updateAction: ' + updateAction + ', value:' + value);
 			$.ajax({
 				url				  : ajaxurl,
 				type     : 'POST',
@@ -78,9 +77,6 @@
 																value       : value
 																},
 				dataType : 'json',
-				success  : function(response, statusText, jqXHR){
-					console.log(response);
-				},
 				error    : function(jqXHR, statusText, errorThrown){
 						showError(errorThrown);
 				}

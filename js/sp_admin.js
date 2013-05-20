@@ -4,158 +4,126 @@
  */ 
 
 (function($) {
-	$(document).ready(function($){
+			if(spAdmin){
+				spAdmin = {
 
-		/**
-		 * Enable sorting for <li> elements in #sp_cats.
-		 * If an <li> from #sp_cats is dropped on #non_sp_cats,
-		 * that category is disabled and vice versa.
-		 * @uses switchCategoryAJAX() in sp_adminAJAX.php
-		 */
-		$( "#sp_cats" ).sortable({
-				connectWith:  "#non_sp_cats",
-				axis: 'y',
-				receive: function(event, ui){
-					catID = ui.item.attr('wpcat_id');
-					if(!catID){
-						alert("Error: Could not enable the category, could not find catID!");
-					}else{	
-						$.ajax({
-							url: ajaxurl,
-							type    : 'POST',
-							data    : {action: 'switchCategoryAJAX', catID: catID, isSPCat: false, nonce: spNonce},
-							dataType: 'json',
-							success : function(response, statusText, jqXHR){
-							 if(response){
-										document.location.reload(true);
-							 }
-							},
-							error   : function(jqXHR, statusText, errorThrow){
-								showError(statusText);
-							}
-						})
-					}
-				} //end receive function
-		});
+						/**
+					 * Initializes a simple dynaTree instance using listContainer as its 
+					 * HTML Element. listContainer should be a <div> or some HTML
+					 * container that contains a <ul> or <ol> list.
+					 *
+					 * @param DOMElem listContainer - A <ul> or <ol> container where the list exists
+					 * @param bool linkToPosts  - Tree will link to posts if True, does nothing otherwise
+					 * @param bool expandToPost - Expands tree to the current post being displayed
+					 */
+					initDynaTree: function(listContainer, linkToPosts, expandToPost){
+						var thisObj = this;
+						listContainer.dynatree({
+							imagePath: "",
+				   onActivate: function(node) {
+				    // Use <a> href and target attributes to load the content:
+				    if( node.data.href && linkToPosts){
+				      window.open(node.data.href, node.data.target);
+				    }
+				   }
+						});
+					},
 		
-		/*	
-		$( "#non_sp_cats" ).sortable({
-				connectWith: "#sp_cats",
-				axis: 'y',
-				receive: function(event, ui){
-					var isSPCat = 0;
-					var catID   = ui.item.attr('spcat_id');
-					if(!catID){
-						catID = ui.item.attr('wpcat_id');
-					}else{
-						isSPCat = 1;
-					}
+					/* Changes rightArrow to downArrow on toggle and
+					 * displays DOM Element based off of divID
+					 * @param string arrowClass - The class associated with the arrow image, default: '.expandArrow'
+					 */
+					expandArrow: function(arrowClass){
+						if(arrowClass == undefined)
+							arrowClass = '.expandArrow';
+						
+						$(arrowClass).toggle(
+							function(){
+								var divID = $(this).attr('data-divID');
+								$(this).attr('src', IMAGE_PATH + '/downArrow.png');
+								$('#' + divID).show();
+							}, 
+							function(){
+								var divID = $(this).attr('data-divID');
+								$(this).attr('src', IMAGE_PATH + '/rightArrow.png');
+								$('#' + divID).hide();
+						});
+						
+					},
 					
-					if(!catID){
-						alert("Error: Could not find catID!");
-						return;
-					}
-	
-					$.ajax({
-						url: ajaxurl,
-						type    : 'POST',
-						data    : {action: 'switchCategoryAJAX', catID: catID, isSPCat: isSPCat, nonce: spNonce},
-						dataType: 'json',
-						success : function(response, statusText, jqXHR){
-						 if(response){
-									document.location.reload(true);
-						 }
-						},
-						error   : function(jqXHR, statusText, errorThrow){
-							showError(statusText);
-						}
-					})
-				}
-			});			*/
-		
-		/* Changes rightArrow to downArrow on toggle and
-		 * displays DOM Element based off of divID
-		 */
-		$('.expandArrow').toggle(
-			function(){
-				var divID = $(this).attr('data-divID');
-				$(this).attr('src', IMAGE_PATH + '/downArrow.png');
-				$('#' + divID).show();
-			}, 
-			function(){
-				var divID = $(this).attr('data-divID');
-				$(this).attr('src', IMAGE_PATH + '/rightArrow.png');
-				$('#' + divID).hide();
-		});
-	
-		function showError(errorText){
-				$('#setting_errors').show().html(
-													'<h4>' +
-														'Error: ' +
-															errorText + 
-													'<h4>').attr("class", "error");	
-		}
-	
-		/*********************************
-		 * Load Existing SP Categories   *
-		 *********************************/
-		
-		var loadCatSettings = function(catID){
-			$.ajax({
-				url				  : ajaxurl,
-				type     : 'POST',
-				data			  : {action: 'renderSPCatSettingsAJAX', nonce: spNonce, catID: catID},
-				dataType : 'html',
-				success  : function(response, statusText, jqXHR){
-						$('#the_settings').html(response);
-				},
-				error    : function(jqXHR, statusText, errorThrown){
-							showError(statusText);
-				}
-			})
-		}
-		
-		/**********************************
-		 * New SP Category Form Functions *
-		 **********************************/
-		
-		//adds a list item to the #sp_cats list
-		var addSPCatToList = function(catTitle, catID){
-			var category = $('<li><span id="cat-' + catID + '" class="cat_title">' + catTitle + '</span></li>');
-			$('#sp_cats').prepend(category);
-		}
-		
-		//Loads a new or existing category form based off of action
-		function spCatOptions(action){
-			var spCatOptions = {
-					url									 : ajaxurl,
-					type								 : 'POST',
-					data    				 : {action: action, nonce: spNonce},			
-					dataType				 : 'json',
-					success						: function(response, statusText, xhr, $form){
-						if(response){
-							if(response.error){
-									showError(response.error);
-							}else{
-									window.location.href = adminurl + '?page=smartpost&catID=' + response.catID;
+					/**
+					 * Displays errors to the user.
+					 * @param errorDivID - The HTML DOM elm's ID where the error will be displayed. Default: #setting_errors
+					 * @param errorText  - The error message to display (can be HTML)
+					 */
+					showError: function(errorDivID, errorText){
+							if(errorDivID == undefined)
+								errorDivID = '#setting_errors';
+								
+							$(errorDivID).show().html(
+									'<h4> Error: ' +	errorText + '<h4>').attr("class", "error");	
+					},
+					
+					/**
+					 * Load settings for a given category and render it to an HTML DOM elem
+					 * @param catID        - the category ID
+					 * @param settingsElem - The HTML DOM elem container to render the settings. Default: '#the_settings'
+					 */
+					loadCatSettings: function(catID, settingsElem){
+						if(settingsElem == undefined)
+							settingsElem = '#the_settings';
+							
+						$.ajax({
+							url				  : ajaxurl,
+							type     : 'POST',
+							data			  : {action: 'renderSPCatSettingsAJAX', nonce: spNonce, catID: catID},
+							dataType : 'html',
+							success  : function(response, statusText, jqXHR){
+									$(settingsElem).html(response);
+							},
+							error    : function(jqXHR, statusText, errorThrown){
+										showError(statusText);
 							}
-						}
+						});
 					},
-					beforeSubmit : function(formData, jqForm, options){ // form validation
-																					var form = jqForm[0];
-																					if(!form.cat_name.value){
-																						showError('Please fill in the category name');
-																						$('#cat_name').focus();
-																						return false;
-																					}
-																			},
-					error 							: function(data){
-							console.log(data);
-							showError(data.statusText);
+		
+					/**
+					 * Loads a new or existing category form based off of action.
+					 * i.e. Title, description of a category - not to be confused with
+					 * settings.
+					 * @param action - coincides with functions actions in sp_adminAJAX.php
+					 * 																See sp_adminAJAX::newSPCatAJAX() and sp_adminAJAX::updateSPCatAJAX()
+					 */
+					setCatOptions: function(action){
+						var thisObj = this;
+						var setOptions = {
+								url									 : ajaxurl,
+								type								 : 'POST',
+								data    				 : {action: action, nonce: spNonce},			
+								dataType				 : 'json',
+								success						: function(response, statusText, xhr, $form){
+									if(response){
+										if(response.error){
+												this.showError(response.error);
+										}else{
+												window.location.href = adminurl + '?page=smartpost&catID=' + response.catID;
+										}
+									}
+								},
+								beforeSubmit : function(formData, jqForm, options){ // form validation
+																								var form = jqForm[0];
+																								if(!form.cat_name.value){
+																									showError('Please fill in the category name');
+																									$('#cat_name').focus();
+																									return false;
+																								}
+																						},
+								error 							: function(data){
+										console.log(data);
+										showError(data.statusText);
+								},
+						};
 					},
-			};
-			return spCatOptions;
-		}
 		
 		//Loads a new category form via AJAX
 		var getNewCatForm = function(){
@@ -190,29 +158,32 @@
 		/**********************************
 		 * Category Response Update       *
 		 **********************************/
-				$('#responseCatsForm').submit(function(){
-						$(this).ajaxSubmit({
-								url									 : ajaxurl,
-								type								 : 'POST',
-								data    				 : {action: 'responseCatAJAX', nonce: spNonce},			
-								dataType				 : 'json',
-								success						: function(response, statusText, xhr, $form){
-									if(response.error){
-											showError(response.error);
-									}else{
-										if( !$('#successCatUpdate').exists() ){
-											var success = $('<p id="successCatUpdate"> Response Categories saved! </p>');
-											$('#submitResponseCats').after(success);
-											success.delay(3000).fadeOut();
-											success.delay(3000, function(){ $(this).remove() });
-										}
-									}
-								},
-								error 							: function(data){
-										showError(data.statusText);
-								},						
-						}); //end ajaxSubmit
-						return false;
-			}); //end submit
+		$('#responseCatsForm').submit(function(){
+				$(this).ajaxSubmit({
+						url									 : ajaxurl,
+						type								 : 'POST',
+						data    				 : {action: 'responseCatAJAX', nonce: spNonce},			
+						dataType				 : 'json',
+						success						: function(response, statusText, xhr, $form){
+							if(response.error){
+									showError(response.error);
+							}else{
+								if( !$('#successCatUpdate').exists() ){
+									var success = $('<p id="successCatUpdate"> Response Categories saved! </p>');
+									$('#submitResponseCats').after(success);
+									success.delay(3000).fadeOut();
+									success.delay(3000, function(){ $(this).remove() });
+								}
+							}
+						},
+						error 							: function(data){
+								showError(data.statusText);
+						},						
+				}); //end ajaxSubmit
+				return false;
+	}); //end submit
+			
+	$(document).ready(function($){
 		}); //end document.ready
+		
 })(jQuery);

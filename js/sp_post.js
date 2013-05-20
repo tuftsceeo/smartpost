@@ -77,7 +77,7 @@
 	}
 	
 	$(document).ready(function(){
-		sp_post.init();
+		smartpost.sp_post.init();
 	});
 	
 })(jQuery);

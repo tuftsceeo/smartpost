@@ -7,7 +7,7 @@
  * @author Rafi Yagudin <rafi.yagudin@tufts.edu>
  * @project SmartPost 
  */
-(function($){})
+(function($){
 	smartpost.sp_postMedia = {
 		/**
 		 * Required for all post component JS objects.
@@ -447,6 +447,7 @@
 	}
 	
 	$(document).ready(function(){
-		sp_postMedia.init();
+		smartpost.sp_postMedia.init();
 	});
+	
 })(jQuery);

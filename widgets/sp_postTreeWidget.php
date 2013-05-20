@@ -19,7 +19,7 @@ class sp_postTreeWidget extends WP_Widget {
 	    	wp_register_style('sp_postTreeWidgetCSS', plugins_url('css/sp_postTreeWidget.css', __FILE__));
 	    	wp_register_style('jquery-dynatree-css', plugins_url('js/dynatree/src/skin-vista/ui.dynatree.css', __FILE__));
 		    wp_enqueue_style( 'sp_postTreeWidgetCSS' );
-		    wp_enqueue_style( 'jquery-dynatree-css' );				
+		    wp_enqueue_style( 'jquery-dynatree-css' );
 				}
 				
 				static function enqueueJS(){

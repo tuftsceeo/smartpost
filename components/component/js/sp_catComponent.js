@@ -8,7 +8,7 @@
 		//Make all the component divs sortable
 		$( "#catComponentList" ).sortable({
 			axis       : 'y',
-			handle     : 'h3',
+			handle     : '.componentHandle',
 			stop       : function(event, ui){
 					setCompOrder($(this).sortable('toArray'));
 			}

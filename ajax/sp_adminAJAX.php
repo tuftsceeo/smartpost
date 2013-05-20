@@ -6,7 +6,7 @@ if (!class_exists("sp_adminAJAX")) {
 		 * Called on plugin initialization. Adds necessary action hooks to handle
 		 * AJAX requests.
 		 */
-		function init(){
+		static function init(){
 			add_action('wp_ajax_catFormAJAX', array('sp_adminAJAX', 'catFormAJAX'));
 			add_action('wp_ajax_newSPCatAJAX', array('sp_adminAJAX', 'newSPCatAJAX'));
 			add_action('wp_ajax_updateSPCatAJAX', array('sp_adminAJAX', 'updateSPCatAJAX'));

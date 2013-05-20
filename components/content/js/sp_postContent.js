@@ -55,8 +55,8 @@
 				data			  : {action: 'saveContentAJAX', nonce: spNonce, compID: compID, content: content},
 				dataType : 'json',
 				error    : function(jqXHR, statusText, errorThrown){
-						if(sp_postComponent)
-							sp_postComponent.showError('Status: ' + statusText + ', Error Thrown:' + errorThrown);
+						if(smartpost.sp_postComponent)
+							smartpost.sp_postComponent.showError('Status: ' + statusText + ', Error Thrown:' + errorThrown);
 				}
 			});
 		},
@@ -70,11 +70,11 @@
 	 */		
 		initComponent: function(component, postID, autoFocus){
 			var thisObj  = this;
-			if(sp_postComponent){
+			if(smartpost.sp_postComponent){
 				var content  = $(component).find('.sp_richtext, .sp_plaintext');
 				var panelID  = $(component).find('.editorPanel').attr('id');
 				var richText = Boolean($(content).attr('data-richtext'));
-				sp_postComponent.addNicEditor(content.attr('id'), panelID, this.saveContent, "Click to add content");
+				smartpost.sp_postComponent.addNicEditor(content.attr('id'), panelID, this.saveContent, "Click to add content");
 			}else{
 				console.log('Error: could not find the sp_postComponent object!');
 			}
@@ -88,12 +88,12 @@
 		init: function(){
 			this.setTypeID();
 			var thisObj = this;
-			if(sp_postComponent){
+			if(smartpost.sp_postComponent){
 				$('.sp_richtext, .sp_plaintext').each(function(){
 						var elementID  = $(this).attr('id');
 						var compID     = $(this).attr('data-compid');
 						var panelID    = $('#editorPanel-' + compID).exists() ? 'editorPanel-' + compID : undefined;
-						sp_postComponent.addNicEditor( elementID, panelID, thisObj.saveContent, "Click to add content" );
+						smartpost.sp_postComponent.addNicEditor( elementID, panelID, thisObj.saveContent, "Click to add content" );
 				});
 			}
 		}

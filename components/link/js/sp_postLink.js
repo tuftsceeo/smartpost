@@ -62,13 +62,13 @@
 		         	$('#' + fallback_id).show();
 		          break;
 		      case 'TooManyFiles':
-												sp_postComponent.showError('Too many files! Please upload less');
+												smartpost.sp_postComponent.showError('Too many files! Please upload less');
 		          break;
 		      case 'FileTooLarge':
-												sp_postComponent.showError(file.name + ' is too large!');
+												smartpost.sp_postComponent.showError(file.name + ' is too large!');
 		          break;
 		      default:
-		      				sp_postComponent.showError(err);
+		      				smartpost.sp_postComponent.showError(err);
 		          break;
 		    }
 						$('#loadingGIF').remove();
@@ -114,8 +114,8 @@
 					$('#thumbSelection-' + compID).delay(3000).fadeOut();
 				},
 				error    : function(jqXHR, statusText, errorThrown){
-						if(sp_postComponent)
-							sp_postComponent.showError(errorThrown);
+						if(smartpost.sp_postComponent)
+							smartpost.sp_postComponent.showError(errorThrown);
 				}
 			})		
 		},
@@ -204,18 +204,18 @@
 						
 						//Remove required component if it's the last one
 						if(link != ""){
-								if(sp_postComponent.isLast(compID) && sp_postComponent.isRequired(compID))
+								if(smartpost.sp_postComponent.isLast(compID) && smartpost.sp_postComponent.isRequired(compID))
 									$('#comp-' + compID).removeClass('requiredComponent');
 						}else{
-								if(sp_postComponent.isLast(compID) && sp_postComponent.isRequired(compID))
+								if(smartpost.sp_postComponent.isLast(compID) && smartpost.sp_postComponent.isRequired(compID))
 									$('#comp-' + compID).addClass('requiredComponent');					
 						}
 						thisObj.currUrl = link;
 				},
 				error    : function(jqXHR, statusText, errorThrown){
 						$(loading).remove();
-						if(sp_postComponent)
-							sp_postComponent.showError(errorThrown);
+						if(smartpost.sp_postComponent)
+							smartpost.sp_postComponent.showError(errorThrown);
 				}
 			})
 		},
@@ -239,8 +239,8 @@
 						console.log(response);
 				},
 				error    : function(jqXHR, statusText, errorThrown){
-						if(sp_postComponent)
-							sp_postComponent.showError(errorThrown);
+						if(smartpost.sp_postComponent)
+							smartpost.sp_postComponent.showError(errorThrown);
 				}
 			})
 		},
@@ -294,9 +294,9 @@
 	 */
 		initDescEditor: function(descDiv){
 			var thisObj = this;
-			if(sp_postComponent){
+			if(smartpost.sp_postComponent){
 				var elementID = $(descDiv).attr('id');
-				sp_postComponent.addNicEditor(elementID, false, thisObj.saveDescription,'Click to add a description');
+				smartpost.sp_postComponent.addNicEditor(elementID, false, thisObj.saveDescription,'Click to add a description');
 			}
 		},
 		
@@ -321,8 +321,8 @@
 						}
 					},
 					error    : function(jqXHR, statusText, errorThrown){
-							if(sp_postComponent)
-								sp_postComponent.showError(errorThrown);
+							if(smartpost.sp_postComponent)
+								smartpost.sp_postComponent.showError(errorThrown);
 					}
 				});
 		},
@@ -391,7 +391,7 @@
 	}
 	
 	$(document).ready(function(){
-		sp_postLink.init();
+		smartpost.sp_postLink.init();
 	});
 	
 })(jQuery);

@@ -7,7 +7,7 @@ if (!class_exists("sp_postComponent")) {
  * sp_postComponent table.
  *
  * @abstract
- * @version 1.0
+ * @version 2.0
  * @author Rafi Yagudin <rafi.yagudin@tufts.edu>
  * @project SmartPost
  */

@@ -19,7 +19,6 @@ if (!class_exists("sp_post")) {
 			*                       post components
 		 */
 		function __construct($postID, $loadPost = false){
-			global $current_user;
 			if($loadPost){
 				self::load($postID);
 			}else{
@@ -29,7 +28,7 @@ if (!class_exists("sp_post")) {
 				
 						//Get the sp_category if there is one
 						$sp_category       = self::getSPCategory($postID);
-						$this->wpPost 					= get_post($postID);
+						$this->wpPost 	   = get_post($postID);
 						$this->sp_category = $sp_category;
 						$this->components  = array();
 						
@@ -43,7 +42,6 @@ if (!class_exists("sp_post")) {
 										$this->addComponent($catCompID);
 									}
 							}
-							
 						}
 				}else{
 					$this->errors = new WP_Error('broke', ('Could not load WP post properly'));

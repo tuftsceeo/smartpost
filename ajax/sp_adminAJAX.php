@@ -96,8 +96,7 @@ if (!class_exists("sp_adminAJAX")) {
 				if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
 					die('Security Check');
 				}
-				$xhr = $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest';
-				
+
 				if( empty($_POST['cat_name']) ){
 						echo '<div class="errors">The title field is empty!</div>';
 				}else{
@@ -107,11 +106,11 @@ if (!class_exists("sp_adminAJAX")) {
 						
 						//Cannot have empty name
 						if(empty($name)){
-									header("HTTP/1.0 409 " .  $icon_error);
-									echo json_encode($responseArray);
+									header("HTTP/1.0 409 Error: empty name category name.");
 									exit;							
 						}
-						
+
+                        $iconID = -1;
 						//Validate icon upload
 						if($_FILES['category_icon']['size'] > 0){
 								if(sp_core::validImageUpload($_FILES, 'category_icon') && sp_core::validateIcon($_FILES['category_icon']['tmp_name'])){
@@ -153,7 +152,7 @@ if (!class_exists("sp_adminAJAX")) {
 				exit;
 		}		
 		
-		/**
+		/*
 		 * Renders HTML category settings
 		 * @uses sp_admin::renderSPCatSettings()
 		 */ 
@@ -290,14 +289,12 @@ if (!class_exists("sp_adminAJAX")) {
 				if($success === false){
 					header("HTTP/1.0 409 Could not update response categories.");
 				}
-				
+
 				//Return catID if everything was successful!
-				if(!$xhr){
-						echo json_encode(array('catID' => $sp_category->getID()));
-				}
+                echo json_encode( array('catID' => $sp_category->getID()) );
+
 				exit;
 		}
 	
 	}
 }
-?>

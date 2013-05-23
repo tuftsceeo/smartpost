@@ -23,7 +23,7 @@ require_once( 'components/component/sp_catComponent.php' );
 require_once( 'components/component/sp_postComponent.php' );
 require_once( 'sp_category.php' );
 require_once( 'sp_admin.php' );
-require_once( 'sp_post.php');
+require_once( 'sp_post.php' );
 
 if (!class_exists("smartpost")){
 
@@ -77,28 +77,27 @@ if (!class_exists("smartpost")){
          */
         static function enqueueCSS(){
             wp_register_style( 'simple-menu-css', plugins_url('/css/simple_menu.css', __FILE__) );
+            wp_register_style( 'jquery-dynatree-css', plugins_url('js/dynatree/skin-vista/ui.dynatree.css', __FILE__) );
             wp_enqueue_style( 'simple-menu-css' );
+            wp_enqueue_style( 'jquery-dynatree-css' );
         }
 
         /**
          * Places globally used JS on the page.
          */
         static function enqueueJS(){
-            wp_enqueue_script( 'jquery' );
-
+            //Register scripts
             wp_register_script( 'sp_globals'     , plugins_url('/js/sp_globals.js'            , __FILE__), array( 'jquery' ) );
             wp_register_script( 'simple-menu'    , plugins_url('/js/simple_menu.js'           , __FILE__), array( 'jquery' ) );
             wp_register_script( 'strip_tags'     , plugins_url('/js/strip_tags.js'            , __FILE__), array( 'jquery' ) );
             wp_register_script( 'jquery-editable', plugins_url('/js/jquery.jeditable.mini.js' , __FILE__), array( 'jquery' ) );
             wp_register_script( 'nicEditor'      , plugins_url('/js/nicEdit/nicEdit.js'       , __FILE__) );
+            wp_register_script( 'jquery-dynatree', plugins_url('js/dynatree/jquery.dynatree.min.js', __FILE__), array( 'jquery-ui-core', 'jquery-ui-widget' ) );
+            wp_register_script( 'jquery-dynatree-cookie', plugins_url('js/dynatree/jquery.cookie.js', __FILE__) );
 
-            //Enqueue misc SP scripts
-            wp_enqueue_script( 'sp_globals' );
-            //wp_enqueue_script( 'simple-menu' );
-            wp_enqueue_script( 'strip_tags' );
-            wp_enqueue_script( 'jquery-editable' );
-
-            /*Enqueue default WP scripts*/
+            //Enqueue default WP scripts
+            wp_enqueue_script( 'jquery' );
+            wp_enqueue_script( 'jquery-form' );
             wp_enqueue_script( 'jquery-ui-core' );
             wp_enqueue_script( 'jquery-ui-widget' );
             wp_enqueue_script( 'jquery-ui-mouse' );
@@ -107,6 +106,14 @@ if (!class_exists("smartpost")){
             wp_enqueue_script( 'jquery-ui-sortable' );
             wp_enqueue_script( 'jquery-ui-dialog' );
             wp_enqueue_script( 'jquery-ui-tabs' );
+            wp_enqueue_script( 'jquery-editable' );
+
+            //Enqueue SmartPost scripts
+            wp_enqueue_script( 'sp_globals' );
+            //wp_enqueue_script( 'simple-menu' );
+            wp_enqueue_script( 'strip_tags' );
+            wp_enqueue_script( 'jquery-dynatree-cookie' );
+            wp_enqueue_script( 'jquery-dynatree' );
 
             $typesAndIDs = sp_core::getTypesAndIDs();
             wp_localize_script( 'sp_globals', 'sp_globals', array(

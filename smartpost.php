@@ -19,6 +19,7 @@ define("PLUGIN_PATH", plugins_url('/', __FILE__));
 require_once( ABSPATH . 'wp-includes/pluggable.php' );
 require_once( 'core/sp_core.php' );
 require_once( 'sp_install.php' );
+register_activation_hook(__FILE__, array('sp_install','smartpost_install') );
 require_once( 'components/component/sp_catComponent.php' );
 require_once( 'components/component/sp_postComponent.php' );
 require_once( 'sp_category.php' );
@@ -62,9 +63,15 @@ if (!class_exists("smartpost")){
             if (is_dir($dir)) {
                 if ($dh = opendir($dir)) {
                     while (($file = readdir($dh)) !== false) {
+                        $folder = $dir . '/' . $file;
                         //filters ".", "..", and ".svn" files
-                        if(is_dir($dir . $file) && ($file != "." && $file != ".." && $file != ".svn")){
-                            require_once($dir . $file);
+                        if(is_dir($folder) && ($file != "." && $file != "..")){
+                            foreach (glob($folder . "/*.php") as $filepath){
+                                $class = basename($filepath, ".php");
+                                if(!class_exists($class)){
+                                    require_once($filepath);
+                                }
+                            }
                         }
                     }
                     closedir($dh);
@@ -76,10 +83,12 @@ if (!class_exists("smartpost")){
          * Places globally used SmartPost CSS on the page.
          */
         static function enqueueCSS(){
+            wp_register_style( 'jquery-ui-theme', plugins_url('/css/jquery-ui-theme/jquery-ui-1.8.21.custom.css', __FILE__));
             wp_register_style( 'simple-menu-css', plugins_url('/css/simple_menu.css', __FILE__) );
             wp_register_style( 'jquery-dynatree-css', plugins_url('js/dynatree/skin-vista/ui.dynatree.css', __FILE__) );
             wp_enqueue_style( 'simple-menu-css' );
             wp_enqueue_style( 'jquery-dynatree-css' );
+            wp_enqueue_style( 'jquery-ui-theme' );
         }
 
         /**
@@ -94,6 +103,7 @@ if (!class_exists("smartpost")){
             wp_register_script( 'nicEditor'      , plugins_url('/js/nicEdit/nicEdit.js'       , __FILE__) );
             wp_register_script( 'jquery-dynatree', plugins_url('js/dynatree/jquery.dynatree.min.js', __FILE__), array( 'jquery-ui-core', 'jquery-ui-widget' ) );
             wp_register_script( 'jquery-dynatree-cookie', plugins_url('js/dynatree/jquery.cookie.js', __FILE__) );
+
 
             //Enqueue default WP scripts
             wp_enqueue_script( 'jquery' );
@@ -138,7 +148,6 @@ if(class_exists('smartpost')){
  * Register SmartPost widgets.
  */
 if(isset($new_smartpost)){
-    register_activation_hook(__FILE__, array('sp_install','smartpost_install') );
 
     //Register SmartPost Widgets
     /*

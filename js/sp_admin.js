@@ -6,134 +6,133 @@
 (function($) {
     spAdmin.adminpage = {
 
-        /* Changes rightArrow to downArrow on toggle and
-         * displays DOM Element based off of divID
-         * @param string arrowClass - The class associated with the arrow image, default: '.expandArrow'
-         */
-        expandArrow: function(arrowClass){
-            if(arrowClass == undefined)
-                arrowClass = '.expandArrow';
-
-            $(arrowClass).toggle(
-                function(){
-                    var divID = $(this).attr('data-divID');
-                    $(this).attr('src', IMAGE_PATH + '/downArrow.png');
-                    $('#' + divID).show();
-                },
-                function(){
-                    var divID = $(this).attr('data-divID');
-                    $(this).attr('src', IMAGE_PATH + '/rightArrow.png');
-                    $('#' + divID).hide();
-                });
-
-        },
-
         /**
          * Displays errors to the user.
          * @param errorDivID - The HTML DOM elm's ID where the error will be displayed. Default: #setting_errors
          * @param errorText  - The error message to display (can be HTML)
          */
-        showError: function(errorDivID, errorText){
+        showError: function(errorText, errorDivID){
             if(errorDivID == undefined)
                 errorDivID = '#setting_errors';
 
             $(errorDivID).show().html(
                 '<h4> Error: ' +	errorText + '<h4>').attr("class", "error");
         },
-
         /**
-         * Load settings for a given category and render it to an HTML DOM elem
-         * @param catID        - the category ID
-         * @param settingsElem - The HTML DOM elem container to render the settings. Default: '#the_settings'
+         * Saves the component order for a category template on the admin page.
+         * @param components - An array of the components
          */
-        loadCatSettings: function(catID, settingsElem){
-            if(settingsElem == undefined)
-                settingsElem = '#the_settings';
+        saveCompOrder: function(components){
+            if(components.length > 0){
+                var thisObj = this;
+                var compOrder = new Array();
+                var catID     = $('#catID').val();
 
-            $.ajax({
-                url				  : ajaxurl,
-                type     : 'POST',
-                data			  : {action: 'renderSPCatSettingsAJAX', nonce: SP_NONCE, catID: catID},
-                dataType : 'html',
-                success  : function(response, statusText, jqXHR){
-                    $(settingsElem).html(response);
-                },
-                error    : function(jqXHR, statusText, errorThrown){
-                    showError(statusText);
-                }
-            });
+                $(components).each(function(index, value){
+                    compOrder[index] = value.split('-')[1];
+                });
+
+                $.ajax({
+                    url	 : SP_AJAX_URL,
+                    type : 'POST',
+                    data : {
+                        action    : 'setCompOrderAJAX',
+                        nonce     : SP_NONCE,
+                        compOrder : compOrder,
+                        catID     : catID
+                    },
+                    dataType : 'json',
+                    success  : function(response){
+                        console.log(response);
+                    },
+                    error    : function(jqXHR, statusText, errorThrown){
+                        thisObj.showError(errorThrown, null);
+                    }
+                })
+            }
         },
 
         /**
-         * Loads a new or existing category form based off of action.
-         * i.e. Title, description of a category - not to be confused with
-         * settings.
-         * @param action - coincides with functions actions in sp_adminAJAX.php
-         * See sp_adminAJAX::newSPCatAJAX() and sp_adminAJAX::updateSPCatAJAX()
+         * Turns the elements in draggableDiv draggable and connects the
+         * draggable elements with the sortable elements of sortableDiv.
+         * @param draggableDiv
+         * @param sortableDiv
          */
-        setCatOptions: function(action){
+        makeCompDivsDraggable: function(draggableDiv, sortableDiv){
+          if(draggableDiv == undefined)
+            draggableDiv = $('.catCompDraggable');
+
+          if(sortableDiv == undefined)
+            sortableDiv = $('#normal-sortables');
+
+          if(draggableDiv.exists()){
+              draggableDiv.draggable({
+                  addClasses: false,
+                  helper: 'clone',
+                  revert: 'invalid',
+                  connectToSortable: sortableDiv
+              })
+          }
+        },
+
+        /**
+         * Replaces the dropped component widget with a category
+         * component interface.
+         * @param sortableDiv
+
+        handleDroppedComp: function(sortableDiv){
             var thisObj = this;
-            var setOptions = {
-                url  	 : ajaxurl,
-                type	 : 'POST',
-                data	 : {action: action, nonce: SP_NONCE},
-                dataType : 'json',
-                success	 : function(response, statusText, xhr, $form){
-                    if(response){
-                        if(response.error){
-                            this.showError(response.error);
-                        }else{
-                            window.location.href = adminurl + '?page=smartpost&catID=' + response.catID;
+            sortableDiv.on(
+                "sortstop",
+                function(event, ui){
+                    if ( ui.item.hasClass('catCompDraggable') ){
+                        var typeID = ui.item.attr("type-id").split("-")[1];
+                        var catID  = $('#catID').val();
+                        var cl = function(newComponent){
+                            sortableDiv.find('.catCompDraggable').replaceWith(newComponent);
+                            var compOrder = sortableDiv.sortable('toArray');
+                            thisObj.saveCompOrder( compOrder );
                         }
+                        spAdmin.sp_catComponent.addComponent(catID, typeID, cl);
+                    }else{
+                        var compOrder = sortableDiv.sortable('toArray');
+                        thisObj.saveCompOrder( compOrder );
                     }
-                },
-                beforeSubmit : function(formData, jqForm, options){ // form validation
-                    var form = jqForm[0];
-                    if(!form.cat_name.value){
-                        showError('Please fill in the category name');
-                        $('#cat_name').focus();
-                        return false;
-                    }
-                },
-                error 							: function(data){
-                    console.log(data);
-                    showError(data.statusText);
-                },
-            };
-        },
-
-        /**
-         * Loads a new category form via AJAX
-         */
-        getNewCatForm: function(){
-            $.post(
-                ajaxurl,
-                {nonce: SP_NONCE, action: 'catFormAJAX', newSPCat: 1},
-                function(data){
-                    $('#the_settings').html(data);
-                    $('#cat_name').focus();
-                    $('#cat_form').submit(function(){
-                        var newSPCatOptions = spCatOptions('newSPCatAJAX');
-                        $('#cat_form').ajaxSubmit(newSPCatOptions);
-                        return false;
-                    });
-                },
-                'html'
+                }
             );
         },
+         */
+
+        /**
+         * Calls the AJAX to delete a component and deletes the corresponding
+         * HTML for the component.
+         * @param deleteButton
+         * @param cl - callback after the delete operation has completed.
+         */
+        handleDeleteComp: function(deleteButton, cl){
+            var thisObj = this;
+            deleteButton.click(function(){
+                var compDivID = $(this).attr("comp-id");
+                var compid = compDivID.split("-")[1];
+                $('#' + compDivID).remove();
+                spAdmin.sp_catComponent.deleteComponent(compid, cl);
+            })
+        },
+
         /**
          * Category Response Update
          */
         submitResponseCatForm: function(){
+            var thisObj = this;
             $('#responseCatsForm').submit(function(){
                 $(this).ajaxSubmit({
-                    url	     : ajaxurl,
+                    url	     : SP_ADMIN_URL,
                     type     : 'POST',
                     data	 : {action: 'responseCatAJAX', nonce: SP_NONCE},
                     dataType : 'json',
-                    success	 : function(response, statusText, xhr, $form){
+                    success	 : function(response){
                         if(response.error){
-                            showError(response.error);
+                            thisObj.showError(response.error, null);
                         }else{
                             if( !$('#successCatUpdate').exists() ){
                                 var success = $('<p id="successCatUpdate"> Response Categories saved! </p>');
@@ -144,8 +143,8 @@
                         }
                     },
                     error	 : function(data){
-                        showError(data.statusText);
-                    },
+                        thisObj.showError(data.statusText, null);
+                    }
                 }); //end ajaxSubmit
                 return false;
             }); //end submit
@@ -156,11 +155,8 @@
          * necessary for initialization.
          */
         init: function(){
-
-
-            $( "#sp_compTabs" ).tabs().addClass( "ui-tabs-vertical ui-helper-clearfix" );
-            $( "#sp_compTabs li" ).removeClass( "ui-corner-top" ).addClass( "ui-corner-left" );
-            $( "#sp_compTabs ul").removeClass( "ui-corner-all");
+            var self = this;
+            var sortableDiv = $( ".meta-box-sortables" );
 
             //Initialize a dynatree instance for the SP category tree.
             $('#sp_catTree').dynatree({
@@ -171,22 +167,48 @@
                 debugLevel: 0
             });
 
-            $('#newSPCatForm').click(function(){
-                getNewCatForm();
-            });
+            //Make the component widgets draggable
+            this.makeCompDivsDraggable(null, null);
 
-            if($('#cat_form').exists()){
-                $('#cat_form').submit(function(){
-                    var catOptions = spCatOptions('updateSPCatAJAX');
-                    $(this).ajaxSubmit(catOptions);
-                    return false;
-                });
-            }
+            //Enable component deletion
+            this.handleDeleteComp(
+                $('.delComp'),
+                function(){self.saveCompOrder( sortableDiv.sortable( 'toArray') )}
+            );
+
+            //Re-define sortable behavior on the admin page.
+
+            sortableDiv.sortable( "option", "axis", "y" );
+            sortableDiv.sortable({
+                axis: "y",
+                stop: function(e, ui){
+                    if ( ui.item.hasClass('catCompDraggable') ){
+                        var typeID = ui.item.attr("type-id").split("-")[1];
+                        var catID  = $('#catID').val();
+                        var cl = function(newComponent){
+                            $(newComponent).unwrap();
+                            ui.item.replaceWith(newComponent);
+                            self.saveCompOrder( sortableDiv.sortable( 'toArray' ) );
+                        }
+                        spAdmin.sp_catComponent.addComponent(catID, typeID, cl);
+                    }else{
+                        self.saveCompOrder( sortableDiv.sortable( 'toArray' ) );
+                    }
+                }
+            })
+
+            //Reveal delete button
+            $('.postbox').hover(function(){
+                $(this).find('.delComp').css('visibility', 'visible');
+            }, function(){
+                $(this).find('.delComp').css('visibility', 'hidden');
+            })
         }
-    };//end adminpage object
+    };
 
-    $(document).ready(function($){
+    //Initialize admin page behavior.
+    $(document).ready(function(){
         spAdmin.adminpage.init();
-    }); //end document.ready
+    });
 
 })(jQuery);

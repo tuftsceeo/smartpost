@@ -1,9 +1,0 @@
-/*
- * CSS for the category components
- * Used in the dashboard/admin page
- */
- .componentHandle{ height: 10px; margin-bottom: 5px; margin-top: 0px; }
- .componentTitle{ display: inline; }
- .sp_componentBox{ padding: 5px; background-color: white; }
- .componentInfo{ display: none; border-top: 1px solid #ECECEC; }
- .requiredAndDefault{ float:right; padding-right: 20px; padding-top: 5px; }

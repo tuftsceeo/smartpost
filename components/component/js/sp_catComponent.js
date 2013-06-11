@@ -1,178 +1,138 @@
 /*
- * JS for sp_catComponent class
- * Used in dashboard/admin page
- */ 
+ * JS for sp_catComponent class.
+ * Used in dashboard/admin page.
+ */
 
 (function($){
-	$(document).ready(function($){
-		//Make all the component divs sortable
-		$( "#catComponentList" ).sortable({
-			axis       : 'y',
-			handle     : '.componentHandle',
-			stop       : function(event, ui){
-					setCompOrder($(this).sortable('toArray'));
-			}
-		});
-	
-		function setCompOrder(components){
-				if(components.length > 0){
-					var compOrder = new Array();
-					var catID     = $('#catID').val();
-					
-					$(components).each(function(index, value){
-						var compID = value.split('-')[1];
-						compOrder[index] = compID;
-					});
-					
-					$.ajax({
-						url				  : ajaxurl,
-						type     : 'POST',
-						data			  : {action      : 'setCompOrderAJAX', 
-																		nonce       : spNonce,  
-																		compOrder   : compOrder,
-																		catID       : catID
-																		},
-						dataType : 'json',
-						success  : function(response, statusText, jqXHR){
-							console.log(response);
-						},
-						error    : function(jqXHR, statusText, errorThrown){
-								showError(errorThrown);
-						}
-					})
-				}
-		}
-	
-		function showError(errorText){
-				$('#setting_errors').show().html(
-													'<h4>' +
-														'Error: ' +
-															errorText + 
-													'<h4>').attr("class", "error");	
-		}
-	
-		//!To-do: adapt drop down strategy
-	
-		//Display the new component form
-		$('#addNewComponent').click(function(){
-			$('#compFormWrapper').show();
-			$('#compName').focus();
-			$(this).hide();
-		})
-		
-		//Hide the new component form
-		$('#cancelCompForm').click(function(){
-			$('#compFormWrapper').hide();
-			$('#addNewComponent').show();
-		})
-	
-		var updateSettings = function(updateAction, compID, value){
-			$.ajax({
-				url				  : ajaxurl,
-				type     : 'POST',
-				data			  : {action      : 'updateSettingsAJAX', 
-																nonce       : spNonce, 
-																compID      : compID, 
-																updateAction: updateAction,
-																value       : value
-																},
-				dataType : 'json',
-				error    : function(jqXHR, statusText, errorThrown){
-						showError(errorThrown);
-				}
-			})
-		}
-		
-		//delete a component
-		$('.delete_component').click(function(){
-				var compID  = $(this).attr('data-compid');
-				$.ajax({
-						url				  : ajaxurl,
-						type     : 'POST',
-						data			  : {action      : 'deleteComponentAJAX', 
-																		nonce       : spNonce, 
-																		compID      : compID
-																		},
-						dataType : 'json',
-						success  : function(response, statusText, jqXHR){
-								$('#comp-' + compID).remove();
-								setCompOrder($('#catComponentList').sortable('toArray'));
-						},
-						error    : function(jqXHR, statusText, errorThrown){
-								showError(errorThrown);
-						}
-					})
-		});
-	
-		//isRequired/isDefault checkbox handler
-		var disableDefault = function(checkBoxes){
-			var isDefault   = checkBoxes.get(0); //index 0 -> #isDefault
-			var isRequired  = checkBoxes.get(1); //index 1 -> #isRequired
-			var compID      = $(isDefault).attr('data-compid');
-			
-			//Update isDefault and isRequired
-			checkBoxes.click(function(){
-				if($(this).is($(isRequired))){
-						if($(isRequired).attr('checked')){
-						 $(isDefault).attr('checked', 'checked').attr('disabled', 'disabled');
-							if(compID > 0 ){
-								updateSettings('SetIsDefault', compID, 1);
-								updateSettings('SetIsRequired', compID, 1);
-							}
-						}else{
-							if(compID > 0 ){
-							updateSettings('SetIsRequired', compID, 0);
-							}
-							$(isDefault).removeAttr('disabled');
-						}
-				}
-				
-				if($(this).is($(isDefault)) && (compID > 0)){
-						if($(isDefault).attr('checked')){
-							updateSettings('SetIsDefault', compID, 1);
-						}else{
-							updateSettings('SetIsDefault', compID, 0);
-						}
-				}
-			});
-		}
-		
-		//Add isRequired/isDefault checkbox restraints to all components
-	 $('.requiredAndDefault').each(function(){
-	 					var checkBoxes = $(this).find('.compRestrictions'); 
-	 					disableDefault(checkBoxes);
-	 });
-		
-		//Component form options
-		var newCompOptions = {
-				url									 : ajaxurl,
-				type								 : 'POST',
-				data    				 : {action: 'newComponentAJAX', nonce: spNonce},			
-				dataType				 : 'json',
-				success						: function(response, statusText, xhr, $form){
-						if(response.success){
-							location.reload(true);
-						}else if(response.error){
-							showError(response.error);
-						}
-				},				
-				error 							: function(data){
-						showError(data.statusText);
-				},
-		};
-	
-		var initializeCompSettingsForm = function(formID){
-				if($(formID).exists()){
-						//Form submission
-						$(formID).submit(function(){
-									$(this).ajaxSubmit(newCompOptions);
-									return false;
-						});
-						var checkBoxes = $(formID).find('.compRestrictions');
-						disableDefault(checkBoxes);
-				}
-		}
-		
-		initializeCompSettingsForm('#componentSettings-form');	
-	})
+    spAdmin.sp_catComponent = {
+
+        /**
+         * Given a componentID, makes the appropriate AJAX call
+         * to delete the component server side. On a successful
+         * response, remove the HTML associated with that component.
+         * @param componentID
+         * @param cl - closure that gets passed the response from the server
+         */
+        deleteComponent: function(compID, cl){
+            $.ajax({
+                url		 : SP_AJAX_URL,
+                type     : 'POST',
+                data	 : {
+                    action : 'deleteComponentAJAX',
+                    nonce  : SP_NONCE,
+                    compID : compID
+                },
+                dataType : 'json',
+                success  : function(response, statusText, jqXHR){
+                    cl(response, statusText, jqXHR);
+                },
+                error    : function(jqXHR, statusText, errorThrown){
+                    spAdmin.adminpage.showError(errorThrown);
+                }
+            })
+        },
+
+        /**
+         * Given a component typeID and a category ID, adds that component
+         * to a category template represented by catID
+         * @param catID
+         * @param typeID
+         * @param cl - closure that gets passed the server response
+         */
+        addComponent: function(catID, typeID, cl){
+            $.ajax({
+                url		 : SP_AJAX_URL,
+                type     : 'POST',
+                data	 : {
+                    action : 'newComponentAJAX',
+                    nonce  : SP_NONCE,
+                    catID  : catID,
+                    typeID : typeID
+                },
+                dataType : 'html',
+                success  : function(response, statusText, jqXHR){
+                    //Remove the outer parent: <div id="advanced-sortables">
+                    cl($(response).html(), statusText, jqXHR);
+                },
+                error    : function(jqXHR, statusText, errorThrown){
+                    spAdmin.adminpage.showError(errorThrown);
+                }
+            })
+        },
+
+        updateCompOptions: function(theAction, compID, value){
+            $.ajax({
+                url  : SP_AJAX_URL,
+                type : 'POST',
+                data : {
+                    action : 'updateSettingsAJAX',
+                    nonce  : SP_NONCE,
+                    compID : compID,
+                    updateAction : theAction,
+                    value  : value
+                },
+                dataType : 'json',
+                error    : function(jqXHR, statusText, errorThrown){
+                    spAdmin.adminpage.showError(errorThrown);
+                }
+            })
+        },
+
+        /**
+         * Handles the required/default checkbox behavior on the admin page.
+         * Invariance: If the required checkboxed is checked off, then the
+         * default checkox should be disabled AND checked off.
+         * @param checkBoxes
+         */
+        disableDefault: function(checkBoxes){
+            var self = this;
+            var isDefault   = checkBoxes.get(0); //index 0 -> #isDefault
+            var isRequired  = checkBoxes.get(1); //index 1 -> #isRequired
+            var compID      = $(isDefault).attr('data-compid');
+
+            //Update isDefault and isRequired
+            checkBoxes.click(function(){
+                if($(this).is($(isRequired))){
+                    if($(isRequired).attr('checked')){
+                        $(isDefault).attr('checked', 'checked').attr('disabled', 'disabled');
+                        if(compID > 0 ){
+                            self.updateCompOptions('SetIsDefault', compID, 1);
+                            self.updateCompOptions('SetIsRequired', compID, 1);
+                        }
+                    }else{
+                        if(compID > 0 ){
+                            self.updateCompOptions('SetIsRequired', compID, 0);
+                        }
+                        $(isDefault).removeAttr('disabled');
+                    }
+                }
+
+                if($(this).is($(isDefault)) && (compID > 0)){
+                    if($(isDefault).attr('checked')){
+                        self.updateCompOptions('SetIsDefault', compID, 1);
+                    }else{
+                        self.updateCompOptions('SetIsDefault', compID, 0);
+                    }
+                }
+            });
+        },
+
+        /**
+         * Initializes component functions/behavior required for
+         * interaction the admin page.
+         */
+        init: function(){
+            var self = this;
+            //Add isRequired/isDefault checkbox restraints to all components
+            $('.requiredAndDefault').each(function(){
+                var checkBoxes = $(this).find('.compRestrictions');
+                self.disableDefault(checkBoxes)
+            });
+        }
+
+    }
+
+    $(document).ready(function(){
+        spAdmin.sp_catComponent.init();
+    })
 })(jQuery);

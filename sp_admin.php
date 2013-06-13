@@ -96,18 +96,23 @@ if (!class_exists("sp_admin")) {
             if(!empty($catComponents)){
                 foreach($catComponents as $component){
                     $id    = $component->getName() . '-' . $component->getID();
-                    $title = '<span class="editableCompTitle" style="cursor: text">' . $component->getName() . '</span>';
-                    add_meta_box($id,
-                                 __( $title ),
-                                 array( $component, 'renderSettings' ),
-                                 'smartpost',
-                                 'normal',
-                                 'default');
+                    $title = "";
+                    $title .= '<img src="' . $component->getIcon() . '" /> ';
+                    $title .= '<span class="editableCompTitle" style="cursor: text">';
+                    $title .= $component->getName();
+                    $title .= '</span>';
+                    $title .=  $component->reqDefaultCheckboxes();
 
+                    add_meta_box($id,
+                        __( $title ),
+                        array( $component, 'componentOptions' ),
+                        'smartpost',
+                        'normal',
+                        'default');
                 }
                 do_meta_boxes('smartpost', 'normal', null);
             }else{
-               echo "<div id='normal-sortables' class='meta-box-sortables ui-sortable'></div>";
+                echo "<div id='normal-sortables' class='meta-box-sortables ui-sortable'></div>";
             }
         }
 
@@ -130,15 +135,15 @@ if (!class_exists("sp_admin")) {
                     <?php } ?>
                 </ul>
                 <?php foreach($compTypes as $cType){ ?>
-                <div id="compType-<?php echo $cType->id ?>" class="ui-tabs-panel ui-widget-content ui-corner-bottom">
-                    <h2 style="margin-top:5px;"> <img src="<?php echo $cType->icon ?>" /> <?php echo $cType->name ?></h2>
-                    <p><?php echo $cType->description ?></p>
-                    <button id="addComponent" data="<?php echo $cType->id ?>" class="button button-primary button-large">Add to template</button>
-                    <div class="clear"></div>
-                </div>
+                    <div id="compType-<?php echo $cType->id ?>" class="ui-tabs-panel ui-widget-content ui-corner-bottom">
+                        <h2 style="margin-top:5px;"> <img src="<?php echo $cType->icon ?>" /> <?php echo $cType->name ?></h2>
+                        <p><?php echo $cType->description ?></p>
+                        <button id="addComponent" data="<?php echo $cType->id ?>" class="button button-primary button-large">Add to template</button>
+                        <div class="clear"></div>
+                    </div>
                 <?php } ?>
             </div>
-            <?
+        <?
         }
 
         /**
@@ -161,11 +166,11 @@ if (!class_exists("sp_admin")) {
                     </a>
                 </h2>
                 <?php
-                    $catDesc = $sp_category->getDescription();
-                    echo empty($catDesc) ? '' : '<p>' . $catDesc . '</p>';
+                $catDesc = $sp_category->getDescription();
+                echo empty($catDesc) ? '' : '<p>' . $catDesc . '</p>';
                 ?>
                 <input type="hidden" name="catID" id="catID" value="<?php echo $sp_category->getID() ?>" />
-                <?php
+            <?php
             }
         }
 
@@ -191,19 +196,31 @@ if (!class_exists("sp_admin")) {
                             $sp_category = new sp_category(null, null, $category->term_id);
                             $catIcon     = wp_get_attachment_url($sp_category->getIconID());
                             $adminUrl    = admin_url('admin.php?page=smartpost&catID=' . $category->term_id);
-
                             if( !empty($catIcon) )
                                 $catIcon = 'icon: ' . $catIcon . ', ';
                         }else{
                             $adminUrl = admin_url('edit-tags.php?action=edit&taxonomy=category&tag_ID=' . $category->term_id . '&post_type=post');
                         }
-                        ?>
+                    ?>
                         <li data="<?php echo empty($catIcon) ? 'isFolder: true' : 'icon: ' . $catIcon ?>">
-                            <a href="<?php echo $adminUrl ?>">
-                                <?php echo $category->name ?>
-                            </a>
-                        </li>
-                    <?php } ?>
+                            <a href="<?php echo $adminUrl ?>"><?php echo $category->name ?></a>
+                    <?php
+
+                        if(!is_null($sp_category)){
+                            $components = $sp_category->getComponents();
+                            if(!empty($components)){
+                                echo '<ul>';
+                                foreach($components as $comp){
+                                    $compIcon = $comp->getIcon();
+                                    $treeIcon = !empty($compIcon) ? 'icon: \'' . $compIcon . '\'' : '';
+
+                                    echo '<li data="' . $treeIcon . '">' . $comp->getName() . '</li>';
+                                }
+                                echo '</ul>';
+                            }
+                        }
+                    }
+                    ?>
                 </ul>
             </div>
         <?php
@@ -223,60 +240,60 @@ if (!class_exists("sp_admin")) {
             ?>
 
             <div class="wrap">
-                <div id="sp_errors"></div>
-                <h2><?php echo PLUGIN_NAME . ' Templates' ?></h2>
+            <div id="sp_errors"></div>
+            <h2><?php echo PLUGIN_NAME . ' Templates' ?></h2>
 
-                <button id="newSPCatForm" class="button button-primary button-large" title="Create a new category template">New Template</button>
+            <button id="newSPCatForm" class="button button-primary button-large" title="Create a new category template">New Template</button>
 
-                <div id="poststuff">
-                    <div id="post-body" class="metabox-holder columns-2">
-                        <div id="post-body-content" style="margin-bottom: 0px;">
-                            <div id="category_settings" class="postbox">
-                                <div id="setting_errors"></div>
-                                <div id="the_settings">
-                                    <?php
-                                    if( empty($sp_categories) ){
-                                        //self::newCatForm();
-                                    }else{
-                                        if( empty($_GET['catID']))
-                                            $sp_category = new sp_category(null, null, $sp_categories[0]);
+            <div id="poststuff">
+                <div id="post-body" class="metabox-holder columns-2">
+                    <div id="post-body-content" style="margin-bottom: 0px;">
+                        <div id="category_settings" class="postbox">
+                            <div id="setting_errors"></div>
+                            <div id="the_settings">
+                                <?php
+                                if( empty($sp_categories) ){
+                                    //self::newCatForm();
+                                }else{
+                                    if( empty($_GET['catID']))
+                                        $sp_category = new sp_category(null, null, $sp_categories[0]);
 
-                                        self::renderSPCatSettings($sp_category);
-                                    }
-                                    ?>
-                                    <div class="clear"></div>
-                                </div><!-- end #the_settings -->
+                                    self::renderSPCatSettings($sp_category);
+                                }
+                                ?>
                                 <div class="clear"></div>
-                            </div><!-- end #category_settings -->
-                        </div>
+                            </div><!-- end #the_settings -->
+                            <div class="clear"></div>
+                        </div><!-- end #category_settings -->
+                    </div>
 
-                        <div id="postbox-container-1" class="postbox-container">
-                                <div id="sp_cat_list" class="postbox" style="display: block;">
-                                    <div class="handlediv" title="Click to toggle"><br></div>
-                                    <h3 class="hndle" style="cursor: default"><span>SmartPost Templates</span></h3>
-                                    <div class="inside">
-                                        <?php self::renderCatTree(); ?>
-                                    </div>
-                                </div><!-- end sp_cat_list -->
+                    <div id="postbox-container-1" class="postbox-container">
+                        <div id="sp_cat_list" class="postbox" style="display: block;">
+                            <div class="handlediv" title="Click to toggle"><br></div>
+                            <h3 class="hndle" style="cursor: default"><span>SmartPost Templates</span></h3>
+                            <div class="inside">
+                                <?php self::renderCatTree(); ?>
+                            </div>
+                        </div><!-- end sp_cat_list -->
 
-                                <div id="sp_components" class="postbox" style="display: block;">
-                                    <div class="handlediv" title="Click to toggle"><br></div>
-                                    <h3 class="hndle" style="cursor: default;"><span>SmartPost Components</span></h3>
-                                    <div class="inside">
-                                        <p>Drag the below components to the template on the left:</p>
-                                        <?php self::listCompTypes() ?>
-                                    </div>
-                                </div><!-- end sp_components -->
+                        <div id="sp_components" class="postbox" style="display: block;">
+                            <div class="handlediv" title="Click to toggle"><br></div>
+                            <h3 class="hndle" style="cursor: default;"><span>SmartPost Components</span></h3>
+                            <div class="inside">
+                                <p>Drag the below components to the template on the left:</p>
+                                <?php self::listCompTypes() ?>
+                            </div>
+                        </div><!-- end sp_components -->
 
-                        </div><!-- end #postbox-container-1 -->
+                    </div><!-- end #postbox-container-1 -->
 
-                        <div id="postbox-container-2" class="postbox-container">
-                            <?php self::listCatComponents($sp_category) ?>
-                            <?php wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false ); ?>
-                        </div><!-- end #postbox-container-1 -->
+                    <div id="postbox-container-2" class="postbox-container">
+                        <?php self::listCatComponents($sp_category) ?>
+                        <?php wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false ); ?>
+                    </div><!-- end #postbox-container-1 -->
 
-                    </div><!-- end #post-body -->
-                </div><!-- end #poststuff -->
+                </div><!-- end #post-body -->
+            </div><!-- end #poststuff -->
         <?php
         }
 

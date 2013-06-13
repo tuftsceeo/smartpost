@@ -58,7 +58,7 @@
          * @param draggableDiv
          * @param sortableDiv
          */
-        makeCompDivsDraggable: function(draggableDiv, sortableDiv){
+        makeCompDivsDraggable: function(dragHelper, draggableDiv, sortableDiv){
           if(draggableDiv == undefined)
             draggableDiv = $('.catCompDraggable');
 
@@ -67,8 +67,8 @@
 
           if(draggableDiv.exists()){
               draggableDiv.draggable({
-                  addClasses: false,
-                  helper: 'clone',
+                  addClasses: true,
+                  helper: dragHelper,
                   revert: 'invalid',
                   connectToSortable: sortableDiv
               })
@@ -162,13 +162,16 @@
             $('#sp_catTree').dynatree({
                 imagePath: "",
                 onActivate: function (node) {
-                    window.open(node.data.href, node.data.target);
+                    if(node.data.isFolder)
+                        window.open(node.data.href, node.data.target);
                 },
                 debugLevel: 0
             });
 
             //Make the component widgets draggable
-            this.makeCompDivsDraggable(null, null);
+            $('#sp_catTree').dynatree("getTree").renderInvisibleNodes();
+            this.makeCompDivsDraggable('clone', $('.dynatree-node'), null);
+            this.makeCompDivsDraggable('clone', null, null);
 
             //Enable component deletion
             this.handleDeleteComp(
@@ -177,11 +180,11 @@
             );
 
             //Re-define sortable behavior on the admin page.
-
             sortableDiv.sortable( "option", "axis", "y" );
             sortableDiv.sortable({
                 axis: "y",
                 stop: function(e, ui){
+
                     if ( ui.item.hasClass('catCompDraggable') ){
                         var typeID = ui.item.attr("type-id").split("-")[1];
                         var catID  = $('#catID').val();
@@ -194,8 +197,15 @@
                     }else{
                         self.saveCompOrder( sortableDiv.sortable( 'toArray' ) );
                     }
+                },
+                placeholder: {
+                    element: function(currentItem) {
+                        return $('<div class="sortable-placeholder" style="height:32px;"></div>')[0];
+                    },
+                    update: function(container, p) {}
                 }
-            })
+            });
+            sortableDiv.disableSelection();
 
             //Reveal delete button
             $('.postbox').hover(function(){
@@ -203,6 +213,8 @@
             }, function(){
                 $(this).find('.delComp').css('visibility', 'hidden');
             })
+
+            $('.postbox h3').unbind('click.postboxes');
         }
     };
 

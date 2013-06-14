@@ -87,10 +87,10 @@ if (!class_exists("sp_catComponent")) {
                 $tableName = $wpdb->prefix . 'sp_catComponents';
                 $wpdb->insert($tableName,
                     array(
-                        'catID'    			=> $this->catID,
-                        'name'     			=> $this->name,
+                        'catID'    	  => $this->catID,
+                        'name'     	  => $this->name,
                         'description' => $this->description,
-                        'typeID'     	=> $this->typeID,
+                        'typeID'      => $this->typeID,
                         'compOrder'   => $this->compOrder,
                         'options'     => maybe_serialize($this->options),
                         'is_default'  => $this->isDefault,
@@ -120,7 +120,7 @@ if (!class_exists("sp_catComponent")) {
                     $this->typeID      = $component->typeID;
                     $this->compOrder   = $component->compOrder;
                     $this->description = $component->description;
-                    $this->options				 = maybe_unserialize($component->options);
+                    $this->options	   = maybe_unserialize($component->options);
                     $this->isDefault   = (bool) $component->is_default;
                     $this->isRequired  = (bool) $component->is_required;
                     $this->icon        = $component->iconID;
@@ -276,21 +276,34 @@ if (!class_exists("sp_catComponent")) {
          * @see sp_admin::listCatComponents
          * @return string
          */
-        function reqDefaultCheckboxes(){
+        function render(){
             $disabled  = $this->isRequired ? 'disabled="disabled"' : '';
             $isDefaultChecked  = $this->isDefault ? 'checked="checked"' : '';
             $isRequiredChecked = $this->isRequired ? 'checked="checked"' : '';
 
-            $html = "";
-            //$html .= '<div class="delComp" id="del-' . $this->ID . '" comp-id="' . $this->ID . '" style="background: url("' . admin_url('images/no.png')  . '"); " alt="Delete Component" title="Delete Component"><br></div>';
-            $html .= '<span class="requiredAndDefault">';
-                $html .= '<label for="isDefault-' . $this->ID . '">Default </label>';
-                $html .= '<input type="checkbox" class="compRestrictions" id="isDefault-' . $this->ID . '" data-compid="' . $this->ID . '" name="isDefault-' . $this->ID  . '" value="1" ' . $disabled . $isDefaultChecked . '/> ';
-                $html .= '<label for="isRequired-' . $this->ID . '">Required </label>';
-                $html .= '<input type="checkbox" class="compRestrictions" id="isRequired-' . $this->ID . '" data-compid="' . $this->ID  . '" name="isRequired-' . $this->ID . '" value="1" ' . $isRequiredChecked  . '/>';
-            $html .= '</span>';
+            $checkBoxes = "";
+            $checkBoxes .= '<span class="requiredAndDefault">';
+                $checkBoxes .= '<label for="isDefault-' . $this->ID . '">Default </label>';
+                $checkBoxes .= '<input type="checkbox" class="compRestrictions" id="isDefault-' . $this->ID . '" data-compid="' . $this->ID . '" name="isDefault-' . $this->ID  . '" value="1" ' . $disabled . $isDefaultChecked . '/> ';
+                $checkBoxes .= '<label for="isRequired-' . $this->ID . '">Required </label>';
+                $checkBoxes .= '<input type="checkbox" class="compRestrictions" id="isRequired-' . $this->ID . '" data-compid="' . $this->ID  . '" name="isRequired-' . $this->ID . '" value="1" ' . $isRequiredChecked  . '/>';
+            $checkBoxes .= '</span>';
+            $checkBoxes .= '<div class="delComp" id="del-' . $this->ID . '" comp-id="' . $this->ID . '" style="background: url("' . admin_url('images/no.png')  . '"); " alt="Delete Component" title="Delete Component"><br></div>';
 
-            return $html;
+            $id    = $this->name . '-' . $this->ID;
+            $title = "";
+            $title .= '<img src="' . $this->getIcon() . '" /> ';
+            $title .= '<span class="editableCompTitle" style="cursor: text">';
+            $title .= $this->name;
+            $title .= '</span>';
+            $title .=  $checkBoxes;
+
+            add_meta_box($id,
+                __( $title ),
+                array( &$this, 'componentOptions' ),
+                'smartpost',
+                'normal',
+                'default');
         }
 
         /**
@@ -533,6 +546,10 @@ if (!class_exists("sp_catComponent")) {
 
             //Otherwise return the icon url
             return $icon_url;
+        }
+
+        function getIconID(){
+            return $this->icon;
         }
 
         function setIcon($iconID){

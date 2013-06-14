@@ -151,25 +151,68 @@
         },
 
         /**
-         * Initializes the spAdmin object with click handlers and variables
-         * necessary for initialization.
+         * Initializes a dynaTree for template management.
+         * @param sp_catTree - The DOM element consisting to categories and components.
          */
-        init: function(){
-            var self = this;
-            var sortableDiv = $( ".meta-box-sortables" );
-
-            //Initialize a dynatree instance for the SP category tree.
-            $('#sp_catTree').dynatree({
+        initComponentTree: function(sp_catTree){
+            sp_catTree.dynatree({
                 imagePath: "",
+                generateIds: true,
                 onActivate: function (node) {
                     if(node.data.isFolder)
                         window.open(node.data.href, node.data.target);
                 },
                 debugLevel: 0
             });
+            sp_catTree.dynatree("getTree").renderInvisibleNodes();
+        },
+
+        /**
+         * Used inside the sortable component div, replaces a dropped
+         * item with its corresponding component(s).
+         * @param e
+         * @param ui
+         */
+        replaceDroppedItem: function(e, ui){
+            var self = this;
+            var cl = function(newComponent){
+                ui.item.replaceWith(newComponent);
+                self.saveCompOrder( $(".meta-box-sortables").sortable( 'toArray' ) );
+            }
+
+            if ( ui.item.hasClass('catCompDraggable') ){
+                var typeID = ui.item.attr("type-id").split("-")[1];
+                var catID  = $('#catID').val();
+                spAdmin.sp_catComponent.addComponent(catID, typeID, cl);
+            }
+
+            if( ui.item.hasClass('dynatree-node') ){
+                var node  = $.ui.dynatree.getNode(ui.item.context);
+                var compID = node.data.compID;
+                var catID  = $('#catID').val();
+                if(node.data.compID){
+                    spAdmin.sp_catComponent.copyComponent(compID, catID, cl);
+                }
+
+                if(node.data.catID){
+                    console.log('dropped category:' + catID);
+                }
+            }
+        },
+
+        /**
+         * Initializes the spAdmin object with click handlers and variables
+         * necessary for initialization.
+         */
+        init: function(){
+            var self = this;
+            var sortableDiv = $( ".meta-box-sortables" );
+            var sp_catTree  = $('#sp_catTree');
+
+            //Initialize a dynatree instance for the SP category tree.
+            this.initComponentTree(sp_catTree);
 
             //Make the component widgets draggable
-            $('#sp_catTree').dynatree("getTree").renderInvisibleNodes();
             this.makeCompDivsDraggable('clone', $('.dynatree-node'), null);
             this.makeCompDivsDraggable('clone', null, null);
 
@@ -179,24 +222,13 @@
                 function(){self.saveCompOrder( sortableDiv.sortable( 'toArray') )}
             );
 
+
             //Re-define sortable behavior on the admin page.
             sortableDiv.sortable( "option", "axis", "y" );
             sortableDiv.sortable({
                 axis: "y",
                 stop: function(e, ui){
-
-                    if ( ui.item.hasClass('catCompDraggable') ){
-                        var typeID = ui.item.attr("type-id").split("-")[1];
-                        var catID  = $('#catID').val();
-                        var cl = function(newComponent){
-                            $(newComponent).unwrap();
-                            ui.item.replaceWith(newComponent);
-                            self.saveCompOrder( sortableDiv.sortable( 'toArray' ) );
-                        }
-                        spAdmin.sp_catComponent.addComponent(catID, typeID, cl);
-                    }else{
-                        self.saveCompOrder( sortableDiv.sortable( 'toArray' ) );
-                    }
+                    self.replaceDroppedItem(e, ui);
                 },
                 placeholder: {
                     element: function(currentItem) {
@@ -207,13 +239,7 @@
             });
             sortableDiv.disableSelection();
 
-            //Reveal delete button
-            $('.postbox').hover(function(){
-                $(this).find('.delComp').css('visibility', 'visible');
-            }, function(){
-                $(this).find('.delComp').css('visibility', 'hidden');
-            })
-
+            //Limit click event only to hndl class
             $('.postbox h3').unbind('click.postboxes');
         }
     };

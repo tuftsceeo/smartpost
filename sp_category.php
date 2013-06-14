@@ -80,6 +80,13 @@ if (!class_exists("sp_category")) {
             }
         }
 
+        /*
+         * Initializes scripts, actions, hooks, variables for the sp_category class.
+         */
+        function init(){
+            add_action('delete_category', array('sp_category', 'deleteCategory'));
+        }
+
         /**
          * Renders HTML <ul> tree of all the posts under the category
          *
@@ -364,7 +371,6 @@ if (!class_exists("sp_category")) {
          * @return object an sp_catComponent object on success, otherwise a WP_Error object
          */
         function addCatComponent($name, $description, $typeID, $isDefault, $isRequired){
-            global $wpdb;
             $compOrder = self::getNextOrder();
             $type = 'sp_cat' . sp_core::getType($typeID);
 
@@ -475,10 +481,13 @@ if (!class_exists("sp_category")) {
                 $newOrder = array_values($compOrder);
                 foreach($newOrder as $order => $compID){
                     $component = $this->getComponentByID($compID);
+                    if(is_wp_error($component)){
+                        return new WP_Error('broke', ('Could not instantiate component with component ID: "' . $compID . '".'));
+                    }
+                    $component->setCompOrder($order);
                 }
             }
             return true;
-            $component->setCompOrder($order);
         }
 
         /*

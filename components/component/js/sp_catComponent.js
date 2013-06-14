@@ -33,6 +33,35 @@
         },
 
         /**
+         * Given a compID that represents a component, copies that component
+         * instance to a category represented by catID
+         * @param compID - The component ID of the component to copy
+         * @param catID - The categoryID receiving the copy
+         * @param cl - closure that gets passed response from server
+         * @return DOMElement - An HTML
+         */
+        copyComponent: function(compID, catID, cl){
+            $.ajax({
+                url		 : SP_AJAX_URL,
+                type     : 'POST',
+                data	 : {
+                    action : 'copyComponentAJAX',
+                    nonce  : SP_NONCE,
+                    compID : compID,
+                    catID  : catID
+                },
+                dataType : 'html',
+                success  : function(response, statusText, jqXHR){
+                    //Remove the outer parent: <div id="advanced-sortables">
+                    cl($(response).html(),  statusText, jqXHR);
+                },
+                error    : function(jqXHR, statusText, errorThrown){
+                    spAdmin.adminpage.showError(errorThrown, null);
+                }
+            })
+        },
+
+        /**
          * Given a component typeID and a category ID, adds that component
          * to a category template represented by catID
          * @param catID
@@ -60,6 +89,12 @@
             })
         },
 
+        /**
+         * A generic function that updates category component options.
+         * @param theAction
+         * @param compID
+         * @param value
+         */
         updateCompOptions: function(theAction, compID, value){
             $.ajax({
                 url  : SP_AJAX_URL,
@@ -71,7 +106,7 @@
                     updateAction : theAction,
                     value  : value
                 },
-                dataType : 'json',
+                dataType : 'html',
                 error    : function(jqXHR, statusText, errorThrown){
                     spAdmin.adminpage.showError(errorThrown);
                 }

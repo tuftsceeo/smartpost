@@ -281,22 +281,20 @@ if (!class_exists("sp_catComponent")) {
             $isDefaultChecked  = $this->isDefault ? 'checked="checked"' : '';
             $isRequiredChecked = $this->isRequired ? 'checked="checked"' : '';
 
-            $checkBoxes = "";
-            $checkBoxes .= '<span class="requiredAndDefault">';
+            $checkBoxes = '<span class="requiredAndDefault">';
                 $checkBoxes .= '<label for="isDefault-' . $this->ID . '">Default </label>';
                 $checkBoxes .= '<input type="checkbox" class="compRestrictions" id="isDefault-' . $this->ID . '" data-compid="' . $this->ID . '" name="isDefault-' . $this->ID  . '" value="1" ' . $disabled . $isDefaultChecked . '/> ';
                 $checkBoxes .= '<label for="isRequired-' . $this->ID . '">Required </label>';
                 $checkBoxes .= '<input type="checkbox" class="compRestrictions" id="isRequired-' . $this->ID . '" data-compid="' . $this->ID  . '" name="isRequired-' . $this->ID . '" value="1" ' . $isRequiredChecked  . '/>';
             $checkBoxes .= '</span>';
-            $checkBoxes .= '<div class="delComp" id="del-' . $this->ID . '" comp-id="' . $this->ID . '" style="background: url("' . admin_url('images/no.png')  . '"); " alt="Delete Component" title="Delete Component"><br></div>';
 
             $id    = $this->name . '-' . $this->ID;
-            $title = "";
-            $title .= '<img src="' . $this->getIcon() . '" /> ';
+            $title = '<img src="' . $this->getIcon() . '" /> ';
             $title .= '<span class="editableCompTitle" style="cursor: text">';
             $title .= $this->name;
             $title .= '</span>';
             $title .=  $checkBoxes;
+            $title .= '<div class="delComp" id="del-' . $this->ID . '" comp-id="' . $this->getCompType() . '-' . $this->ID . '" style="background: url(\'' . admin_url('images/no.png')  . '\'); " alt="Delete Component" title="Delete Component"><br></div>';
 
             add_meta_box($id,
                 __( $title ),

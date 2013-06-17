@@ -55,6 +55,7 @@
         /**
          * Turns the elements in draggableDiv draggable and connects the
          * draggable elements with the sortable elements of sortableDiv.
+         * @param dragHelper
          * @param draggableDiv
          * @param sortableDiv
          */
@@ -76,47 +77,31 @@
         },
 
         /**
-         * Replaces the dropped component widget with a category
-         * component interface.
-         * @param sortableDiv
-
-        handleDroppedComp: function(sortableDiv){
-            var thisObj = this;
-            sortableDiv.on(
-                "sortstop",
-                function(event, ui){
-                    if ( ui.item.hasClass('catCompDraggable') ){
-                        var typeID = ui.item.attr("type-id").split("-")[1];
-                        var catID  = $('#catID').val();
-                        var cl = function(newComponent){
-                            sortableDiv.find('.catCompDraggable').replaceWith(newComponent);
-                            var compOrder = sortableDiv.sortable('toArray');
-                            thisObj.saveCompOrder( compOrder );
-                        }
-                        spAdmin.sp_catComponent.addComponent(catID, typeID, cl);
-                    }else{
-                        var compOrder = sortableDiv.sortable('toArray');
-                        thisObj.saveCompOrder( compOrder );
-                    }
-                }
-            );
-        },
-         */
-
-        /**
          * Calls the AJAX to delete a component and deletes the corresponding
          * HTML for the component.
          * @param deleteButton
-         * @param cl - callback after the delete operation has completed.
          */
-        handleDeleteComp: function(deleteButton, cl){
-            var thisObj = this;
+        handleDeleteComp: function(deleteButton){
+
             deleteButton.click(function(){
-                var compDivID = $(this).attr("comp-id");
-                var compid = compDivID.split("-")[1];
-                $('#' + compDivID).remove();
-                spAdmin.sp_catComponent.deleteComponent(compid, cl);
+                var divID = $(this).attr("comp-id");
+                var compID = divID.split('-')[1];
+                var cl = function(){
+                   $('#' + divID ).remove();
+                };
+                spAdmin.sp_catComponent.deleteComponent(compID, cl);
             })
+        },
+
+        /**
+         * Reveals the delete button when hovering over hoverElem.
+         * @param hoverElem
+         */
+        enableDeleteHover: function(hoverElem){
+            hoverElem.hover(
+                function(){$(this).find('.delComp').css('visibility', 'visible')},
+                function(){$(this).find('.delComp').css('visibility', 'hidden')}
+            )
         },
 
         /**
@@ -174,22 +159,33 @@
          * @param ui
          */
         replaceDroppedItem: function(e, ui){
-            var self = this;
+            var self  = this;
+            var catID = $('#catID').val();
             var cl = function(newComponent){
-                ui.item.replaceWith(newComponent);
+                var component = $(newComponent)
+                ui.item.replaceWith(component);
+
+                //Enable delete event
+                self.handleDeleteComp(component.find('.delComp'));
+                self.enableDeleteHover(component);
+
+                //Enable required and default checkboxes
+                if(spAdmin.sp_catComponent)
+                    spAdmin.sp_catComponent.disableDefault(component.find('.requiredAndDefault input'));
+
+                //Enable postbox open/close
+                //Enable component rename
+                //Enable icon drag n' drop
+
                 self.saveCompOrder( $(".meta-box-sortables").sortable( 'toArray' ) );
-            }
+            };
 
             if ( ui.item.hasClass('catCompDraggable') ){
                 var typeID = ui.item.attr("type-id").split("-")[1];
-                var catID  = $('#catID').val();
                 spAdmin.sp_catComponent.addComponent(catID, typeID, cl);
-            }
-
-            if( ui.item.hasClass('dynatree-node') ){
+            }else if( ui.item.hasClass('dynatree-node') ){
                 var node  = $.ui.dynatree.getNode(ui.item.context);
                 var compID = node.data.compID;
-                var catID  = $('#catID').val();
                 if(node.data.compID){
                     spAdmin.sp_catComponent.copyComponent(compID, catID, cl);
                 }
@@ -197,6 +193,8 @@
                 if(node.data.catID){
                     console.log('dropped category:' + catID);
                 }
+            }else{
+                self.saveCompOrder( $(".meta-box-sortables").sortable( 'toArray' ) );
             }
         },
 
@@ -216,13 +214,6 @@
             this.makeCompDivsDraggable('clone', $('.dynatree-node'), null);
             this.makeCompDivsDraggable('clone', null, null);
 
-            //Enable component deletion
-            this.handleDeleteComp(
-                $('.delComp'),
-                function(){self.saveCompOrder( sortableDiv.sortable( 'toArray') )}
-            );
-
-
             //Re-define sortable behavior on the admin page.
             sortableDiv.sortable( "option", "axis", "y" );
             sortableDiv.sortable({
@@ -237,10 +228,14 @@
                     update: function(container, p) {}
                 }
             });
-            sortableDiv.disableSelection();
+
+            //Enable component deletion
+            this.handleDeleteComp($('.delComp'));
+            this.enableDeleteHover($('.postbox'));
 
             //Limit click event only to hndl class
             $('.postbox h3').unbind('click.postboxes');
+
         }
     };
 

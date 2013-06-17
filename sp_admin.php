@@ -95,20 +95,7 @@ if (!class_exists("sp_admin")) {
             $catComponents = $sp_category->getComponents();
             if(!empty($catComponents)){
                 foreach($catComponents as $component){
-                    $id    = $component->getName() . '-' . $component->getID();
-                    $title = "";
-                    $title .= '<img src="' . $component->getIcon() . '" /> ';
-                    $title .= '<span class="editableCompTitle" style="cursor: text">';
-                    $title .= $component->getName();
-                    $title .= '</span>';
-                    $title .=  $component->reqDefaultCheckboxes();
-
-                    add_meta_box($id,
-                        __( $title ),
-                        array( $component, 'componentOptions' ),
-                        'smartpost',
-                        'normal',
-                        'default');
+                    $component->render();
                 }
                 do_meta_boxes('smartpost', 'normal', null);
             }else{
@@ -202,7 +189,7 @@ if (!class_exists("sp_admin")) {
                             $adminUrl = admin_url('edit-tags.php?action=edit&taxonomy=category&tag_ID=' . $category->term_id . '&post_type=post');
                         }
                     ?>
-                        <li data="<?php echo empty($catIcon) ? 'isFolder: true' : 'icon: ' . $catIcon ?>">
+                        <li data="<?php echo empty($catIcon) ? 'isFolder: true, catID: ' . $category->term_id : 'catID:, ' . $category->term_id . 'icon: ' . $catIcon ?>">
                             <a href="<?php echo $adminUrl ?>"><?php echo $category->name ?></a>
                     <?php
 
@@ -212,9 +199,9 @@ if (!class_exists("sp_admin")) {
                                 echo '<ul>';
                                 foreach($components as $comp){
                                     $compIcon = $comp->getIcon();
-                                    $treeIcon = !empty($compIcon) ? 'icon: \'' . $compIcon . '\'' : '';
+                                    $liData = !empty($compIcon) ? 'icon: \'' . $compIcon . '\', compID: ' . $comp->getID() : 'compID: ' . $comp->getID();
 
-                                    echo '<li data="' . $treeIcon . '">' . $comp->getName() . '</li>';
+                                    echo '<li data="' . $liData . '">' . $comp->getName() . '</li>';
                                 }
                                 echo '</ul>';
                             }

@@ -90,6 +90,21 @@
         },
 
         /**
+         * Initializes a component elements by binding relevant JS events to it.
+         * @param componentElem
+         * @param typeID
+         * @param cl - closure
+         */
+        initializeComponent: function(componentElem, typeID, cl){
+            if(spAdmin.types)
+                var componentJS = spAdmin.types[typeID];
+
+            //Bind component-specific events
+            if(componentJS)
+                componentJS.initComponent(componentDiv);
+        },
+
+        /**
          * A generic function that updates category component options.
          * @param theAction
          * @param compID

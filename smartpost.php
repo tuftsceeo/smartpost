@@ -43,6 +43,7 @@ if (!class_exists("smartpost")){
             sp_postComponent::initPostComponent();
             sp_catComponent::initCatComponent();
             self::requireClasses(dirname(__FILE__) . '/components');
+            self::requireClasses(dirname(__FILE__) . '/widgets');
         }
 
         /**
@@ -64,7 +65,7 @@ if (!class_exists("smartpost")){
                 if ($dh = opendir($dir)) {
                     while (($file = readdir($dh)) !== false) {
                         $folder = $dir . '/' . $file;
-                        //filters ".", "..", and ".svn" files
+                        //filters ".", ".."
                         if(is_dir($folder) && ($file != "." && $file != "..")){
                             foreach (glob($folder . "/*.php") as $filepath){
                                 $class = basename($filepath, ".php");
@@ -83,12 +84,13 @@ if (!class_exists("smartpost")){
          * Places globally used SmartPost CSS on the page.
          */
         static function enqueueCSS(){
-            wp_register_style( 'jquery-ui-theme', plugins_url('/css/jquery-ui-theme/jquery-ui-1.8.21.custom.css', __FILE__));
+            wp_register_style( 'jquery-ui-theme', plugins_url('/css/jquery-ui-theme/jquery-ui-1.10.3.custom.css', __FILE__));
             wp_register_style( 'simple-menu-css', plugins_url('/css/simple_menu.css', __FILE__) );
             wp_register_style( 'jquery-dynatree-css', plugins_url('js/dynatree/skin-vista/ui.dynatree.css', __FILE__) );
             wp_enqueue_style( 'simple-menu-css' );
             wp_enqueue_style( 'jquery-dynatree-css' );
             wp_enqueue_style( 'jquery-ui-theme' );
+
         }
 
         /**

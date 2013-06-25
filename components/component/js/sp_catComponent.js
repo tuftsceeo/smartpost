@@ -7,6 +7,32 @@
     spAdmin.sp_catComponent = {
 
         /**
+         * Saves the title of a component given a title and component ID.
+         * @param compID
+         * @param title
+         * @param cl - closure that gets passed the server response.
+         */
+        saveCatCompTitleAJAX: function(compID, title, cl){
+            $.ajax({
+                url		 : SP_AJAX_URL,
+                type     : 'POST',
+                data	 : {
+                    action : 'saveCatCompTitleAJAX',
+                    nonce  : SP_NONCE,
+                    compID : compID,
+                    title  : title
+                },
+                dataType : 'json',
+                success  : function(response, statusText, jqXHR){
+                    cl(response, statusText, jqXHR);
+                },
+                error    : function(jqXHR, statusText, errorThrown){
+                    spAdmin.adminpage.showError(errorThrown);
+                }
+            })
+        },
+
+        /**
          * Given a componentID, makes the appropriate AJAX call
          * to delete the component server side. On a successful
          * response, remove the HTML associated with that component.
@@ -84,7 +110,7 @@
                     cl($(response).html(), statusText, jqXHR);
                 },
                 error    : function(jqXHR, statusText, errorThrown){
-                    spAdmin.adminpage.showError(errorThrown);
+                    spAdmin.adminpage.showError(errorThrown, null);
                 }
             })
         },

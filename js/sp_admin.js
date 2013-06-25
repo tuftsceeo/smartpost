@@ -82,11 +82,11 @@
          * @param deleteButton
          */
         handleDeleteComp: function(deleteButton){
-
             deleteButton.click(function(){
                 var divID = $(this).attr("comp-id");
                 var compID = divID.split('-')[1];
                 var cl = function(){
+                    console.log($('#' + divID ));
                    $('#' + divID ).remove();
                 };
                 spAdmin.sp_catComponent.deleteComponent(compID, cl);
@@ -136,6 +136,30 @@
         },
 
         /**
+         * Make component titles editable
+         */
+        editableCatCompTitle: function(titleElems){
+
+            if( titleElems == undefined){
+                titleElems = $('.editableCatCompTitle');
+            }
+
+            titleElems.editable(function(value, settings){
+                    var compID = $(this).attr('comp-id');
+                    if(spAdmin.sp_catComponent)
+                        spAdmin.sp_catComponent.saveCatCompTitleAJAX(compID, value, function(response){});
+                    return value;
+                },
+                {
+                    placeholder: 'Click to add a component title',
+                    onblur     : 'submit',
+                    cssclass   : 'editableCatCompTitle',
+                    maxlength  : 35
+                }
+            )
+        },
+
+        /**
          * Initializes a dynaTree for template management.
          * @param sp_catTree - The DOM element consisting to categories and components.
          */
@@ -144,8 +168,10 @@
                 imagePath: "",
                 generateIds: true,
                 onActivate: function (node) {
-                    if(node.data.isFolder)
+                    if(node.data.isFolder){
+                        node.expand(false)
                         window.open(node.data.href, node.data.target);
+                    }
                 },
                 debugLevel: 0
             });
@@ -162,7 +188,7 @@
             var self  = this;
             var catID = $('#catID').val();
             var cl = function(newComponent){
-                var component = $(newComponent)
+                var component = $(newComponent);
                 ui.item.replaceWith(component);
 
                 //Enable delete event
@@ -173,9 +199,11 @@
                 if(spAdmin.sp_catComponent)
                     spAdmin.sp_catComponent.disableDefault(component.find('.requiredAndDefault input'));
 
-                //Enable postbox open/close
                 //Enable component rename
-                //Enable icon drag n' drop
+                self.editableCatCompTitle();
+
+                //TODO: Enable postbox open/close
+                //TODO: Enable icon drag n' drop
 
                 self.saveCompOrder( $(".meta-box-sortables").sortable( 'toArray' ) );
             };
@@ -184,12 +212,11 @@
                 var typeID = ui.item.attr("type-id").split("-")[1];
                 spAdmin.sp_catComponent.addComponent(catID, typeID, cl);
             }else if( ui.item.hasClass('dynatree-node') ){
-                var node  = $.ui.dynatree.getNode(ui.item.context);
+                var node   = $.ui.dynatree.getNode(ui.item.context);
                 var compID = node.data.compID;
                 if(node.data.compID){
                     spAdmin.sp_catComponent.copyComponent(compID, catID, cl);
                 }
-
                 if(node.data.catID){
                     console.log('dropped category:' + catID);
                 }
@@ -199,9 +226,50 @@
         },
 
         /**
+         * Sends a AJAX request with new category information
+         * based off the fields in the form represented by formID.
+         * @param formElement
+         */
+        submitCategory: function(formElement){
+            var self = this;
+            var spCatOptions = {
+                url	 : SP_AJAX_URL,
+                type : 'POST',
+                data : {action: 'newSPCatAJAX', nonce: SP_NONCE},
+                dataType : 'json',
+                success	: function(response){
+                    if(response){
+                        if(response.error){
+                            self.showError(response.error, null);
+                        }else{
+                            window.location.href = SP_ADMIN_URL + '?page=smartpost&catID=' + response.catID;
+                        }
+                    }
+                },
+                beforeSubmit : function(formData, jqForm){ // form validation
+                    var form = jqForm[0];
+                    if(!form.cat_name.value){
+                        self.showError('Please fill in the category name', null);
+                        $('#cat_name').focus();
+                        return false;
+                    }
+                },
+                error: function(data){
+                    self.showError(data.statusText, null);
+                }
+            };
+            formElement.submit(function(){
+                $(this).ajaxSubmit(spCatOptions);
+                return false;
+            });
+        },
+
+        /**
          * Initializes the spAdmin object with click handlers and variables
          * necessary for initialization.
+         * TODO: define constants for element classes and IDs
          */
+        SP_CAT_FORM: 'cat_form',
         init: function(){
             var self = this;
             var sortableDiv = $( ".meta-box-sortables" );
@@ -215,7 +283,6 @@
             this.makeCompDivsDraggable('clone', null, null);
 
             //Re-define sortable behavior on the admin page.
-            sortableDiv.sortable( "option", "axis", "y" );
             sortableDiv.sortable({
                 axis: "y",
                 stop: function(e, ui){
@@ -223,7 +290,16 @@
                 },
                 placeholder: {
                     element: function(currentItem) {
-                        return $('<div class="sortable-placeholder" style="height:32px;"></div>')[0];
+                        var node = $.ui.dynatree.getNode(currentItem.context);
+                        var placeholder = '';
+                        if(node.data.catID > 0){
+                            placeholder = '<div class="sortable-placeholder" style="height:32px; position: relative;"><div style="position: absolute; top: -5px; right: -5px; color: red;">' + node.childList.length + '</div></div>';
+                        }else{
+                            placeholder = '<div class="sortable-placeholder" style="height:32px;"></div>';
+                        }
+
+                        console.log($(placeholder))
+                        return $(placeholder);
                     },
                     update: function(container, p) {}
                 }
@@ -236,6 +312,25 @@
             //Limit click event only to hndl class
             $('.postbox h3').unbind('click.postboxes');
 
+            //Enable editable component titles
+            this.editableCatCompTitle($('.editableCatCompTitle'));
+
+            //Initialize the dialog
+            $( "#newCategoryForm" ).dialog({
+                resizable: false,
+                draggable: false,
+                autoOpen: false,
+                title: "Create a new template:",
+                width: "auto",
+                modal: true
+            });
+            //Enable dialog for new category form
+            $('#newCatButton').click(function(){
+                $( '#newCategoryForm' ).dialog( 'open' );
+            })
+
+            //Enable new template submission
+            this.submitCategory( $('#' + self.SP_CAT_FORM) )
         }
     };
 

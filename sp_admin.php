@@ -18,10 +18,18 @@ if (!class_exists("sp_admin")) {
         static function init(){
             require_once('ajax/sp_adminAJAX.php');
             sp_adminAJAX::init();
-
             add_action( 'admin_menu', array('sp_admin', 'sp_admin_add_template_page') );
             add_action( 'admin_menu', array('sp_admin', 'sp_admin_add_category_page') );
             add_action( 'admin_enqueue_scripts', array('sp_admin', 'enqueueScripts') );
+
+            //Load relevant classes for the admin page.
+            $spTypes = sp_core::getTypesAndIDs();
+            foreach($spTypes as $typeName => $typeID){
+                $class = 'sp_cat' . $typeName;
+                if(class_exists($class)){
+                    $class::init();
+                }
+            }
         }
 
         /**
@@ -104,40 +112,48 @@ if (!class_exists("sp_admin")) {
         }
 
         /**
-         * Renders a jQuery UI vertical Tabs. Each tab described a SmartPost component
-         * and gives a user an option to add the component to the category template.
+         * Renders a new category form that users can fill out
          */
-        private static function renderComponents($sp_category){
-            $compTypes = sp_core::getTypes();
+        function renderCategoryForm(){
             ?>
-            <div id="sp_compTabs" class="ui-tabs ui-widget ui-widget-content ui-corner-all ui-tabs-vertical ui-helper-clearfix">
-                <ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
-                    <?php foreach($compTypes as $cType){ ?>
-                        <li class="ui-corner-left ui-state-default">
-                            <a href="#compType-<?php echo $cType->id ?>" style="text-decoration: none;">
-                                <img src="<?php echo $cType->icon ?>" style="vertical-align: text-bottom;"/>
-                                <?php echo $cType->name ?>
-                            </a>
-                        </li>
-                    <?php } ?>
-                </ul>
-                <?php foreach($compTypes as $cType){ ?>
-                    <div id="compType-<?php echo $cType->id ?>" class="ui-tabs-panel ui-widget-content ui-corner-bottom">
-                        <h2 style="margin-top:5px;"> <img src="<?php echo $cType->icon ?>" /> <?php echo $cType->name ?></h2>
-                        <p><?php echo $cType->description ?></p>
-                        <button id="addComponent" data="<?php echo $cType->id ?>" class="button button-primary button-large">Add to template</button>
-                        <div class="clear"></div>
-                    </div>
-                <?php } ?>
+            <div id="newCategoryForm">
+                <form id="cat_form" method="post" action="">
+                    <table>
+                        <tr>
+                            <td>
+                                <h4>Category Name <span style="color:red">*</span></h4>
+                            </td>
+                            <td>
+                                <input type="text" class="regular-text" id="cat_name" name="cat_name" value="" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <h4>Category Description</h4>
+                            </td>
+                            <td>
+                                <input type="text" class="regular-text" id="category_description" name="category_description" value="" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><h4>Category Icon</h4></td>
+                            <td>
+                                <input type="file" id="category_icon" name="category_icon">
+                            </td>
+                        </tr>
+                    </table>
+                    <p style="color: red">* Required</p>
+                    <button class="button button-large" id="">Save Template</button>
+                </form>
             </div>
-        <?
+            <?php
         }
 
         /**
          * Given a category, renders the settings for that category.
          * @param object $sp_category The sp_category object instance.
          */
-        static function renderSPCatSettings($sp_category){
+        static function renderCatSettings($sp_category){
             if(is_wp_error($sp_category->errors)){
                 ?>
                 <div class="error">
@@ -190,7 +206,7 @@ if (!class_exists("sp_admin")) {
                         }
                     ?>
                         <li data="<?php echo empty($catIcon) ? 'isFolder: true, catID: ' . $category->term_id : 'catID:, ' . $category->term_id . 'icon: ' . $catIcon ?>">
-                            <a href="<?php echo $adminUrl ?>"><?php echo $category->name ?></a>
+                            <a href="<?php echo $adminUrl ?>" target="_self"><?php echo $category->name ?></a>
                     <?php
 
                         if(!is_null($sp_category)){
@@ -230,8 +246,8 @@ if (!class_exists("sp_admin")) {
             <div id="sp_errors"></div>
             <h2><?php echo PLUGIN_NAME . ' Templates' ?></h2>
 
-            <button id="newSPCatForm" class="button button-primary button-large" title="Create a new category template">New Template</button>
-
+            <button id="newCatButton" class="button button-primary button-large" title="Create a new category template">New Template</button>
+            <?php self::renderCategoryForm(); ?>
             <div id="poststuff">
                 <div id="post-body" class="metabox-holder columns-2">
                     <div id="post-body-content" style="margin-bottom: 0px;">
@@ -240,12 +256,12 @@ if (!class_exists("sp_admin")) {
                             <div id="the_settings">
                                 <?php
                                 if( empty($sp_categories) ){
-                                    //self::newCatForm();
+                                    self::renderCategoryForm();
                                 }else{
                                     if( empty($_GET['catID']))
                                         $sp_category = new sp_category(null, null, $sp_categories[0]);
 
-                                    self::renderSPCatSettings($sp_category);
+                                    self::renderCatSettings($sp_category);
                                 }
                                 ?>
                                 <div class="clear"></div>

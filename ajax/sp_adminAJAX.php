@@ -155,7 +155,7 @@ if (!class_exists("sp_adminAJAX")) {
 
         /*
          * Renders HTML category settings
-         * @uses sp_admin::renderSPCatSettings()
+         * @uses sp_admin::renderCatSettings()
          */
         function renderSPCatSettingsAJAX(){
             $nonce = $_POST['nonce'];
@@ -170,7 +170,7 @@ if (!class_exists("sp_adminAJAX")) {
                 if(is_wp_error($sp_category->errors)){
                     header("HTTP/1.0 409 " .  $sp_category->errors->get_error_message());
                 }else{
-                    echo sp_admin::renderSPCatSettings($sp_category);
+                    echo sp_admin::renderCatSettings($sp_category);
                 }
             }
             exit;

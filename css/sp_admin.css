@@ -30,4 +30,17 @@
 input.requiredAndDefault{ vertical-align: text-bottom; }
 .dynatree-node{ width: 100%; }
 #normal-sortables .postbox .handlediv{ float: left; }
-#emptyComp{text-align: center;}
+#emptyComp{ text-align: center; }
+.editableCatCompTitle form{ display: inline !important; }
+.editableCatCompTitle input{
+    height: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    font-family: inherit;
+    background: transparent;
+    padding: inherit;
+    margin: inherit;
+    border: none;
+    min-width: 150px;
+}
+.hndle img{ vertical-align: middle; }

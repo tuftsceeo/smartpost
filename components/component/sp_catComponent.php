@@ -288,9 +288,9 @@ if (!class_exists("sp_catComponent")) {
                 $checkBoxes .= '<input type="checkbox" class="compRestrictions" id="isRequired-' . $this->ID . '" data-compid="' . $this->ID  . '" name="isRequired-' . $this->ID . '" value="1" ' . $isRequiredChecked  . '/>';
             $checkBoxes .= '</span>';
 
-            $id    = $this->name . '-' . $this->ID;
+            $id    = $this->getCompType() . '-' . $this->ID;
             $title = '<img src="' . $this->getIcon() . '" /> ';
-            $title .= '<span class="editableCompTitle" style="cursor: text">';
+            $title .= '<span class="editableCatCompTitle" comp-id="' . $this->ID . '" style="cursor: text">';
             $title .= $this->name;
             $title .= '</span>';
             $title .=  $checkBoxes;
@@ -317,9 +317,9 @@ if (!class_exists("sp_catComponent")) {
 
         /**
          * Returns true whether $name exists under a given $catID, otherwise false
-         *
-         * @param string  $name   name of the component
-         * @catID integer $catID  category ID of the category the component belongs to
+         * @param $name
+         * @param $catID
+         * @return bool
          */
         static function componentExists($name, $catID){
             global $wpdb;
@@ -364,7 +364,7 @@ if (!class_exists("sp_catComponent")) {
         static function getCompTypeFromID($compID){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
-            $typeID 			= $wpdb->get_var($wpdb->prepare("SELECT typeID FROM $tableName where id = $compID;"));
+            $typeID    = $wpdb->get_var($wpdb->prepare("SELECT typeID FROM $tableName where id = $compID;"));
             return sp_core::getType($typeID);
         }
 

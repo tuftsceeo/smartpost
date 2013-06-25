@@ -15,6 +15,7 @@ if (!class_exists("sp_catComponentAJAX")) {
             add_action('wp_ajax_updateSettingsAJAX', array('sp_catComponentAJAX', 'updateSettingsAJAX'));
             add_action('wp_ajax_deleteComponentAJAX', array('sp_catComponentAJAX', 'deleteComponentAJAX'));
             add_action('wp_ajax_copyComponentAJAX', array('sp_catComponentAJAX', 'copyComponentAJAX'));
+            add_action('wp_ajax_saveCatCompTitleAJAX', array('sp_catComponentAJAX', 'saveCatCompTitleAJAX'));
         }
 
         /**
@@ -77,9 +78,15 @@ if (!class_exists("sp_catComponentAJAX")) {
             }
 
             $compID = (int) $_POST['compID'];
-            $type   = 'sp_cat' . (string) sp_catComponent::getCompTypeFromID($compID);
+            $type   = (string) sp_catComponent::getCompTypeFromID($compID);
+            if(empty($type)){
+                header("HTTP/1.0 409 Could not find correct component type.");
+                echo json_encode(array('error' => 'Could not find correct component type.'));
+                exit;
+            }
+            $class  = 'sp_cat' . $type;
 
-            $component = new $type($compID);
+            $component = new $class($compID);
             $success = $component->delete();
             if( $success === false ){
                 header("HTTP/1.0 409 Could not delete component");
@@ -130,6 +137,8 @@ if (!class_exists("sp_catComponentAJAX")) {
             }
             exit;
         }
+
+
 
         /**
          * Adds a new $component object to $sp_category based off of the $catID
@@ -237,7 +246,6 @@ if (!class_exists("sp_catComponentAJAX")) {
             }else{
                 $compID = (int) $_POST['compID'];
                 $typeID = (int) $_POST['typeID'];
-                $catID  = (int) $_POST['catID'];
                 $type   = 'sp_cat' . sp_core::getType($typeID);
                 $component = new $type($compID);
                 sp_admin::loadCompForm($component->getCatID(), $component);
@@ -245,7 +253,45 @@ if (!class_exists("sp_catComponentAJAX")) {
             exit;
         }
 
+        /**
+         * AJAX handler for saving the title of a component represented by $_POST['compID'].
+         */
+        function saveCatCompTitleAJAX(){
+            $nonce = $_POST['nonce'];
+            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+                die('Security Check');
+            }
 
+            if( empty($_POST['compID']) ){
+                header("HTTP/1.0 409 Could find component ID.");
+                exit;
+            }
+
+            $compID = (int) $_POST['compID'];
+            $title  = (string) stripslashes_deep($_POST['title']);
+            $type   = sp_catComponent::getCompTypeFromID($compID);
+            $class  = 'sp_cat' . $type;
+
+            $component = new $class($compID);
+            if(is_wp_error($component->errors)){
+                header("HTTP/1.0 409 " . $component->errors->get_error_message());
+                exit;
+            }
+
+            if($component->getName() == $title){
+                echo json_encode( array('success' => true) );
+                exit;
+            }
+
+            $success = $component->setName($title);
+            if($success === false){
+                header("HTTP/1.0 409 Could find component ID to delete.");
+                exit;
+            }
+
+            echo json_encode( array('success' => true) );
+            exit;
+        }
 
     }
 }

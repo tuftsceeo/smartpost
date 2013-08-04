@@ -71,7 +71,8 @@
                   addClasses: true,
                   helper: dragHelper,
                   revert: 'invalid',
-                  connectToSortable: sortableDiv
+                  connectToSortable: sortableDiv,
+                  cancel: ".disableSPSortable"
               })
           }
         },
@@ -86,8 +87,10 @@
                 var divID = $(this).attr("comp-id");
                 var compID = divID.split('-')[1];
                 var cl = function(){
-                    console.log($('#' + divID ));
-                   $('#' + divID ).remove();
+                    $('#' + divID ).remove();
+                    var node = $("#sp_catTree").dynatree("getTree").getNodeByKey('comp-' + compID);
+                    if(node)
+                        node.remove();
                 };
                 spAdmin.sp_catComponent.deleteComponent(compID, cl);
             })
@@ -146,8 +149,14 @@
 
             titleElems.editable(function(value, settings){
                     var compID = $(this).attr('comp-id');
-                    if(spAdmin.sp_catComponent)
+                    if(spAdmin.sp_catComponent){
                         spAdmin.sp_catComponent.saveCatCompTitleAJAX(compID, value, function(response){});
+                        var node = $("#sp_catTree").dynatree("getTree").getNodeByKey('comp-' + compID);
+                        if(node){
+                            node.data.title = value;
+                            node.render();
+                        }
+                    }
                     return value;
                 },
                 {
@@ -167,15 +176,54 @@
             sp_catTree.dynatree({
                 imagePath: "",
                 generateIds: true,
+                persist: true,
+                clickFolderMode: 1,
                 onActivate: function (node) {
                     if(node.data.isFolder){
-                        node.expand(false)
                         window.open(node.data.href, node.data.target);
                     }
                 },
                 debugLevel: 0
             });
             sp_catTree.dynatree("getTree").renderInvisibleNodes();
+        },
+
+        /**
+         * Given a SmartPost category component container (@see sp_CatComponent.php),
+         * binds the appropriate JS events/listeners to the container
+         * @param component - jQuery object representing the component
+         * @param catID - The ID of the category the component belongs to
+         */
+        initializeComponent: function(component, catID){
+            var self = this;
+
+            //Enable delete event
+            self.handleDeleteComp(component.find('.delComp'));
+            self.enableDeleteHover(component);
+
+            //Enable required and default checkboxes
+            if(spAdmin.sp_catComponent)
+                spAdmin.sp_catComponent.disableDefault(component.find('.requiredAndDefault input'));
+
+            //Enable component rename
+            self.editableCatCompTitle();
+
+            //TODO: Enable postbox open/close
+            //TODO: Enable icon drag n' drop
+
+            //Add a new node to the tree
+            var compTitle = $(component).find('.editableCatCompTitle').html();
+            var compIcon  = $(component).find('.catCompIcon').attr('src');
+            var compID    = $(component).attr('id').split('-')[1];
+            var node = $("#sp_catTree").dynatree("getTree").getNodeByKey('cat-' + catID);
+
+            if(node){
+                node.addChild({
+                    title: compTitle,
+                    key  : 'comp-' + compID,
+                    icon : compIcon
+                });
+            }
         },
 
         /**
@@ -187,38 +235,45 @@
         replaceDroppedItem: function(e, ui){
             var self  = this;
             var catID = $('#catID').val();
-            var cl = function(newComponent){
+            var newCompHndlr = function(newComponent){
                 var component = $(newComponent);
                 ui.item.replaceWith(component);
-
-                //Enable delete event
-                self.handleDeleteComp(component.find('.delComp'));
-                self.enableDeleteHover(component);
-
-                //Enable required and default checkboxes
-                if(spAdmin.sp_catComponent)
-                    spAdmin.sp_catComponent.disableDefault(component.find('.requiredAndDefault input'));
-
-                //Enable component rename
-                self.editableCatCompTitle();
-
-                //TODO: Enable postbox open/close
-                //TODO: Enable icon drag n' drop
-
+                self.initializeComponent(component, catID);
                 self.saveCompOrder( $(".meta-box-sortables").sortable( 'toArray' ) );
             };
 
             if ( ui.item.hasClass('catCompDraggable') ){
+
                 var typeID = ui.item.attr("type-id").split("-")[1];
-                spAdmin.sp_catComponent.addComponent(catID, typeID, cl);
+                spAdmin.sp_catComponent.addComponent(catID, typeID, newCompHndlr);
+
             }else if( ui.item.hasClass('dynatree-node') ){
+
                 var node   = $.ui.dynatree.getNode(ui.item.context);
                 var compID = node.data.compID;
+
                 if(node.data.compID){
-                    spAdmin.sp_catComponent.copyComponent(compID, catID, cl);
+                    spAdmin.sp_catComponent.copyComponent(compID, catID, newCompHndlr);
                 }
+
                 if(node.data.catID){
-                    console.log('dropped category:' + catID);
+                    if((node.childList instanceof Array) && node.childList.length > 0){
+                        var copyTemplateHndlr = function(response, statusText, jqXHR){
+                            var components = $(response).children('div');
+                            ui.item.replaceWith(components);
+
+                            $.each(components, function(key, val){
+                                self.initializeComponent($(val), catID);
+                            });
+                            self.saveCompOrder( $(".meta-box-sortables").sortable( 'toArray' ) );
+                        }
+                        spAdmin.sp_catComponent.copyTemplate(node.data.catID, catID, copyTemplateHndlr);
+                    }else{
+                        self.showError('The template you are trying to copy has no components!');
+                    }
+                }else{
+                    self.showError('Invalid dropped item!');
+                    ui.remove();
                 }
             }else{
                 self.saveCompOrder( $(".meta-box-sortables").sortable( 'toArray' ) );
@@ -267,9 +322,7 @@
         /**
          * Initializes the spAdmin object with click handlers and variables
          * necessary for initialization.
-         * TODO: define constants for element classes and IDs
          */
-        SP_CAT_FORM: 'cat_form',
         init: function(){
             var self = this;
             var sortableDiv = $( ".meta-box-sortables" );
@@ -288,21 +341,15 @@
                 stop: function(e, ui){
                     self.replaceDroppedItem(e, ui);
                 },
-                placeholder: {
-                    element: function(currentItem) {
-                        var node = $.ui.dynatree.getNode(currentItem.context);
-                        var placeholder = '';
+                start: function(e, ui){
+                    var node = $.ui.dynatree.getNode(ui.item.context);
+                    if(node){
                         if(node.data.catID > 0){
-                            placeholder = '<div class="sortable-placeholder" style="height:32px; position: relative;"><div style="position: absolute; top: -5px; right: -5px; color: red;">' + node.childList.length + '</div></div>';
-                        }else{
-                            placeholder = '<div class="sortable-placeholder" style="height:32px;"></div>';
+                            ui.placeholder.html('<div id="catCompIndicator" style="position: relative;"><div class="catDragCompCount">' + node.childList.length + '</div></div>');
                         }
-
-                        console.log($(placeholder))
-                        return $(placeholder);
-                    },
-                    update: function(container, p) {}
-                }
+                    }
+                },
+                placeholder: "sortable-placeholder"
             });
 
             //Enable component deletion

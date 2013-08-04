@@ -54,7 +54,7 @@ if (!class_exists("sp_admin")) {
             self::enqueueCSS();
 
             wp_register_script( 'sp_admin_globals', plugins_url('/js/sp_admin_globals.js', __FILE__), array( 'jquery') );
-            wp_register_script( 'sp_admin_js', plugins_url('/js/sp_admin.js', __FILE__), array('post', 'postbox'));
+            wp_register_script( 'sp_admin_js', plugins_url('/js/sp_admin.js', __FILE__), array('sp_admin_globals', 'post', 'postbox'));
             wp_enqueue_script( 'post' );
             wp_enqueue_script( 'postbox' );
             wp_enqueue_script( 'sp_admin_globals' );
@@ -193,9 +193,9 @@ if (!class_exists("sp_admin")) {
                         $spcat        = null;
                         $adminUrl     = null;
                         $catIcon      = null;
+                        $liCatData    = null;
 
                         if(in_array($category->term_id, $sp_categories)){
-                            $spCat       = 'spCat: true';
                             $sp_category = new sp_category(null, null, $category->term_id);
                             $catIcon     = wp_get_attachment_url($sp_category->getIconID());
                             $adminUrl    = admin_url('admin.php?page=smartpost&catID=' . $category->term_id);
@@ -204,8 +204,12 @@ if (!class_exists("sp_admin")) {
                         }else{
                             $adminUrl = admin_url('edit-tags.php?action=edit&taxonomy=category&tag_ID=' . $category->term_id . '&post_type=post');
                         }
+
+                        $liCatData = 'isFolder: true';
+                        $liCatData .= empty($catIcon) ? ', catID: ' . $category->term_id : ', catID: ' . $category->term_id . ', icon: ' . $catIcon;
+                        $liCatData .= empty($sp_category) ? ", addClass: 'disableSPSortable'" : '';
                     ?>
-                        <li data="<?php echo empty($catIcon) ? 'isFolder: true, catID: ' . $category->term_id : 'catID:, ' . $category->term_id . 'icon: ' . $catIcon ?>">
+                        <li id="cat-<?php echo $category->term_id ?>" data="<?php echo $liCatData ?>">
                             <a href="<?php echo $adminUrl ?>" target="_self"><?php echo $category->name ?></a>
                     <?php
 
@@ -217,7 +221,7 @@ if (!class_exists("sp_admin")) {
                                     $compIcon = $comp->getIcon();
                                     $liData = !empty($compIcon) ? 'icon: \'' . $compIcon . '\', compID: ' . $comp->getID() : 'compID: ' . $comp->getID();
 
-                                    echo '<li data="' . $liData . '">' . $comp->getName() . '</li>';
+                                    echo '<li id="comp-' . $comp->getID() .'" data="' . $liData . '">' . $comp->getName() . '</li>';
                                 }
                                 echo '</ul>';
                             }

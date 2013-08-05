@@ -150,31 +150,45 @@ if (!class_exists("sp_admin")) {
         }
 
         /**
-         * Given a category, renders the settings for that category.
-         * @param object $sp_category The sp_category object instance.
+         * Renders the appropriate settings for a given category.
+         * @param int $catID - the category ID
+         * @param array $sp_categories - Array of category IDs that are SP enabled.
          */
-        static function renderCatSettings($sp_category){
-            if(is_wp_error($sp_category->errors)){
-                ?>
-                <div class="error">
-                    <h3>An error occurred: <?php echo $sp_category->errors->get_error_message() ?></h3>
-                </div>
-            <?php
+        static function renderCatSettings($catID, $sp_categories){
+            $sp_category = null;
+            $category    = null;
+            $cat_desc = null;
+            $title = null;
+            $icon  = null;
+            if( in_array($catID, $sp_categories) ){
+                $sp_category = new sp_category(null, null, $catID);
+                $title = $sp_category->getTitle();
+                $icon  = wp_get_attachment_image($sp_category->getIconID(), null, null, array('class' => 'category_icon'));
+                $cat_desc = $sp_category->getDescription();
             }else{
-                ?>
-                <?php echo wp_get_attachment_image($sp_category->getIconID(), null, null, array('class' => 'category_icon')); ?>
-                <h2 class="category_title">
-                    <a href="<?php echo admin_url('admin.php?page=sp-cat-page&catID=' . $sp_category->getID()) ?>">
-                        <?php echo $sp_category->getTitle() ?>
-                    </a>
-                </h2>
-                <?php
-                $catDesc = $sp_category->getDescription();
-                echo empty($catDesc) ? '' : '<p>' . $catDesc . '</p>';
-                ?>
-                <input type="hidden" name="catID" id="catID" value="<?php echo $sp_category->getID() ?>" />
-            <?php
+                $category = get_category($catID);
+                $title = $category->cat_name;
             }
+            ?>
+            <h2 class="category_title">
+                <a href="<?php echo admin_url('admin.php?page=sp-cat-page&catID=' . $catID) ?>">
+                    <?php echo $icon . ' ' . $title ?>
+                </a>
+            </h2>
+            <?php echo '<p>' . $cat_desc . '</p>'; ?>
+            <?php
+                if(!is_null($sp_category)){
+                ?>
+                    <input type="checkbox" id="sp_enabled" checked /> <label for="sp_enabled">Uncheck to disable SmartPost for this category.</label>
+                <?php
+                }else{
+                ?>
+                    <input type="checkbox" id="sp_enabled" /> <label for="sp_enabled">Check to enable SmartPost for this category.</label>
+                <?php
+                }
+            ?>
+            <input type="hidden" name="catID" id="catID" value="<?php echo $catID ?>" />
+            <?php
         }
 
         /**
@@ -190,19 +204,16 @@ if (!class_exists("sp_admin")) {
                     <?php
                     foreach($categories as $category){
                         $sp_category  = null;
-                        $spcat        = null;
                         $adminUrl     = null;
                         $catIcon      = null;
                         $liCatData    = null;
 
+                        $adminUrl    = admin_url('admin.php?page=smartpost&catID=' . $category->term_id);
                         if(in_array($category->term_id, $sp_categories)){
                             $sp_category = new sp_category(null, null, $category->term_id);
                             $catIcon     = wp_get_attachment_url($sp_category->getIconID());
-                            $adminUrl    = admin_url('admin.php?page=smartpost&catID=' . $category->term_id);
                             if( !empty($catIcon) )
                                 $catIcon = 'icon: ' . $catIcon . ', ';
-                        }else{
-                            $adminUrl = admin_url('edit-tags.php?action=edit&taxonomy=category&tag_ID=' . $category->term_id . '&post_type=post');
                         }
 
                         $liCatData = 'isFolder: true';
@@ -265,7 +276,7 @@ if (!class_exists("sp_admin")) {
                                     if( empty($_GET['catID']))
                                         $sp_category = new sp_category(null, null, $sp_categories[0]);
 
-                                    self::renderCatSettings($sp_category);
+                                    self::renderCatSettings($catID, $sp_categories);
                                 }
                                 ?>
                                 <div class="clear"></div>
@@ -293,12 +304,17 @@ if (!class_exists("sp_admin")) {
                         </div><!-- end sp_components -->
 
                     </div><!-- end #postbox-container-1 -->
+                    <?php
 
-                    <div id="postbox-container-2" class="postbox-container">
-                        <?php self::listCatComponents($sp_category) ?>
-                        <?php wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false ); ?>
-                    </div><!-- end #postbox-container-1 -->
-
+                    if(in_array($catID, $sp_categories)){
+                    ?>
+                        <div id="postbox-container-2" class="postbox-container">
+                            <?php self::listCatComponents($sp_category) ?>
+                            <?php wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false ); ?>
+                        </div><!-- end #postbox-container-1 -->
+                    <?php
+                    }
+                    ?>
                 </div><!-- end #post-body -->
             </div><!-- end #poststuff -->
         <?php

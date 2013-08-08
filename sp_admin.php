@@ -76,7 +76,7 @@ if (!class_exists("sp_admin")) {
         }
 
         function sp_admin_add_category_page(){
-            add_submenu_page( 'smartpost', 'SP Category Settings', 'SP Category Settings', 'edit_users', 'sp-cat-page', array('sp_admin', 'sp_category_page') );
+            add_submenu_page( 'smartpost', 'SP Components', 'SP Components', 'edit_users', 'sp-cat-page', array('sp_admin', 'sp_category_page') );
         }
 
         /**
@@ -100,12 +100,25 @@ if (!class_exists("sp_admin")) {
          * @param sp_category $sp_category
          */
         function listCatComponents($sp_category){
-            $catComponents = $sp_category->getComponents();
+            $closed_meta_boxes = get_user_option( 'closedpostboxes_toplevel_page_smartpost' );
+            $catComponents     = $sp_category->getComponents();
             if(!empty($catComponents)){
                 foreach($catComponents as $component){
                     $component->render();
+
+                    //handle meta box toggling
+                    $compElemID = $component->getCompType() . '-' . $component->getID();
+                    $key        = array_search($compElemID, $closed_meta_boxes);
+                    if($key !== false){
+                        unset($closed_meta_boxes[$key]);
+                    }
+
                 }
-                do_meta_boxes('smartpost', 'normal', null);
+                do_meta_boxes('toplevel_page_smartpost', 'normal', null);
+
+                foreach($closed_meta_boxes as $box_id){
+                    echo '<input type="text" class="postbox closed hide" id="' . $box_id . '" />';
+                }
             }else{
                 echo "<div id='normal-sortables' class='meta-box-sortables ui-sortable'></div>";
             }
@@ -171,7 +184,7 @@ if (!class_exists("sp_admin")) {
             }
             ?>
             <h2 class="category_title">
-                <a href="<?php echo admin_url('admin.php?page=sp-cat-page&catID=' . $catID) ?>">
+                <a href="<?php echo admin_url('edit-tags.php?action=edit&taxonomy=category&tag_ID=' . $catID . '&post_type=post') ?>">
                     <?php echo $icon . ' ' . $title ?>
                 </a>
             </h2>
@@ -179,11 +192,11 @@ if (!class_exists("sp_admin")) {
             <?php
                 if(!is_null($sp_category)){
                 ?>
-                    <input type="checkbox" id="sp_enabled" checked /> <label for="sp_enabled">Uncheck to disable SmartPost for this category.</label>
+                    <input type="checkbox" id="sp_enabled" checked /> <label for="sp_enabled">Click to disable SmartPost for this category.</label>
                 <?php
                 }else{
                 ?>
-                    <input type="checkbox" id="sp_enabled" /> <label for="sp_enabled">Check to enable SmartPost for this category.</label>
+                    <input type="checkbox" id="sp_enabled" /> <label for="sp_enabled">Click to enable SmartPost for this category.</label>
                 <?php
                 }
             ?>
@@ -252,9 +265,10 @@ if (!class_exists("sp_admin")) {
             if (!current_user_can('manage_options'))  {
                 wp_die( __('You do not have sufficient permissions to access this page.') );
             }
-            $catID         = (int) $_GET['catID'];
-            $sp_category   = new sp_category(null, null, $catID);
+            $categories    = get_categories(array('orderby' => 'name','order' => 'ASC', 'hide_empty' => 0));
             $sp_categories = get_option('sp_categories');
+            $catID         = empty($_GET['catID']) ? $categories[0]->term_id : (int) $_GET['catID'];
+            $sp_category   = new sp_category(null, null, $catID);
             ?>
 
             <div class="wrap">
@@ -265,20 +279,12 @@ if (!class_exists("sp_admin")) {
             <?php self::renderCategoryForm(); ?>
             <div id="poststuff">
                 <div id="post-body" class="metabox-holder columns-2">
-                    <div id="post-body-content" style="margin-bottom: 0px;">
+
+                    <div id="post-body-content" style="margin-bottom: 0;">
                         <div id="category_settings" class="postbox">
                             <div id="setting_errors"></div>
                             <div id="the_settings">
-                                <?php
-                                if( empty($sp_categories) ){
-                                    self::renderCategoryForm();
-                                }else{
-                                    if( empty($_GET['catID']))
-                                        $sp_category = new sp_category(null, null, $sp_categories[0]);
-
-                                    self::renderCatSettings($catID, $sp_categories);
-                                }
-                                ?>
+                                <?php self::renderCatSettings($catID, $sp_categories); ?>
                                 <div class="clear"></div>
                             </div><!-- end #the_settings -->
                             <div class="clear"></div>
@@ -286,6 +292,7 @@ if (!class_exists("sp_admin")) {
                     </div>
 
                     <div id="postbox-container-1" class="postbox-container">
+
                         <div id="sp_cat_list" class="postbox" style="display: block;">
                             <div class="handlediv" title="Click to toggle"><br></div>
                             <h3 class="hndle" style="cursor: default"><span>SmartPost Templates</span></h3>
@@ -305,14 +312,14 @@ if (!class_exists("sp_admin")) {
 
                     </div><!-- end #postbox-container-1 -->
                     <?php
-
                     if(in_array($catID, $sp_categories)){
                     ?>
-                        <div id="postbox-container-2" class="postbox-container">
-                            <?php self::listCatComponents($sp_category) ?>
-                            <?php wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false ); ?>
-                        </div><!-- end #postbox-container-1 -->
+                    <div id="postbox-container-2" class="postbox-container">
+                        <?php self::listCatComponents($sp_category) ?>
+                    </div><!-- end #postbox-container-1 -->
                     <?php
+                        //handle toggling for meta boxes
+                        wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false );
                     }
                     ?>
                 </div><!-- end #post-body -->

@@ -22,7 +22,7 @@ if (!class_exists("sp_adminAJAX")) {
 
         /**
          * "Enables" a wordpress category, or "disables" a SP category.
-         * If $_POST['isSPCat'] is true, it will remove $_POST['catID']
+         * If the catID is that of a SP category, it will be removed from the
          * from global WP option 'sp_categories', otherwise it will add it.
          */
         function switchCategoryAJAX(){
@@ -37,27 +37,19 @@ if (!class_exists("sp_adminAJAX")) {
                 exit;
             }
 
-            if( is_null($_POST['isSPCat']) ){
-                header("HTTP/1.0 409 Could not find differentiate categories.");
-                exit;
-            }
-
-            $isSPCat = (bool) $_POST['isSPCat'];
             $catID   = (int) $_POST['catID'];
             $sp_categories = get_option('sp_categories');
 
-            if(!$isSPCat){
-                if( !in_array($catID, $sp_categories) ){
-                    array_push($sp_categories, $catID);
-                    update_option('sp_categories', $sp_categories);
-                }
+            if( !in_array($catID, $sp_categories) ){
+                array_push($sp_categories, $catID);
+                update_option('sp_categories', $sp_categories);
             }else{
                 $key = array_search($catID, $sp_categories);
                 if( $key !== false){
                     unset( $sp_categories[$key] );
                     update_option('sp_categories', $sp_categories);
                 }else{
-                    header("HTTP/1.0 409 Could not find the spCatID to disable.");
+                    header("HTTP/1.0 409 Could not find the category ID to disable.");
                     exit;
                 }
             }

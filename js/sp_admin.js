@@ -70,7 +70,7 @@
               draggableDiv.draggable({
                   addClasses: true,
                   helper: dragHelper,
-                  revert: 'invalid',
+                  revert: 'valid',
                   connectToSortable: sortableDiv,
                   cancel: ".disableSPSortable"
               })
@@ -211,7 +211,7 @@
             //TODO: Enable postbox open/close
             //TODO: Enable icon drag n' drop
 
-            //Add a new node to the tree
+            /*Add a new node to the tree
             var compTitle = $(component).find('.editableCatCompTitle').html();
             var compIcon  = $(component).find('.catCompIcon').attr('src');
             var compID    = $(component).attr('id').split('-')[1];
@@ -224,6 +224,7 @@
                     icon : compIcon
                 });
             }
+            */
         },
 
         /**
@@ -235,6 +236,7 @@
         replaceDroppedItem: function(e, ui){
             var self  = this;
             var catID = $('#catID').val();
+
             var newCompHndlr = function(newComponent){
                 var component = $(newComponent);
                 ui.item.replaceWith(component);
@@ -242,11 +244,13 @@
                 self.saveCompOrder( $(".meta-box-sortables").sortable( 'toArray' ) );
             };
 
+            //Handle drag n' drop via component draggables
             if ( ui.item.hasClass('catCompDraggable') ){
 
                 var typeID = ui.item.attr("type-id").split("-")[1];
                 spAdmin.sp_catComponent.addComponent(catID, typeID, newCompHndlr);
 
+            //Handle drag n' drop via dynaTree
             }else if( ui.item.hasClass('dynatree-node') ){
 
                 var node   = $.ui.dynatree.getNode(ui.item.context);
@@ -269,12 +273,15 @@
                         }
                         spAdmin.sp_catComponent.copyTemplate(node.data.catID, catID, copyTemplateHndlr);
                     }else{
-                        self.showError('The template you are trying to copy has no components!');
+                        self.showError('The template you are trying to copy has no components!', null);
                     }
-                }else{
-                    self.showError('Invalid dropped item!');
+                }
+
+                if(!node.data.catID && !node.data.compID){
+                    self.showError('Invalid dropped item!', null);
                     ui.remove();
                 }
+
             }else{
                 self.saveCompOrder( $(".meta-box-sortables").sortable( 'toArray' ) );
             }
@@ -317,6 +324,33 @@
                 $(this).ajaxSubmit(spCatOptions);
                 return false;
             });
+        },
+        /**
+         * "Enables" a wordpress category, or "disables" a SP category.
+         * @param caID - The category
+         */
+        switchCategory: function(catID){
+            var self = this;
+            if(catID){
+                $.ajax({
+                    url	 : SP_AJAX_URL,
+                    type : 'POST',
+                    data : {
+                        action : 'switchCategoryAJAX',
+                        nonce  : SP_NONCE,
+                        catID  : catID
+                    },
+                    dataType : 'json',
+                    success  : function(response){
+                        window.location.reload();
+                    },
+                    error    : function(jqXHR, statusText, errorThrown){
+                        self.showError(errorThrown, null);
+                    }
+                })
+            }else{
+                self.showError('Empty category ID!');
+            }
         },
 
         /**
@@ -372,12 +406,18 @@
                 modal: true
             });
             //Enable dialog for new category form
-            $('#newCatButton').click(function(){
-                $( '#newCategoryForm' ).dialog( 'open' );
-            })
+            $('#newCatButton').click(function () {
+                $('#newCategoryForm').dialog('open');
+            });
 
             //Enable new template submission
-            this.submitCategory( $('#' + self.SP_CAT_FORM) )
+            this.submitCategory( $('#cat_form') );
+
+            //Click handler for enable/disable checkboxes
+            $('#sp_enabled').click(function(){
+                self.switchCategory($('#catID').val());
+            });
+
         }
     };
 

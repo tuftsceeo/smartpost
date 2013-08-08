@@ -58,3 +58,4 @@ input.requiredAndDefault{ vertical-align: text-bottom; }
     font-size: 14px;
 }
 #newCategoryForm{ display: none; }
+.hide{ visibility: hidden; position: absolute; top:-9999; left: -9999; }

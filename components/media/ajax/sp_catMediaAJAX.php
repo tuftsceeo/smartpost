@@ -9,16 +9,17 @@ if (!class_exists("sp_catMediaAJAX")) {
 	class sp_catMediaAJAX{
 		
 		static function init(){
-			add_action('wp_ajax_saveMediaSettingsAJAX', array('sp_catMediaAJAX', 'saveMediaSettingsAJAX'));			
+			add_action('wp_ajax_saveMediaSettingsAJAX', array('sp_catMediaAJAX', 'saveMediaSettingsAJAX'));
 		}
-	
+
 		static function saveMediaSettingsAJAX(){
-			$nonce = $_POST['nonce'];
+			error_log('test');
+            $nonce = $_POST['nonce'];
 			if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
 				header("HTTP/1.0 403 Security Check.");
 				exit;
-			}					
-		
+			}
+
 			if( empty($_POST['compID']) ){
 				header("HTTP/1.0 403 Could not find componentID to update.");
 				exit;			

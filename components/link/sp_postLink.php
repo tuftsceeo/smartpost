@@ -172,7 +172,7 @@ if (!class_exists("sp_postLink")) {
 			/**
 			 * @see parent::update();
 			 */
-			function update($data){
+			function update($data = null){
 			
 				$urlData->url      = $this->url;
 				$urlData->urlThumb = $this->urlThumb;

@@ -70,7 +70,7 @@ if (!class_exists("sp_postContent")) {
 			/**
 			 * @see parent::update();
 			 */
-			function update($content){
+			function update($content = null){
 				$this->value = (string) $content;
 				return sp_core::updateVar('sp_postComponents', $this->ID, 'value', $content, '%s');					
 			}

@@ -238,7 +238,7 @@ if (!class_exists("sp_postMedia")) {
 			 * @param array $extensions Extensions of the form array( ".jpg" => 0|1 ), 
 			 *																										where 1 is enabled, and 0 is disabled
 			 */
-			function update($extensions){}
+			function update($extensions = null){ return null; }
 			
 			function isEmpty(){
 				return empty($this->attachmentIDs);

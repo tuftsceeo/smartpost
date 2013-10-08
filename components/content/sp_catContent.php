@@ -32,8 +32,13 @@ if (!class_exists("sp_catContent")) {
          * @see parent::installComponent()
          */
         function install(){
-            self::installComponent("Content Editor", "Rich and plain text editor. Uses the <a href='http://nicedit.com/'>NicEdit</a> as its editor.", __FILE__);
+            self::installComponent("Content", "Rich and plain text editor. Uses the <a href='http://nicedit.com/'>NicEdit</a> as its editor.", __FILE__);
         }
+
+        /**
+         * @see parent::uninstall()
+         */
+        function uninstall(){}
 
         /**
          * Adds CSS / JS to stylize and handle any UI actions
@@ -100,6 +105,11 @@ if (!class_exists("sp_catContent")) {
         }
 
         /**
+         * @see parent::renderSettings()
+         */
+        function renderSettings(){}
+
+        /**
          * @see parent::getOptions()
          */
         function getOptions(){
@@ -127,9 +137,7 @@ if (!class_exists("sp_catContent")) {
         /**
          * @see parent::setOptions()
          */
-        function setOptions($data){
-
-        }
+        function setOptions($data = null){}
 
         //Converts all instances from Richtext to Plaintext
         private function convertToPlaintext(){

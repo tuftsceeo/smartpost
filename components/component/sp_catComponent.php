@@ -7,7 +7,7 @@ if (!class_exists("sp_catComponent")) {
      * sp_catComponent table.
      *
      * @abstract
-     * @version 1.0
+     * @version 2.0
      * @author Rafi Yagudin <rafi.yagudin@tufts.edu>
      * @project SmartPost
      */
@@ -26,38 +26,59 @@ if (!class_exists("sp_catComponent")) {
         protected $icon;
         public $errors;
 
-        /* Used in smartpost::requireFiles().
+        /**
+         * Used in smartpost::requireFiles().
          * Installs itself into sp_compTypes and makes this class
          * known to SmartPost that it exists
+         *
+         * @return mixed
          */
         abstract public function install();
 
-        /* Any initialization the component needs, i.e. enqueuing
+        /**
+         * Called when register_uninstall_hook() is called
+         *
+         * @see register_uninstall_hook()
+         * @return mixed
+         */
+        abstract public function uninstall();
+
+        /**
+         * Any initialization the component needs, i.e. enqueuing
          * JS/CSS files, action hooks, filters, etc..
+         *
+         * @return mixed
          */
         abstract static public function init();
 
-        /* GUI Function that renders serialized
+        /**
+         * GUI Function that renders serialized
          * options that are specific to the component.
          * Used inside renderSettings().
+         * @return mixed
          */
         abstract public function componentOptions();
 
-        /* Return component options in the appropriate form
+        /**
+         * Return component options in the appropriate form
          *
          * @return mixed return the component options
          */
         abstract public function getOptions();
 
-        /* Sets the component options. For each
+        /**
+         * Sets the component options. For each
          * component, the set operation is unique.
+         * @param null $data
+         * @return mixed
          */
+        abstract public function setOptions($data = null);
 
-        abstract public function setOptions($data);
-
-        /**************************************
-         * Administrative Functions			  *
-         **************************************/
+        /**
+         * Section added to the SmartPost settings sub-page in the
+         * Admin section/WP Dashboard
+         */
+        abstract public function renderSettings();
 
         /**
          * Creates a new category component (inserts it into the DB) or loads an existing one if
@@ -104,6 +125,10 @@ if (!class_exists("sp_catComponent")) {
             }
         }
 
+        /**
+         * Loads an existing category component into a sp_catComponent instance
+         * @param $compID
+         */
         protected function load($compID){
             global $wpdb;
             $wpdb->show_errors();
@@ -147,14 +172,15 @@ if (!class_exists("sp_catComponent")) {
          */
         static function enqueueBaseJS(){
             wp_register_script( 'sp_catComponentJS', plugins_url('/js/sp_catComponent.js', __FILE__), array('sp_admin_globals', 'sp_admin_js'));
-            wp_enqueue_script( 'sp_catComponentJS', array('jquery', 'sp_admin_globals', 'sp_admin_js') );
+            wp_enqueue_script( 'sp_catComponentJS' );
         }
 
-        /* Adds this component to sp_compTypes
-         * precondition: must called inside sub_class::install()
+        /**
+         * Adds this component to sp_compTypes
+         * precondition: must be called inside sub_class::install()
          * where sub_class is a component extending this one
          *
-         * @param string $name        The name of the component
+         * @param string $name        The name of the component (No spaces allowed!)
          * @param string $description Description of the component
          * @param string $filepath    Filepath of the component
          */
@@ -162,7 +188,7 @@ if (!class_exists("sp_catComponent")) {
             global $wpdb;
             $wpdb->show_errors();
 
-            if( empty($name) || empty($filepath)){
+            if( empty($name) || empty($filepath) ){
                 ?>
                 <div class="error">
                     Error: Could not install new component to SmartPost. The name or filepath
@@ -196,7 +222,7 @@ if (!class_exists("sp_catComponent")) {
                 $wpdb->update(
                     $tableName,
                     array(
-                        'name' 							=> $name,
+                        'name' 		  => $name,
                         'description' => $description,
                         'icon'        => $icon_url
                     ),
@@ -214,14 +240,13 @@ if (!class_exists("sp_catComponent")) {
                 $wpdb->insert(
                     $tableName,
                     array(
-                        'name' 							=> $name,
+                        'name' 		  => $name,
                         'description' => $description,
-                        'icon'								=> $icon_url
+                        'icon'		  => $icon_url
                     ),
                     array('%s','%s','%s')
                 );
             }
-
         }
 
         /**
@@ -289,19 +314,21 @@ if (!class_exists("sp_catComponent")) {
             $checkBoxes .= '</span>';
 
             $id    = $this->getCompType() . '-' . $this->ID;
-            $title = '<img src="' . $this->getIcon() . '" /> ';
+            $title = '<img class="catCompIcon" src="' . $this->getIcon() . '" /> ';
             $title .= '<span class="editableCatCompTitle" comp-id="' . $this->ID . '" style="cursor: text">';
             $title .= $this->name;
             $title .= '</span>';
             $title .=  $checkBoxes;
             $title .= '<div class="delComp" id="del-' . $this->ID . '" comp-id="' . $this->getCompType() . '-' . $this->ID . '" style="background: url(\'' . admin_url('images/no.png')  . '\'); " alt="Delete Component" title="Delete Component"><br></div>';
 
-            add_meta_box($id,
+            add_meta_box(
+                $id,
                 __( $title ),
                 array( &$this, 'componentOptions' ),
-                'smartpost',
+                'toplevel_page_smartpost',
                 'normal',
-                'default');
+                'default'
+            );
         }
 
         /**
@@ -377,7 +404,7 @@ if (!class_exists("sp_catComponent")) {
         static function getCompTypeIDFromID($compID){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
-            $typeID 			= $wpdb->get_var($wpdb->prepare("SELECT typeID FROM $tableName where id = $compID;"));
+            $typeID    = $wpdb->get_var($wpdb->prepare("SELECT typeID FROM $tableName where id = $compID;"));
             return $typeID;
         }
 

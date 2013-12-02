@@ -28,8 +28,7 @@ if (!class_exists("sp_catComponent")) {
 
         /**
          * Used in smartpost::requireFiles().
-         * Installs itself into sp_compTypes and makes this class
-         * known to SmartPost that it exists
+         * Installs itself into sp_compTypes and makes this class known to SmartPost that it exists
          *
          * @return mixed
          */
@@ -44,16 +43,14 @@ if (!class_exists("sp_catComponent")) {
         abstract public function uninstall();
 
         /**
-         * Any initialization the component needs, i.e. enqueuing
+         * Any initialization the component needs, i.e. enqueue
          * JS/CSS files, action hooks, filters, etc..
-         *
          * @return mixed
          */
         abstract static public function init();
 
         /**
-         * GUI Function that renders serialized
-         * options that are specific to the component.
+         * GUI Function that renders serialized options that are specific to the component.
          * Used inside renderSettings().
          * @return mixed
          */
@@ -61,14 +58,12 @@ if (!class_exists("sp_catComponent")) {
 
         /**
          * Return component options in the appropriate form
-         *
          * @return mixed return the component options
          */
         abstract public function getOptions();
 
         /**
-         * Sets the component options. For each
-         * component, the set operation is unique.
+         * Sets the component options. For each component, the set operation is unique.
          * @param null $data
          * @return mixed
          */
@@ -83,7 +78,6 @@ if (!class_exists("sp_catComponent")) {
         /**
          * Creates a new category component (inserts it into the DB) or loads an existing one if
          * $compID > 0.
-         *
          * @param array $compInfo An array with the component info. @see __construct() method of child class more info
          * @return int|object The component ID on success, otherwise a WP_Error object on failure
          */

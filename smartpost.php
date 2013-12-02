@@ -102,10 +102,11 @@ if (!class_exists("smartpost")){
             wp_register_script( 'simple-menu'    , plugins_url('/js/simple_menu.js'           , __FILE__), array( 'jquery' ) );
             wp_register_script( 'strip_tags'     , plugins_url('/js/strip_tags.js'            , __FILE__), array( 'jquery' ) );
             wp_register_script( 'jquery-editable', plugins_url('/js/jquery.jeditable.mini.js' , __FILE__), array( 'jquery' ) );
-            wp_register_script( 'nicEditor'      , plugins_url('/js/nicEdit/nicEdit.js'       , __FILE__) );
+            wp_register_script( 'jquery-filedrop', plugins_url('js/jquery.filedrop.js'        , __FILE__), array( 'jquery' ) );
+            wp_register_script( 'nicEditor'      , plugins_url('/js/nicEdit/nicEdit.js'       , __FILE__), array( 'jquery' ) );
+            wp_register_script( 'jquery-webcam'  , plugins_url('js/jquery.webcam/jquery.webcam.js' , __FILE__), array( 'jquery' ) );
             wp_register_script( 'jquery-dynatree', plugins_url('js/dynatree/jquery.dynatree.min.js', __FILE__), array( 'jquery-ui-core', 'jquery-ui-widget' ) );
             wp_register_script( 'jquery-dynatree-cookie', plugins_url('js/dynatree/jquery.cookie.js', __FILE__) );
-
 
             //Enqueue default WP scripts
             wp_enqueue_script( 'jquery' );

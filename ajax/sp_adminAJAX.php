@@ -14,11 +14,21 @@ if (!class_exists("sp_adminAJAX")) {
             add_action('wp_ajax_responseCatAJAX', array('sp_adminAJAX', 'responseCatAJAX'));
             add_action('wp_ajax_switchCategoryAJAX', array('sp_adminAJAX', 'switchCategoryAJAX'));
             add_action('wp_ajax_setCompOrderAJAX', array('sp_adminAJAX', 'setCompOrderAJAX'));
+            add_action('wp_ajax_getCategoryJSONTreeAJAX', array('sp_adminAJAX', 'getCategoryJSONTreeAJAX'));
         }
 
-        /**********************************
-         * Category AJAX functions        *
-         **********************************/
+        /**
+         * AJAX handler function that echos properly formatted JSON representing
+         * SP Templates and their components.
+         */
+        function getCategoryJSONTreeAJAX(){
+
+            $dynaTree = sp_admin::buildSPDynaTree( array('orderby' => 'name','order' => 'ASC', 'hide_empty' => 0 ) );
+
+            echo json_encode($dynaTree);
+
+            exit;
+        }
 
         /**
          * "Enables" a wordpress category, or "disables" a SP category.

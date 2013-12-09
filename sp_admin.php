@@ -76,7 +76,7 @@ if (!class_exists("sp_admin")) {
         }
 
         function sp_admin_add_category_page(){
-            add_submenu_page( 'smartpost', 'SP Components', 'SP Components', 'edit_users', 'sp-cat-page', array('sp_admin', 'sp_category_page') );
+            add_submenu_page( 'smartpost', 'SP Components', 'SP Components', 'edit_users', 'sp-cat-page', array('sp_admin', 'sp_component_page') );
         }
 
         /**
@@ -112,7 +112,6 @@ if (!class_exists("sp_admin")) {
                     if($key !== false){
                         unset($closed_meta_boxes[$key]);
                     }
-
                 }
                 do_meta_boxes('toplevel_page_smartpost', 'normal', null);
 
@@ -205,56 +204,67 @@ if (!class_exists("sp_admin")) {
         }
 
         /**
-         * HTML <ul> that lists all the categories.
-         * Used with DynaTree JS to visualize the categories in a tree view.
+         * Build an object that represents the category hierarchy
+         * with added smartpost components.
          */
-        function renderCatTree(){
-            $sp_categories = get_option("sp_categories");
-            $categories    = get_categories(array('orderby' => 'name','order' => 'ASC', 'hide_empty' => 0));
-            ?>
-            <div id="sp_catTree">
-                <ul id="sp_catList">
-                    <?php
-                    foreach($categories as $category){
-                        $sp_category  = null;
-                        $adminUrl     = null;
-                        $catIcon      = null;
-                        $liCatData    = null;
+        public static function buildSPDynaTree($args, $parent = 0){
 
-                        $adminUrl    = admin_url('admin.php?page=smartpost&catID=' . $category->term_id);
-                        if(in_array($category->term_id, $sp_categories)){
-                            $sp_category = new sp_category(null, null, $category->term_id);
-                            $catIcon     = wp_get_attachment_url($sp_category->getIconID());
-                            if( !empty($catIcon) )
-                                $catIcon = 'icon: ' . $catIcon . ', ';
-                        }
+            $args['parent'] = $parent;
 
-                        $liCatData = 'isFolder: true';
-                        $liCatData .= empty($catIcon) ? ', catID: ' . $category->term_id : ', catID: ' . $category->term_id . ', icon: ' . $catIcon;
-                        $liCatData .= empty($sp_category) ? ", addClass: 'disableSPSortable'" : '';
-                    ?>
-                        <li id="cat-<?php echo $category->term_id ?>" data="<?php echo $liCatData ?>">
-                            <a href="<?php echo $adminUrl ?>" target="_self"><?php echo $category->name ?></a>
-                    <?php
+            $categories    = get_categories($args);
+            $sp_categories = get_option( "sp_categories" );
 
-                        if(!is_null($sp_category)){
-                            $components = $sp_category->getComponents();
-                            if(!empty($components)){
-                                echo '<ul>';
-                                foreach($components as $comp){
-                                    $compIcon = $comp->getIcon();
-                                    $liData = !empty($compIcon) ? 'icon: \'' . $compIcon . '\', compID: ' . $comp->getID() : 'compID: ' . $comp->getID();
+            $catTree =  array();
 
-                                    echo '<li id="comp-' . $comp->getID() .'" data="' . $liData . '">' . $comp->getName() . '</li>';
-                                }
-                                echo '</ul>';
-                            }
+            foreach( $categories as $category ) {
+
+                $node = new stdClass();
+
+                $node->title    = $category->name;
+                $node->key      = 'cat-' . $category->term_id;
+                $node->isFolder = true;
+                $node->catID    = $category->term_id;
+                $node->href     = admin_url('admin.php?page=smartpost&catID=' . $category->term_id);
+                $node->target   = '_self';
+
+                if( in_array( $category->term_id, $sp_categories ) ){
+
+                    $sp_category = new sp_category( null, null, $category->term_id );
+
+                    $icon = wp_get_attachment_url( $sp_category->getIconID() );
+                    $node->icon = $icon ? $icon : null;
+
+                    $components = $sp_category->getComponents();
+
+                    if( !empty($components) ){
+                        $node->compCount = count($components);
+
+                        $compNodes = array();
+                        foreach( $components as $comp ) {
+                            $compNode = new stdClass();
+                            $compNode->title  = $comp->getName();
+                            $compNode->key    = 'comp-' .  $comp->getID();
+                            $compNode->icon   = $comp->getIcon() ? $comp->getIcon() : null;
+                            $compNode->compID = $comp->getID();
+                            array_push($compNodes, $compNode);
                         }
                     }
-                    ?>
-                </ul>
-            </div>
-        <?php
+                    //$node->components = $compNodes;
+                }else{
+                    $node->addClass = 'disableSPSortable';
+                }
+
+                $node->children = sp_admin::buildSPDynaTree($args, $category->term_id);
+
+                if( !empty($compNodes) ){
+                    $node->children = array_merge_recursive($compNodes, $node->children);
+                    $compNodes = null;
+                }
+
+                array_push( $catTree, $node );
+            }
+
+            return $catTree;
         }
 
         /**
@@ -297,7 +307,8 @@ if (!class_exists("sp_admin")) {
                             <div class="handlediv" title="Click to toggle"><br></div>
                             <h3 class="hndle" style="cursor: default"><span>SmartPost Templates</span></h3>
                             <div class="inside">
-                                <?php self::renderCatTree(); ?>
+                                <?php //self::renderCatTree(); ?>
+                                <div id="sp_catTree"></div>
                             </div>
                         </div><!-- end sp_cat_list -->
 
@@ -327,10 +338,16 @@ if (!class_exists("sp_admin")) {
         <?php
         }
 
-        function sp_category_page(){
+        function sp_component_page(){
             ?>
             <div class="wrap">
-            <h2><?php echo PLUGIN_NAME ?> Category Settings</h2>
+            <h2><?php echo PLUGIN_NAME ?> Component Settings</h2>
+            <?php
+                $components = sp_core::getTypes();
+                foreach($components as $comp){
+                    echo $comp->name . '<br />';
+                }
+            ?>
         <?php
         }
     }

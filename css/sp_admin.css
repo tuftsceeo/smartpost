@@ -24,7 +24,7 @@
 .contCatTable{ margin-top: 10px; }
 .catCompDraggable{ border: 1px solid silver; border-radius: 3px; margin-top: 5px; }
 .catCompDraggable h3:hover{ color: orangered !important; }
-.delComp{ float:right; cursor: pointer; width: 16px; height:16px; position: absolute; top:-10px; right:-8px; visibility: hidden;}
+.delComp{ float:right; cursor: pointer; width: 16px; height:16px; position: absolute; top:-10px; right:-8px; visibility: hidden; }
 .requiredAndDefault{ float:right; }
 .requiredAndDefault label{ vertical-align: top !important; }
 input.requiredAndDefault{ vertical-align: text-bottom; }
@@ -43,6 +43,7 @@ input.requiredAndDefault{ vertical-align: text-bottom; }
     border: none;
     min-width: 150px;
 }
+.hndle:hover .delComp{ visibility: visible; }
 .hndle img{ vertical-align: middle; }
 .sortable-placeholder{ display: block; min-height: 50px; }
 .catDragCompCount{

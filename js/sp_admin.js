@@ -97,17 +97,6 @@
         },
 
         /**
-         * Reveals the delete button when hovering over hoverElem.
-         * @param hoverElem
-         */
-        enableDeleteHover: function(hoverElem){
-            hoverElem.hover(
-                function(){$(this).find('.delComp').css('visibility', 'visible')},
-                function(){$(this).find('.delComp').css('visibility', 'hidden')}
-            )
-        },
-
-        /**
          * Category Response Update
          */
         submitResponseCatForm: function(){
@@ -173,7 +162,16 @@
          * @param sp_catTree - The DOM element consisting to categories and components.
          */
         initComponentTree: function(sp_catTree){
+            var self = this;
+
             sp_catTree.dynatree({
+                initAjax: {
+                    url: SP_AJAX_URL,
+                    data: {
+                        action    : 'getCategoryJSONTreeAJAX',
+                        nonce     : SP_NONCE
+                    }
+                },
                 imagePath: "",
                 generateIds: true,
                 persist: true,
@@ -182,6 +180,10 @@
                     if(node.data.isFolder){
                         window.open(node.data.href, node.data.target);
                     }
+                },
+                onPostInit: function(isReloading, isError){
+                    if( !isError )
+                        self.makeCompDivsDraggable('clone', $('.dynatree-node'), null);
                 },
                 debugLevel: 0
             });
@@ -199,7 +201,6 @@
 
             //Enable delete event
             self.handleDeleteComp(component.find('.delComp'));
-            self.enableDeleteHover(component);
 
             //Enable required and default checkboxes
             if(spAdmin.sp_catComponent)
@@ -209,22 +210,6 @@
             self.editableCatCompTitle();
 
             //TODO: Enable postbox open/close
-            //TODO: Enable icon drag n' drop
-
-            /*Add a new node to the tree
-            var compTitle = $(component).find('.editableCatCompTitle').html();
-            var compIcon  = $(component).find('.catCompIcon').attr('src');
-            var compID    = $(component).attr('id').split('-')[1];
-            var node = $("#sp_catTree").dynatree("getTree").getNodeByKey('cat-' + catID);
-
-            if(node){
-                node.addChild({
-                    title: compTitle,
-                    key  : 'comp-' + compID,
-                    icon : compIcon
-                });
-            }
-            */
         },
 
         /**
@@ -254,10 +239,9 @@
             }else if( ui.item.hasClass('dynatree-node') ){
 
                 var node   = $.ui.dynatree.getNode(ui.item.context);
-                var compID = node.data.compID;
 
                 if(node.data.compID){
-                    spAdmin.sp_catComponent.copyComponent(compID, catID, newCompHndlr);
+                    spAdmin.sp_catComponent.copyComponent(node.data.compID, catID, newCompHndlr);
                 }
 
                 if(node.data.catID){
@@ -360,13 +344,12 @@
         init: function(){
             var self = this;
             var sortableDiv = $( ".meta-box-sortables" );
-            var sp_catTree  = $('#sp_catTree');
+            var sp_catTree  = $( "#sp_catTree" );
 
             //Initialize a dynatree instance for the SP category tree.
             this.initComponentTree(sp_catTree);
 
             //Make the component widgets draggable
-            this.makeCompDivsDraggable('clone', $('.dynatree-node'), null);
             this.makeCompDivsDraggable('clone', null, null);
 
             //Re-define sortable behavior on the admin page.
@@ -379,7 +362,7 @@
                     var node = $.ui.dynatree.getNode(ui.item.context);
                     if(node){
                         if(node.data.catID > 0){
-                            ui.placeholder.html('<div id="catCompIndicator" style="position: relative;"><div class="catDragCompCount">' + node.childList.length + '</div></div>');
+                            ui.placeholder.html('<div id="catCompIndicator" style="position: relative;"><div class="catDragCompCount">' + node.data.compCount + '</div></div>');
                         }
                     }
                 },
@@ -388,13 +371,12 @@
 
             //Enable component deletion
             this.handleDeleteComp($('.delComp'));
-            this.enableDeleteHover($('.postbox'));
 
             //Limit click event only to hndl class
             $('.postbox h3').unbind('click.postboxes');
 
             //Enable editable component titles
-            this.editableCatCompTitle($('.editableCatCompTitle'));
+            this.editableCatCompTitle( $('.editableCatCompTitle') );
 
             //Initialize the dialog
             $( "#newCategoryForm" ).dialog({
@@ -417,7 +399,6 @@
             $('#sp_enabled').click(function(){
                 self.switchCategory($('#catID').val());
             });
-
         }
     };
 

@@ -16,6 +16,7 @@ if (!class_exists("sp_catComponentAJAX")) {
             add_action('wp_ajax_deleteComponentAJAX', array('sp_catComponentAJAX', 'deleteComponentAJAX'));
             add_action('wp_ajax_copyComponentAJAX', array('sp_catComponentAJAX', 'copyComponentAJAX'));
             add_action('wp_ajax_saveCatCompTitleAJAX', array('sp_catComponentAJAX', 'saveCatCompTitleAJAX'));
+            add_action('wp_ajax_copyTemplateAJAX', array('sp_catComponentAJAX', 'copyTemplateAJAX'));
         }
 
         /**
@@ -56,8 +57,56 @@ if (!class_exists("sp_catComponentAJAX")) {
                 echo 'Could not copy component successfully.';
             }else{
                 $copy->render();
-                do_meta_boxes('smartpost', 'normal', null);
+                do_meta_boxes('toplevel_page_smartpost', 'normal', null);
             }
+            exit;
+        }
+
+        function copyTemplateAJAX(){
+            $nonce = $_POST['nonce'];
+            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+                header("HTTP/1.0 409 Security Check.");
+                die('Security Check');
+            }
+
+            if( empty($_POST['srcCatID']) ){
+                header("HTTP/1.0 409 Could not find component ID.");
+                exit;
+            }
+
+            if( empty($_POST['destCatID']) ){
+                header("HTTP/1.0 409 Could not find category ID.");
+                exit;
+            }
+
+            $srcCatID  = (int) $_POST['srcCatID'];
+            $destCatID = (int) $_POST['destCatID'];
+
+            $srcCategory  = new sp_category(null, null, $srcCatID);
+            $destCategory = new sp_category(null, null, $destCatID);
+
+            $srcComps = $srcCategory->getComponents();
+            foreach($srcComps as $comp){
+                $copy = $destCategory->addCatComponent(
+                            $comp->getName(),
+                            $comp->getDescription(),
+                            $comp->getTypeID(),
+                            $comp->getDefault(),
+                            $comp->getRequired()
+                        );
+
+                $copy->setOptions($comp->getOptions());
+                $copy->setIcon($comp->getIconID());
+
+                if( $copy === false || is_wp_error($copy) ){
+                    header("HTTP/1.0 409 Could not copy component.");
+                    echo 'Could not copy component ' . $copy->getName() . ' successfully.';
+                    exit;
+                }else{
+                    $copy->render();
+               }
+            }
+            do_meta_boxes('toplevel_page_smartpost', 'normal', null);
             exit;
         }
 
@@ -85,13 +134,23 @@ if (!class_exists("sp_catComponentAJAX")) {
                 exit;
             }
             $class  = 'sp_cat' . $type;
-
             $component = new $class($compID);
+
+            //remove meta box toggle tracking
+            $closed_meta_boxes = get_user_option( 'closedpostboxes_toplevel_page_smartpost' );
+            $compElemID = $component->getCompType() . '-' . $component->getID();
+            $key        = array_search($compElemID, $closed_meta_boxes);
+            if($key !== false){
+                unset($closed_meta_boxes[$key]);
+            }
+            update_user_option( get_current_user_id(), 'closedpostboxes_toplevel_page_smartpost', $closed_meta_boxes, true);
+
             $success = $component->delete();
             if( $success === false ){
                 header("HTTP/1.0 409 Could not delete component");
                 echo json_encode(array('error' => 'Could not delete component'));
             }else{
+
                 echo json_encode(array('success' => true));
             }
 
@@ -212,7 +271,7 @@ if (!class_exists("sp_catComponentAJAX")) {
 
             $component->setIcon($iconID);
             $component->render();
-            do_meta_boxes('smartpost', 'normal', null);
+            do_meta_boxes('toplevel_page_smartpost', 'normal', null);
             exit;
         }
 
@@ -295,4 +354,3 @@ if (!class_exists("sp_catComponentAJAX")) {
 
     }
 }
-?>

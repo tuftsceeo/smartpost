@@ -51,7 +51,7 @@ if (!class_exists("sp_catComponent")) {
 
         /**
          * GUI Function that renders serialized options that are specific to the component.
-         * Used inside renderSettings().
+         * Used inside getComponentSettings().
          * @return mixed
          */
         abstract public function componentOptions();
@@ -70,10 +70,12 @@ if (!class_exists("sp_catComponent")) {
         abstract public function setOptions($data = null);
 
         /**
-         * Section added to the SmartPost settings sub-page in the
-         * Admin section/WP Dashboard
+         * Settings section that is added to the SmartPost settings sub-page in the
+         * Admin section/WP Dashboard. Should include any settings that may affect
+         * your component globally across all posts.
+         * @return bool|string The XHTML (forms, tables, etc.) representing the settings of your component, otherwise false
          */
-        abstract public function renderSettings();
+        abstract public function getComponentSettings();
 
         /**
          * Creates a new category component (inserts it into the DB) or loads an existing one if
@@ -291,11 +293,11 @@ if (!class_exists("sp_catComponent")) {
          **************************************/
 
         /**
-         * Returns an HTML string of the required / default checkboxes.
+         * Builds a meta box with the component's settings in XHTML format.
          * @see sp_admin::listCatComponents
          * @return string
          */
-        function render(){
+        public function render(){
             $disabled  = $this->isRequired ? 'disabled="disabled"' : '';
             $isDefaultChecked  = $this->isDefault ? 'checked="checked"' : '';
             $isRequiredChecked = $this->isRequired ? 'checked="checked"' : '';
@@ -313,7 +315,7 @@ if (!class_exists("sp_catComponent")) {
             $title .= $this->name;
             $title .= '</span>';
             $title .=  $checkBoxes;
-            $title .= '<div class="delComp" id="del-' . $this->ID . '" comp-id="' . $this->getCompType() . '-' . $this->ID . '" style="background: url(\'' . admin_url('images/no.png')  . '\'); " alt="Delete Component" title="Delete Component"><br></div>';
+            $title .= '<div class="delComp" id="del-' . $this->ID . '" comp-id="' . $this->getCompType() . '-' . $this->ID . '" style="background: url(\'' . IMAGE_PATH . '/delete.png' . '\'); " alt="Delete Component" title="Delete Component"><br></div>';
 
             add_meta_box(
                 $id,
@@ -329,8 +331,7 @@ if (!class_exists("sp_catComponent")) {
          * Allows user to change or delete the icon for the component
          * @todo HTML form to delete or replace icon
          */
-        function renderIconForm(){
-        }
+        function renderIconForm(){}
 
         /**************************************
          * Statically Bound Getters/Setters	  *
@@ -372,7 +373,7 @@ if (!class_exists("sp_catComponent")) {
         static function getNameFromID($compID){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
-            $name 			  = (string) $wpdb->get_var($wpdb->prepare("SELECT name FROM $tableName where id = $compID;"));
+            $name 	   = (string) $wpdb->get_var($wpdb->prepare("SELECT name FROM $tableName where id = $compID;"));
             return $name;
         }
 
@@ -503,11 +504,9 @@ if (!class_exists("sp_catComponent")) {
          * Sets the category component to default and also calls
          * sp_category::maybeDessimanteReqdOrDef which will add a post
          * component instance to all posts under its category if an instance
-         * does not alread exist
-         *
-         * @see sp_category::maybeDessimanteReqdOrDef()
-         * @param bool $isDefault Whether the component is default or not
-         * @retur int  $result The number of rows affected from updateVar(), otherwise false
+         * does not already exist
+         * @param $isDefault Whether the component is default or not
+         * @return bool|int The number of rows affected from updateVar(), otherwise false
          */
         function setIsDefault($isDefault){
             $this->isDefault = (bool) $isDefault;

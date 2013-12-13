@@ -8,16 +8,16 @@ if (!class_exists("sp_core")) {
         /**
          * Returns all types in sp_compTypes as a $wpdb object
          */
-        function getTypes(){
+        static function getTypes(){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_compTypes';
             return $wpdb->get_results("SELECT * FROM $tableName;");
         }
 
         /**
-         * returns a formatted array of array('typeName' => 'typeID)
+         * returns a formatted array of array('typeName' => 'typeID')
          */
-        function getTypesAndIDs(){
+        static function getTypesAndIDs(){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_compTypes';
             $types = $wpdb->get_results("SELECT * FROM $tableName;");
@@ -50,7 +50,7 @@ if (!class_exists("sp_core")) {
             }
         }
 
-        function getTypeIDByName($name){
+        static function getTypeIDByName($name){
             if(!empty($name)){
                 global $wpdb;
                 $tableName = $wpdb->prefix . 'sp_compTypes';
@@ -71,7 +71,7 @@ if (!class_exists("sp_core")) {
          * @return int|bool    number of rows affected, otherwise false if update failed
          *
          */
-        function updateVar($table, $id, $columnName, $value, $valueType){
+        static function updateVar($table, $id, $columnName, $value, $valueType){
             global $wpdb;
             $tableName = $wpdb->prefix . $table;
             return $wpdb->update(
@@ -93,9 +93,9 @@ if (!class_exists("sp_core")) {
          * @param array   $_FILES       PHP $_FILES array
          * @param int     $input_id     ID of html file <input> tag
          * @param int     $postID       ID of post to attach (i.e. associate) file to
-         * @param array  	$post  							Attachment post info (i.e. Title, description, etc)
+         * @param array   $postInfo		Attachment post info (i.e. Title, description, etc)
          */
-        function upload(&$_FILES, $input_id, $post_id, $postInfo){
+        static function upload(&$_FILES, $input_id, $post_id, $postInfo){
             if (!empty( $_FILES ) ) {
                 require_once(ABSPATH . 'wp-admin/includes/admin.php');
                 $id = media_handle_upload($input_id, $post_id, $postInfo);
@@ -104,12 +104,12 @@ if (!class_exists("sp_core")) {
         }
 
         /* Returns true if the extension of $filename is in
-         * $allowedExntesions
+         * $allowedExtensions
          *
          * @param $filename - string of filename
          * @param $allowedExtension - array of extension strings
          */
-        function validateExtension($filename, $allowedExtensions){
+        static function validateExtension($filename, $allowedExtensions){
             $ext = strtolower(substr(strrchr($filename, "."), 1));
             return in_array($ext, $allowedExtensions);
         }
@@ -121,7 +121,7 @@ if (!class_exists("sp_core")) {
          * @param $input_id - id of <input> field
          */
 
-        function validImageUpload(&$_FILES, $input_id){
+        static function validImageUpload(&$_FILES, $input_id){
             $valid_extensions = array('jpg', 'jpeg', 'png');
             $filename = $_FILES[$input_id]['name'];
             $validExt = self::validateExtension($filename, $valid_extensions);
@@ -137,7 +137,7 @@ if (!class_exists("sp_core")) {
          * @return bool   whether icon image is 16x16
          */
 
-        function validateIcon($icon){
+        static function validateIcon($icon){
             $size = getimagesize($icon);
             return ($size[0] == 16 && $size[1] == 16);
         }
@@ -148,7 +148,7 @@ if (!class_exists("sp_core")) {
          * @param  integer $typeID the component type ID
          * @return string  url of the icon image
          */
-        function getIcon($typeID){
+        static function getIcon($typeID){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_compTypes';
             $sql = "SELECT icon FROM $tableName where id = $typeID;";

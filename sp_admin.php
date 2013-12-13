@@ -76,7 +76,7 @@ if (!class_exists("sp_admin")) {
         }
 
         function sp_admin_add_category_page(){
-            add_submenu_page( 'smartpost', 'SP Components', 'SP Components', 'edit_users', 'sp-cat-page', array('sp_admin', 'sp_component_page') );
+            add_submenu_page( 'smartpost', 'Settings', 'Settings', 'edit_users', 'sp-cat-page', array('sp_admin', 'sp_component_page') );
         }
 
         /**
@@ -206,14 +206,22 @@ if (!class_exists("sp_admin")) {
         /**
          * Build an object that represents the category hierarchy
          * with added smartpost components.
+         * @param $args - $args used in get_category query
+         * @param int $parent - The "root" parent node of where to start the query
+         * @param bool $include_parent - Whether to include the parent in the resulting array
+         * @return array
          */
-        public static function buildSPDynaTree($args, $parent = 0){
+        public static function buildSPDynaTree($args, $parent = 0, $include_parent = false){
 
-            $args['parent'] = $parent;
+            if($include_parent){
+                $parentCat  = get_category( $parent );
+                $categories = array( $parentCat );
+            } else {
+                $args['parent'] = $parent;
+                $categories     = get_categories($args);
+            }
 
-            $categories    = get_categories($args);
             $sp_categories = get_option( "sp_categories" );
-
             $catTree =  array();
 
             foreach( $categories as $category ) {
@@ -249,7 +257,6 @@ if (!class_exists("sp_admin")) {
                             array_push($compNodes, $compNode);
                         }
                     }
-                    //$node->components = $compNodes;
                 }else{
                     $node->addClass = 'disableSPSortable';
                 }

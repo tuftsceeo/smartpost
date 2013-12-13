@@ -5,18 +5,18 @@
  .componentHandle{
  	height: 12px;
  	cursor: move;
-  background-color: #F1F1F1;
-  background-image: -ms-linear-gradient(top,#F9F9F9,#ECECEC);
-  background-image: -moz-linear-gradient(top,#F9F9F9,#ECECEC);
-		background-image: -o-linear-gradient(top,#F9F9F9,#ECECEC);
-		background-image: -webkit-gradient(linear,left top,left bottom,from(#F9F9F9),to(#ECECEC));
-		background-image: -webkit-linear-gradient(top,#F9F9F9,#ECECEC);
-		background-image: linear-gradient(top,#F9F9F9,#ECECEC);
+    background-color: #F1F1F1;
+    background-image: -ms-linear-gradient(top,#F9F9F9,#ECECEC);
+    background-image: -moz-linear-gradient(top,#F9F9F9,#ECECEC);
+    background-image: -o-linear-gradient(top,#F9F9F9,#ECECEC);
+    background-image: -webkit-gradient(linear,left top,left bottom,from(#F9F9F9),to(#ECECEC));
+    background-image: -webkit-linear-gradient(top,#F9F9F9,#ECECEC);
+    background-image: linear-gradient(top,#F9F9F9,#ECECEC);
  	border: 1px solid #EEE;
  	border-radius: 3px;
  	-moz-border-radius: 3px;
  	-webkit-border-radius: 3px;		
-		margin-bottom: 10px;
+    margin-bottom: 10px;
  }
  
  .requiredComponent{
@@ -24,27 +24,27 @@
  	border-radius: 3px;
  	-moz-border-radius: 3px;
  	-webkit-border-radius: 3px;		 
-		-moz-box-shadow:    4px 5px 8px -2px red;
-	 -webkit-box-shadow: 4px 5px 8px -2px red;
-  box-shadow:         4px 5px 8px -2px red;
+    -moz-box-shadow:    4px 5px 8px -2px red;
+	-webkit-box-shadow: 4px 5px 8px -2px red;
+    box-shadow:         4px 5px 8px -2px red;
  }
  
  .editableCompTitle, .componentTitle{
-		display: inline;
-		font-weight: bold;
-		font-size: 14px;
+    display: inline;
+    font-weight: bold;
+    font-size: 14px;
  }
  
  .sp_compTitleEditable{ display: inline; }
  .sp_compTitleEditable input{
  	display: inline !important;
-		height: inherit;
-		width: 90% !important;
-		border: none;
-		font-size: inherit;
-		font-weight: inherit;
-		text-decoration: inherit;
-		font-family: inherit;
+    height: inherit;
+    width: 90% !important;
+    border: none;
+    font-size: inherit;
+    font-weight: inherit;
+    text-decoration: inherit;
+    font-family: inherit;
  } 
   
  .sp_component{
@@ -58,12 +58,6 @@
  
  div.sp_component:hover{
  	border: 1px solid silver;
- 	/*border-radius: 3px;
- 	-moz-border-radius: 3px;
- 	-webkit-border-radius: 3px;
-		-moz-box-shadow:    4px 5px 8px -2px black;
-	 -webkit-box-shadow: 4px 5px 8px -2px black;
-  box-shadow:         4px 5px 8px -2px black;*/
  }
  
  .menuItem{
@@ -111,8 +105,8 @@
  	background: white;
  	font-size: 14px;
  	font-weight: bold;
-		-moz-box-shadow:    4px 5px 8px -2px black;
-	 -webkit-box-shadow: 4px 5px 8px -2px black;
-  box-shadow:         4px 5px 8px -2px black; 	
-  cursor: move;
+	-moz-box-shadow: 4px 5px 8px -2px black;
+	-webkit-box-shadow: 4px 5px 8px -2px black;
+    box-shadow: 4px 5px 8px -2px black;
+    cursor: move;
  }

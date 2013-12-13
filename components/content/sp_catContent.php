@@ -107,7 +107,9 @@ if (!class_exists("sp_catContent")) {
         /**
          * @see parent::renderSettings()
          */
-        function renderSettings(){}
+        function getComponentSettings(){
+            return false;
+        }
 
         /**
          * @see parent::getOptions()

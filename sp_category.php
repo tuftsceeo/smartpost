@@ -70,8 +70,10 @@ if (!class_exists("sp_category")) {
                     if( !empty($componentResults) ){
                         foreach($componentResults as $componentRow){
                             $type = 'sp_cat' . sp_core::getType($componentRow->typeID);
-                            $component = new $type($componentRow->id);
-                            array_push($this->catComponents, $component);
+                            //if(class_exists($type)){
+                                $component = new $type($componentRow->id);
+                                array_push($this->catComponents, $component);
+                            //}
                         }
                     }
                 }
@@ -80,11 +82,33 @@ if (!class_exists("sp_category")) {
             }
         }
 
-        /*
+        /**
          * Initializes scripts, actions, hooks, variables for the sp_category class.
          */
         function init(){
             add_action('delete_category', array('sp_category', 'deleteCategory'));
+        }
+
+        /**
+         * Returns an array representing the category hierarchy.
+         *
+         * @param $args
+         * @param int $parent
+         * @return array
+         */
+        public static function get_cat_hierarchy($args, $parent = 0){
+
+            $args['parent'] = $parent;
+
+            $cats    = get_categories($args);
+            $catTree = array();
+
+            foreach( $cats as $cat ) {
+                $cat->children = sp_category::get_cat_hierarchy($args, $cat->term_id);
+                array_push($catTree, $cat);
+            }
+
+            return $catTree;
         }
 
         /**
@@ -368,7 +392,7 @@ if (!class_exists("sp_category")) {
          * @param string $description The description of the cat component
          * @param bool   $isDefault If the component should be default
          * @param bool   $isRequired If the component should be required
-         * @return object an sp_catComponent object on success, otherwise a WP_Error object
+         * @return sp_catComponent An sp_catComponent object on success, otherwise a WP_Error object
          */
         function addCatComponent($name, $description, $typeID, $isDefault, $isRequired){
             $compOrder = self::getNextOrder();

@@ -200,17 +200,17 @@ if (!class_exists("sp_postMediaAJAX")) {
 				}				
 				
 				if ($_POST['type'] == "pixel") {
-     // input is in format 1,2,3...|1,2,3...|...
-     $im = imagecreatetruecolor(320, 240);
+                    // input is in format 1,2,3...|1,2,3...|...
+                    $im = imagecreatetruecolor(320, 240);
 
-     foreach (explode("|", $_POST['image']) as $y => $csv) {
-        foreach (explode(";", $csv) as $x => $color) {
-         imagesetpixel($im, $x, $y, $color);
-        }
-     }
+                    foreach (explode("|", $_POST['image']) as $y => $csv) {
+                        foreach (explode(";", $csv) as $x => $color) {
+                            imagesetpixel($im, $x, $y, $color);
+                        }
+                    }
 				} else {
-      // input is in format: data:image/png;base64,...
-      $im = imagecreatefrompng($_POST['image']);
+                    // input is in format: data:image/png;base64,...
+                    $im = imagecreatefrompng($_POST['image']);
 				}
 
 				$compID = (int) $_POST['compID'];
@@ -224,18 +224,18 @@ if (!class_exists("sp_postMediaAJAX")) {
 				imagepng($im, $filename, 0);
 				
 				//Create an attachment!
-		  $wp_filetype = wp_check_filetype(basename($filename), null );
-		  $attachment = array(
-		     'guid' => $uploads['baseurl'] . _wp_relative_upload_path( $filename ), 
-		     'post_mime_type' => $wp_filetype['type'],
-		     'post_title' => preg_replace('/\.[^.]+$/', '', basename($filename)),
-		     'post_content' => 'Webcam Snapshot!',
-		     'post_status' => 'inherit'
-		  );
-		  $attach_id = wp_insert_attachment( $attachment, $filename,  $mediaComponent->getPostID() );
-		  require_once(ABSPATH . 'wp-admin/includes/image.php');
-		  $attach_data = wp_generate_attachment_metadata( $attach_id, $filename );
-		  wp_update_attachment_metadata( $attach_id, $attach_data );				
+		        $wp_filetype = wp_check_filetype(basename($filename), null );
+                $attachment = array(
+                 'guid' => $uploads['baseurl'] . _wp_relative_upload_path( $filename ),
+                 'post_mime_type' => $wp_filetype['type'],
+                 'post_title' => preg_replace('/\.[^.]+$/', '', basename($filename)),
+                 'post_content' => 'Webcam Snapshot!',
+                 'post_status' => 'inherit'
+                );
+                $attach_id = wp_insert_attachment( $attachment, $filename,  $mediaComponent->getPostID() );
+                require_once(ABSPATH . 'wp-admin/includes/image.php');
+                $attach_data = wp_generate_attachment_metadata( $attach_id, $filename );
+                wp_update_attachment_metadata( $attach_id, $attach_data );
 
 				$attachmentIDs = $mediaComponent->getAttachments();
 

@@ -22,8 +22,23 @@ if (!class_exists("sp_adminAJAX")) {
          * SP Templates and their components.
          */
         function getCategoryJSONTreeAJAX(){
+            $nonce = $_POST['nonce'];
+            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+                header("HTTP/1.0 409 Security Check.");
+                die('Security Check');
+            }
 
-            $dynaTree = sp_admin::buildSPDynaTree( array('orderby' => 'name','order' => 'ASC', 'hide_empty' => 0 ) );
+            $parent = 0;
+            if( !empty( $_POST['parent'] ) )
+                $parent = (int) $_POST['parent'];
+
+            $includeParent = false;
+            if( !empty( $_POST['includeParent'] ) )
+                $includeParent = $_POST['includeParent'];
+
+            $dynaTree = sp_admin::buildSPDynaTree( array('orderby' => 'name','order' => 'ASC', 'hide_empty' => 0 ), $parent, $includeParent );
+
+            error_log(print_r($dynaTree, true));
 
             echo json_encode($dynaTree);
 

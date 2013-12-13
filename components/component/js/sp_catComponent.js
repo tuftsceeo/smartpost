@@ -88,6 +88,32 @@
         },
 
         /**
+         * Copies all of the components of a source category to a destination category,
+         * effectively copying over an entire template.
+         * @param srcCatID - The source category from which to copy the components
+         * @param destCatID - The destination category to copy the templates to
+         */
+        copyTemplate: function(srcCatID, destCatID, cl){
+            $.ajax({
+                url		 : SP_AJAX_URL,
+                type     : 'POST',
+                data	 : {
+                    action : 'copyTemplateAJAX',
+                    nonce  : SP_NONCE,
+                    srcCatID  : srcCatID,
+                    destCatID : destCatID
+                },
+                dataType : 'html',
+                success  : function(response, statusText, jqXHR){
+                    cl(response, statusText, jqXHR);
+                },
+                error    : function(jqXHR, statusText, errorThrown){
+                    spAdmin.adminpage.showError(errorThrown, null);
+                }
+            })
+        },
+
+        /**
          * Given a component typeID and a category ID, adds that component
          * to a category template represented by catID
          * @param catID

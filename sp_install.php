@@ -19,7 +19,11 @@ if (!class_exists("sp_install")) {
 			self::findComponents(dirname(__FILE__) . "/components/");
 			self::addDefaultSPCategory();
 		}
-		
+
+        /*
+         * On a new install, we add the 'SP QuickPost' category
+         * as a new default category that users can use immediately.
+         */
 		static function addDefaultSPCategory(){
 			$category = get_term_by('name', 'SP QuickPost', 'category', OBJECT);
 			if( empty($category) ){
@@ -31,8 +35,7 @@ if (!class_exists("sp_install")) {
 						$defaultSPCat->addCatComponent($type->name, null, $type->id, false, false);
 					}
 				}
-				
-				update_option('sp_defaultCat', $defaultSPCat->getID());
+                update_option('sp_defaultCat', $defaultSPCat->getID());
 			}
 		}
 		
@@ -42,9 +45,8 @@ if (!class_exists("sp_install")) {
 		 */		
 		function tableExists($tableName){
 			global $wpdb;
-			$sql = "SELECT * 
-											FROM INFORMATION_SCHEMA.TABLES
-											WHERE TABLE_NAME =  '$tableName'";
+			$sql = "SELECT * FROM INFORMATION_SCHEMA.TABLES
+					WHERE TABLE_NAME =  '$tableName'";
 			$row = $wpdb->get_row($sql);
 			return is_null($row);
 		}
@@ -58,7 +60,7 @@ if (!class_exists("sp_install")) {
 					  description tinytext NULL,
 					  icon tinytext NULL,
 					  UNIQUE KEY id (id)
-					    );";
+      					);";
 			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 			dbDelta($sql);
 			self::create_sp_catComponents();
@@ -69,26 +71,26 @@ if (!class_exists("sp_install")) {
 		 */
 		function findComponents($dir){
 			if (is_dir($dir)) {	
-	    if ($dh = opendir($dir)) {
-	      while (($file = readdir($dh)) !== false) {
-											if(is_dir($dir . $file) && ($file != "." && $file != ".." && $file != ".svn")){
-												self::installComponents($dir . $file);
-											}
-	      }
-	      closedir($dh);
-	    }
-			}
+                if ($dh = opendir($dir)) {
+                    while (($file = readdir($dh)) !== false) {
+                        if(is_dir($dir . $file) && ($file != "." && $file != ".." && $file != ".git" && $file != ".idea")){
+                            self::installComponents($dir . $file);
+                        }
+                    }
+                    closedir($dh);
+                }
+		    }
 		}
 		
 		function installComponents($folder){
 			foreach (glob($folder . "/*.php") as $filename){
-						require_once($filename);
-						$component = basename($filename, ".php");
+                require_once($filename);
+                $component = basename($filename, ".php");
 
-						//ignore sp_catComponent as it's an abstract class
-						if(method_exists($component, 'install') && $component != 'sp_catComponent'){
-							call_user_func(array($component, 'install'));
-						}
+                //ignore sp_catComponent as it's an abstract class
+                if(method_exists($component, 'install') && $component != 'sp_catComponent'){
+                    call_user_func(array($component, 'install'));
+                }
 			}
 		}
 

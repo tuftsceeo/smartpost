@@ -60,13 +60,13 @@
          * @param sortableDiv
          */
         makeCompDivsDraggable: function(dragHelper, draggableDiv, sortableDiv){
-          if(draggableDiv == undefined)
+          if( draggableDiv == undefined )
             draggableDiv = $('.catCompDraggable');
 
-          if(sortableDiv == undefined)
+          if( sortableDiv == undefined )
             sortableDiv = $('#normal-sortables');
 
-          if(draggableDiv.exists()){
+          if( draggableDiv.exists() ){
               draggableDiv.draggable({
                   addClasses: true,
                   helper: dragHelper,
@@ -167,6 +167,7 @@
             sp_catTree.dynatree({
                 initAjax: {
                     url: SP_AJAX_URL,
+                    type: 'POST',
                     data: {
                         action    : 'getCategoryJSONTreeAJAX',
                         nonce     : SP_NONCE
@@ -188,6 +189,41 @@
                 debugLevel: 0
             });
             sp_catTree.dynatree("getTree").renderInvisibleNodes();
+        },
+
+        /**
+         * Syncs a node's children via AJAX call
+         * @param node
+         */
+        syncDynaTreeNodeChildren: function(node){
+            var self = this;
+
+            $.ajax({
+                url	 : SP_AJAX_URL,
+                type : 'POST',
+                data : {
+                    action : 'getCategoryJSONTreeAJAX',
+                    nonce  : SP_NONCE,
+                    parent : $('#catID').val(),
+                    includeParent: true
+                },
+                dataType : 'json',
+                success  : function(nodeChildren){
+
+                    console.log(nodeChildren[0].children);
+
+                    node.removeChildren();
+                    $(nodeChildren[0].children).each(function(index, childNode){
+                        node.addChild(childNode);
+                    });
+                    node.render(false, true);
+
+                },
+                error    : function(jqXHR, statusText, errorThrown){
+                    self.showError(errorThrown, null);
+                }
+            })
+
         },
 
         /**
@@ -238,7 +274,7 @@
             //Handle drag n' drop via dynaTree
             }else if( ui.item.hasClass('dynatree-node') ){
 
-                var node   = $.ui.dynatree.getNode(ui.item.context);
+                var node = $.ui.dynatree.getNode(ui.item.context);
 
                 if(node.data.compID){
                     spAdmin.sp_catComponent.copyComponent(node.data.compID, catID, newCompHndlr);
@@ -251,13 +287,13 @@
                             ui.item.replaceWith(components);
 
                             $.each(components, function(key, val){
-                                self.initializeComponent($(val), catID);
+                                self.initializeComponent( $(val), catID );
                             });
                             self.saveCompOrder( $(".meta-box-sortables").sortable( 'toArray' ) );
                         }
                         spAdmin.sp_catComponent.copyTemplate(node.data.catID, catID, copyTemplateHndlr);
                     }else{
-                        self.showError('The template you are trying to copy has no components!', null);
+                        self.showError( 'The template you are trying to copy has no components!', null );
                     }
                 }
 
@@ -343,11 +379,13 @@
          */
         init: function(){
             var self = this;
-            var sortableDiv = $( ".meta-box-sortables" );
-            var sp_catTree  = $( "#sp_catTree" );
+            var catID = $( '#catID').val();
+            var sortableDiv = $( "#normal-sortables" );
+            var sp_catTreeDiv  = $( "#sp_catTree" );
 
             //Initialize a dynatree instance for the SP category tree.
-            this.initComponentTree(sp_catTree);
+            this.initComponentTree(sp_catTreeDiv);
+            var sp_dynaTree = sp_catTreeDiv.dynatree( "getTree" );
 
             //Make the component widgets draggable
             this.makeCompDivsDraggable('clone', null, null);
@@ -355,6 +393,7 @@
             //Re-define sortable behavior on the admin page.
             sortableDiv.sortable({
                 axis: "y",
+                revert: true,
                 stop: function(e, ui){
                     self.replaceDroppedItem(e, ui);
                 },
@@ -366,7 +405,8 @@
                         }
                     }
                 },
-                placeholder: "sortable-placeholder"
+                placeholder: "sortable-placeholder",
+                tolerance: "intersect"
             });
 
             //Enable component deletion

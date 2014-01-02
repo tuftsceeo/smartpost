@@ -38,8 +38,10 @@ if (!class_exists("sp_postGallery")) {
         }
 			
 			static function enqueueCSS(){
+                /*
 					wp_register_style( 'sp_postGalleryCSS', plugins_url('css/sp_postGallery.css', __FILE__) );
 					wp_enqueue_style( 'sp_postGalleryCSS' );
+                */
 			}
 			
 			static function enqueueJS(){

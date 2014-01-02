@@ -666,8 +666,10 @@ if (!class_exists("sp_post")) {
          * Adds a post component to the sp post based off of it's category component ID.
          * Returns the components ID on success, otherwise a WP_Error object on failure.
          *
-         * @param  int $catCompID The post component's category component ID
-         * @return int|object the components ID on succes, otherwise WP_Error object on failure
+         * @param $catCompID int The post component's category component ID
+         * @param string $name
+         * @param string $value
+         * @return WP_Error|object The components ID on success, otherwise WP_Error object on failure
          */
         function addComponent($catCompID, $name = '', $value = ''){
 
@@ -714,9 +716,7 @@ if (!class_exists("sp_post")) {
             global $wpdb;
             $postComponents = array();
             $tableName = $wpdb->prefix . 'sp_postComponents';
-            $componentResults = $wpdb->get_results($wpdb->prepare(
-                "SELECT *	FROM $tableName WHERE postID = $postID order by compOrder ASC;"
-            ));
+            $componentResults = $wpdb->get_results( "SELECT *	FROM $tableName WHERE postID = $postID order by compOrder ASC;" );
 
             if(!empty($componentResults)){
                 $postComponents = array();
@@ -758,7 +758,7 @@ if (!class_exists("sp_post")) {
             $tableName = $wpdb->prefix . 'sp_postComponents';
             $postID = $this->wpPost->ID;
             $sql = "SELECT MAX(compOrder) FROM $tableName where postID = $postID";
-            $nextOrder = (int) $wpdb->get_var($wpdb->prepare($sql)) + 1;
+            $nextOrder = (int) $wpdb->get_var($sql) + 1;
             return $nextOrder;
         }
 

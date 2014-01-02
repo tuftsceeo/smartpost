@@ -51,7 +51,7 @@ if (!class_exists("sp_catComponent")) {
 
         /**
          * GUI Function that renders serialized options that are specific to the component.
-         * Used inside getComponentSettings().
+         * Used inside globalOptions().
          * @return mixed
          */
         abstract public function componentOptions();
@@ -75,7 +75,7 @@ if (!class_exists("sp_catComponent")) {
          * your component globally across all posts.
          * @return bool|string The XHTML (forms, tables, etc.) representing the settings of your component, otherwise false
          */
-        abstract public function getComponentSettings();
+        abstract public function globalOptions();
 
         /**
          * Creates a new category component (inserts it into the DB) or loads an existing one if
@@ -311,7 +311,7 @@ if (!class_exists("sp_catComponent")) {
 
             $id    = $this->getCompType() . '-' . $this->ID;
             $title = '<img class="catCompIcon" src="' . $this->getIcon() . '" /> ';
-            $title .= '<span class="editableCatCompTitle" comp-id="' . $this->ID . '" style="cursor: text">';
+            $title .= '<span class="editableCatCompTitle tooltip" title="Click to edit the title of the component" comp-id="' . $this->ID . '">';
             $title .= $this->name;
             $title .= '</span>';
             $title .=  $checkBoxes;
@@ -346,8 +346,7 @@ if (!class_exists("sp_catComponent")) {
         static function componentExists($name, $catID){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
-            $nameExists = $wpdb->get_var( $wpdb->prepare(
-                "SELECT COUNT(*) FROM $tableName WHERE catID = $catID AND name = $name;" ) );
+            $nameExists = $wpdb->get_var( "SELECT COUNT(*) FROM $tableName WHERE catID = $catID AND name = $name;" );
             return ($nameExists > 0);
         }
 
@@ -373,7 +372,7 @@ if (!class_exists("sp_catComponent")) {
         static function getNameFromID($compID){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
-            $name 	   = (string) $wpdb->get_var($wpdb->prepare("SELECT name FROM $tableName where id = $compID;"));
+            $name 	   = (string) $wpdb->get_var( "SELECT name FROM $tableName where id = $compID;" );
             return $name;
         }
 
@@ -386,7 +385,7 @@ if (!class_exists("sp_catComponent")) {
         static function getCompTypeFromID($compID){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
-            $typeID    = $wpdb->get_var($wpdb->prepare("SELECT typeID FROM $tableName where id = $compID;"));
+            $typeID    = $wpdb->get_var( "SELECT typeID FROM $tableName where id = $compID;" );
             return sp_core::getType($typeID);
         }
 
@@ -399,7 +398,7 @@ if (!class_exists("sp_catComponent")) {
         static function getCompTypeIDFromID($compID){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
-            $typeID    = $wpdb->get_var($wpdb->prepare("SELECT typeID FROM $tableName where id = $compID;"));
+            $typeID    = $wpdb->get_var( "SELECT typeID FROM $tableName where id = $compID;" );
             return $typeID;
         }
 
@@ -413,8 +412,7 @@ if (!class_exists("sp_catComponent")) {
             if( !empty($compID) ){
                 global $wpdb;
                 $tableName  = $wpdb->prefix . 'sp_catComponents';
-                $isDefault = (int) $wpdb->get_var( $wpdb->prepare(
-                    "SELECT is_default FROM $tableName WHERE id = $compID;" ) );
+                $isDefault = (int) $wpdb->get_var( "SELECT is_default FROM $tableName WHERE id = $compID;" );
                 return (bool) $isDefault;
             }else{
                 return false;
@@ -431,8 +429,7 @@ if (!class_exists("sp_catComponent")) {
             if( !empty($compID) ){
                 global $wpdb;
                 $tableName  = $wpdb->prefix . 'sp_catComponents';
-                $isRequired = (int) $wpdb->get_var( $wpdb->prepare(
-                    "SELECT is_required FROM $tableName WHERE id = $compID;" ) );
+                $isRequired = (int) $wpdb->get_var( "SELECT is_required FROM $tableName WHERE id = $compID;" );
                 return (bool) $isRequired;
             }else{
                 return false;
@@ -448,13 +445,13 @@ if (!class_exists("sp_catComponent")) {
         static function getOptionsFromID($compID){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
-            $options   = $wpdb->get_var($wpdb->prepare("SELECT options FROM $tableName where id = $compID;"));
+            $options   = $wpdb->get_var( "SELECT options FROM $tableName where id = $compID;" );
             $options   = maybe_unserialize($options);
             return $options;
         }
 
         /**************************************
-         * Dynamically Bound Getters/Setters			*
+         * Dynamically Bound Getters/Setters  *
          **************************************/
 
         function getID(){

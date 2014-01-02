@@ -140,8 +140,7 @@ if (!class_exists("sp_postComponent")) {
                 $this-> errors = new WP_Error ('broke', __("Invalid Component ID"));
             }else{
                 $sp_postComponentsTable = $wpdb->prefix . "sp_postComponents";
-                $component = $wpdb->get_row($wpdb->prepare("SELECT * FROM $sp_postComponentsTable " .
-                "WHERE id = $compID;"));
+                $component = $wpdb->get_row( "SELECT * FROM $sp_postComponentsTable WHERE id = $compID;" );
                 if( !empty($component) ){
                     $this->ID        = $component->id;
                     $this->catCompID = $component->catCompID;
@@ -220,28 +219,6 @@ if (!class_exists("sp_postComponent")) {
         }
 
         /**
-         * Renders the component menu based off of $this->menuOptions
-         *
-         * @return string HTML representation of the menu
-         *
-         */
-        protected function componentMenu(){
-            $html = '';
-            if(!empty($this->menuOptions)){
-                $html .= '<ul class="simpleMenu">';
-                $html .= '<li class="menuItem"><a href="#"><img src="' . IMAGE_PATH . '/downArrow.png" /></a>';
-                $html .= '<ul class="menuItem">';
-                foreach($this->menuOptions as $menuItem => $menuFunction){
-                    $html .= '<li><a href="#" class="' . $menuFunction . '" data-compid="' . $this->ID .'">' . $menuItem . '</a></li>';
-                }
-                $html .= '</ul>';
-                $html .= '</li>';
-                $html .= '</ul>';
-            }
-            return $html;
-        }
-
-        /**
          * Renders the component in HTML. If the component is empty and renderViewMode is called,
          * then the component will not render.
          * @return string HTML representation of the component
@@ -275,7 +252,6 @@ if (!class_exists("sp_postComponent")) {
                 $html .= '<div id="comp-' . $this->ID . '" data-compid="' . $this->ID . '" data-required="' . $this->isRequired() . '" data-catcompid="' . $this->catCompID . '" data-typeid="' . $this->typeID . '" class="sp_component' . (($this->isRequired() && $this->lastOne() && $this->isEmpty()) ?  ' requiredComponent' : '') . '">';
                 $html .= '<div class="componentHandle"></div>';
                 $html .= $this->renderCompTitle(true);
-                $html .= $this->componentMenu();
                 $html .= $this->renderEditMode();
                 $html .= '<div class="clear"></div>';
                 $html .= '</div><!-- end #comp-' . $this->ID .' -->';
@@ -355,12 +331,12 @@ if (!class_exists("sp_postComponent")) {
         function getCompTypeFromID($compID){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_postComponents';
-            $typeID 			= $wpdb->get_var($wpdb->prepare("SELECT typeID FROM $tableName where id = $compID;"));
+            $typeID = $wpdb->get_var("SELECT typeID FROM $tableName where id = $compID;");
             return sp_core::getType($typeID);
         }
 
         /**************************************
-         * Getters/Setters																				*
+         * Getters/Setters					  *
          **************************************/
         function getCompType(){
             return sp_core::getType($this->typeID);
@@ -394,7 +370,7 @@ if (!class_exists("sp_postComponent")) {
         function nameModified(){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_postComponents';
-            $modified = $wpdb->get_var($wpdb->prepare("SELECT name FROM $tableName where id = $this->ID;"));
+            $modified = $wpdb->get_var( "SELECT name FROM $tableName where id = $this->ID;" );
             return !empty($modified);
         }
 

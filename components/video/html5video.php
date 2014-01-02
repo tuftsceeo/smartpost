@@ -34,8 +34,10 @@ if( !empty( $WPMU_ARGS['IS_WPMU'] ) ){
     require( BASE_PATH . 'wp-load.php' );
     switch_to_blog( $WPMU_ARGS['BLOG_ID'] );
 
-}else{
+} else {
+
     require_once( $ARGS['BASE_PATH'] . 'wp-load.php' );
+
 }
 
 //Get the paths of ffmpeg and HandBrakeCLI

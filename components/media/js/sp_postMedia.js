@@ -2,7 +2,7 @@
  * JS sp_postMedia Component class
  * Used alongside sp_postMedia for AJAX calls
  * Used in front-end posts
- *
+	*
  * @version 1.0
  * @author Rafi Yagudin <rafi.yagudin@tufts.edu>
  * @project SmartPost 
@@ -79,15 +79,15 @@
                     if (pos >= 4 * 320 * 240) {
                         ctx.putImageData(img, 0, 0);
                         $.ajax({
-                            url: ajaxurl,
+                            url: SP_AJAX_URL,
                             type: 'POST',
                             data: {
                                 action: 'mediaUploadAJAX',
-                                nonce: spNonce,
+                                nonce: SP_NONCE,
                                 type: 'data',
                                 compID: compID,
                                 image: canvas.toDataURL("image/png")
-                            },
+                                },
                             dataType  : 'json',
                             beforeSend: function (jqXHR, settings){
                                 thisObj.loadingGif(isGallery, compID);
@@ -98,8 +98,8 @@
                                 }
                             },
                             error    : function(jqXHR, statusText, errorThrown){
-                                if(sp_postComponent)
-                                    sp_postComponent.showError(errorThrown);
+                                if(smartpost.sp_postComponent)
+                                    smartpost.sp_postComponent.showError(errorThrown);
                             }
                         });
                         pos = 0;
@@ -111,26 +111,27 @@
                     pos+= 4 * 320;
                     if (pos >= 4 * 320 * 240) {
                         $.ajax({
-                            url: ajaxurl,
+                            url : SP_AJAX_URL,
                             type: 'POST',
-                            data: {action: 'mediaUploadAJAX',
-                                nonce: spNonce,
-                                type: 'pixel',
+                            data: {
+                                action: 'mediaUploadAJAX',
+                                nonce : SP_NONCE,
+                                type  : 'pixel',
                                 compID: compID,
-                                image:  image.join('|')
+                                image :  image.join('|')
                             },
                             dataType  : 'json',
-                            beforeSend: function (jqXHR, settings){
+                            beforeSend : function (jqXHR, settings){
                                 thisObj.loadingGif(isGallery, compID);
                             },
-                            success  : function(response, statusText, jqXHR){
+                            success : function(response, statusText, jqXHR){
                                 if(response){
                                     thisObj.insertThumb(response, isGallery, compID, $('#loadingGIF'));
                                 }
                             },
-                            error    : function(jqXHR, statusText, errorThrown){
-                                if(sp_postComponent)
-                                    sp_postComponent.showError(errorThrown);
+                            error : function(jqXHR, statusText, errorThrown){
+                                if(smartpost.sp_postComponent)
+                                    smartpost.sp_postComponent.showError(errorThrown);
                             }
                         });
                         pos = 0;
@@ -142,7 +143,7 @@
                 width: 320,
                 height: 240,
                 mode: 'callback',
-                swffile: PLUGIN_PATH + 'components/media/js/jquery.webcam/jscam_canvas_only.swf',
+                swffile: SP_PLUGIN_PATH + 'components/media/js/jquery.webcam/jscam_canvas_only.swf',
                 onSave: function(data){
                     saveCB(data);
                 },
@@ -150,7 +151,6 @@
                     webcam.save();
                 }
             });
-
         },
         /**
          * Show the webcam
@@ -182,9 +182,9 @@
          * Cancel camera upload
          */
         cancelCam: function(compID){
-            var webcam = $('#sp_media_webcam-' + compID);
-            webcam.find('#XwebcamXobjectX').remove();
-            webcam.hide();
+                var webcam = $('#sp_media_webcam-' + compID);
+                webcam.find('#XwebcamXobjectX').remove();
+                webcam.hide();
         },
         /**
          * Initializes HTML5 filedrop for the media component
@@ -199,31 +199,34 @@
 
             if(postID == undefined){
                 postID = jQuery('#postID').val();
+                if(postID == undefined){
+                    postID = jQuery('#sp_qpPostID').val();
+                }
             }
 
             component.filedrop({
                 fallback_id: fallback_id,
-                url: ajaxurl,
+                url: SP_AJAX_URL,
                 paramname: 'sp_media_files',
                 data: {
                     action  : 'mediaUploadAJAX',
-                    nonce   : spNonce,
+                    nonce   : SP_NONCE,
                     compID  : compID,
                     postID  : postID
                 },
                 error: function(err, file) {
                     switch(err) {
-                        case 'BrowserNotSupported':
+                      case 'BrowserNotSupported':
                             $('.sp_browse').show();
+                          break;
+                      case 'TooManyFiles':
+                            smartpost.sp_postComponent.showError('Too many files! Please upload less');
                             break;
-                        case 'TooManyFiles':
-                            sp_postComponent.showError('Too many files! Please upload less');
+                      case 'FileTooLarge':
+                            smartpost.sp_postComponent.showError(file.name + ' is too large!');
                             break;
-                        case 'FileTooLarge':
-                            sp_postComponent.showError(file.name + ' is too large!');
-                            break;
-                        default:
-                            sp_postComponent.showError(err);
+                      default:
+                            smartpost.sp_postComponent.showError(err);
                             break;
                     }
                     $('#loadingGIF').remove();
@@ -236,17 +239,16 @@
                 },
                 uploadFinished: function(i, file, response, time) {
                     if(response){
-                        thisObj.insertThumb(response, isGallery, compID, $('#loadingGIF'));
+                            thisObj.insertThumb(response, isGallery, compID, $('#loadingGIF'));
                     }
                 }
             });
-
-        },
-        /**
-         * Insert Description (used only in single-media mode)
-         * After the thumbnail div
-         */
-        insertDesc: function(attachmentID, compID, thumbDiv, placeHolder){
+     },
+     /**
+      * Insert Description (used only in single-media mode)
+      * After the thumbnail div
+      */
+     insertDesc: function(attachmentID, compID, thumbDiv, placeHolder){
             var thisObj = this;
             var descDiv = '';
 
@@ -260,7 +262,7 @@
 
             var descExists = $('#sp_attachments-' + compID).find('.sp_media_desc');
             descDiv += '<div id="sp_media_desc-' + attachmentID + '" class="sp_media_desc editable" data-compid="' + compID + '" attach-id="' + attachmentID + '">';
-            descDiv += placeHolder;
+                descDiv += placeHolder;
             descDiv += '</div>';
             if( !$(descExists).exists() ){
                 thumbDiv.after( $(descDiv) );
@@ -269,19 +271,19 @@
             }
 
             thisObj.initDescEditor($('#sp_media_desc-' + attachmentID));
-        },
+     },
 
-        /**
-         * Initialize the description editor
-         * @param descElem jQuery <div> object of the description
-         */
-        initDescEditor: function(descElem){
-            var thisObj = this;
-            if(sp_postComponent){
+     /**
+      * Initialize the description editor
+      * @param descElem jQuery <div> object of the description
+      */
+     initDescEditor: function(descElem){
+        var thisObj = this;
+            if(smartpost.sp_postComponent){
                 var elementID = $(descElem).attr('id');
-                sp_postComponent.addNicEditor(elementID, false, thisObj.saveDescription,'Click to add a description');
-            }
-        },
+                    smartpost.sp_postComponent.addNicEditor(elementID, false, thisObj.saveDescription,'Click to add a description');
+        }
+     },
 
         /**
          * Saves a media component's description to the database.
@@ -294,41 +296,41 @@
             var compID  = $('#' + contentID).attr('data-compid');
             var attachmentID  = $('#' + contentID).attr('attach-id');
             $.ajax({
-                url				   : ajaxurl,
+                url				   : SP_AJAX_URL,
                 type      : 'POST',
                 data			   : {action: 'saveMediaDescAJAX',
-                    nonce: spNonce,
-                    compID: compID,
-                    attachmentID: attachmentID,
-                    desc: content},
+                                                                    nonce: SP_NONCE,
+                                                                    compID: compID,
+                                                                    attachmentID: attachmentID,
+                                                                    desc: content},
                 dataType  : 'json',
                 success  : function(response, statusText, jqXHR){
-                    console.log(response);
+                        console.log(response);
                 },
                 error    : function(jqXHR, statusText, errorThrown){
-                    if(sp_postComponent)
-                        sp_postComponent.showError(errorThrown);
+                        if(smartpost.sp_postComponent)
+                            smartpost.sp_postComponent.showError(errorThrown);
                 }
             })
         },
 
-        /**
-         * Loads a loading GIF prior to upload
-         */
-        loadingGif: function(isGallery, compID){
+     /**
+      * Loads a loading GIF prior to upload
+      */
+     loadingGif: function(isGallery, compID){
             console.log('loadingGIF isGallery: ' + isGallery)
             console.log('loadingGIF compID: ' + compID)
 
             var attachments = $('#sp_attachments-' + compID);
             var thumbClass = isGallery ? 'gallery_thumb' : 'sp_media_thumb';
-            var loadingGIF = '<div id="loadingGIF" class="' + thumbClass + '"><img src="' + IMAGE_PATH + '/loading.gif" /></div>';
+            var loadingGIF = '<div id="loadingGIF" class="' + thumbClass + '"><img src="' + SP_IMAGE_PATH + '/loading.gif" /></div>';
 
             if(isGallery || (attachments.children().length == 0) ){
                 $('#sp_attachments-' + compID).append(loadingGIF);
             }else{
                 $('#sp_attachments-' + compID).find('.sp_media_thumb').replaceWith(loadingGIF);
             }
-        },
+     },
         /**
          * Inserts a thumbnail into the DOM based off of info in response
          * reponse.id -> Attachment ID of the attachment
@@ -342,28 +344,28 @@
          * @replaceMe $(elem) jQuery element to replace the thumb with
          */
         insertThumb: function(response, isGallery, compID, replaceMe){
-            var thisObj      = this;
-            var thumbDiv 		  = '';
-            var thumbClass   = isGallery ? 'gallery_thumb' : 'sp_media_thumb';
-            var deleteButton = '<img src="' + IMAGE_PATH + '/no.png" id="deleteThumb-' + response.id + '" name="deleteThumb-' + response.id + '" data-attachid="' + response.id + '" data-compid="' + compID + '" class="sp_mediaDelete" title="Delete Attachment" alt="Delete Attachment" />';
-            var captionEl    = '<p id="media_caption-' + response.id +'" class="sp_mediaCaption">' + response.caption + '</p>';
+                var thisObj      = this;
+                var thumbDiv 		  = '';
+                var thumbClass   = isGallery ? 'gallery_thumb' : 'sp_media_thumb';
+                var deleteButton = '<img src="' + SP_IMAGE_PATH + '/no.png" id="deleteThumb-' + response.id + '" name="deleteThumb-' + response.id + '" data-attachid="' + response.id + '" data-compid="' + compID + '" class="sp_mediaDelete" title="Delete Attachment" alt="Delete Attachment" />';
+                var captionEl    = '<p id="media_caption-' + response.id +'" class="sp_mediaCaption">' + response.caption + '</p>';
 
-            thumbDiv += '<div id="media_thumb-' + response.id + '" data-compid="704" class="' + thumbClass + '">';
-            thumbDiv += '<a id="thumb-' + response.id +'" href="' + response.fileURL + '" rel="lightbox[' + compID + ']" title="' + response.caption + '">';
-            thumbDiv += '<img width="' + response.thumbURL[1] + '" height="' + response.thumbURL[2] + '" src="' + response.thumbURL[0] + '" class="attachment-100x100">';
-            thumbDiv += '</a>';
-            thumbDiv += captionEl;
-            thumbDiv += deleteButton;
-            thumbDiv += '</div>';
+                thumbDiv += '<div id="media_thumb-' + response.id + '" data-compid="704" class="' + thumbClass + '">';
+                    thumbDiv += '<a id="thumb-' + response.id +'" href="' + response.fileURL + '" rel="lightbox[' + compID + ']" title="' + response.caption + '">';
+                        thumbDiv += '<img width="' + response.thumbURL[1] + '" height="' + response.thumbURL[2] + '" src="' + response.thumbURL[0] + '" class="attachment-100x100">';
+                    thumbDiv += '</a>';
+                    thumbDiv += captionEl;
+                    thumbDiv += deleteButton;
+                thumbDiv += '</div>';
 
-            replaceMe.replaceWith($(thumbDiv));
-            thisObj.bindDelete($('#deleteThumb-' + response.id));
-            thisObj.bindDeleteHover($('#media_thumb-' + response.id));
+                replaceMe.replaceWith($(thumbDiv));
+                thisObj.bindDelete($('#deleteThumb-' + response.id));
+                thisObj.bindDeleteHover($('#media_thumb-' + response.id));
 
-            if(!isGallery)
-                thisObj.insertDesc(response.id, compID);
+                if(!isGallery)
+                    thisObj.insertDesc(response.id, compID);
 
-            return $(thumbDiv);
+                return $(thumbDiv);
         },
         /**
          * Shows the delete button when over over deleteElems
@@ -375,16 +377,16 @@
                 var attachmentID = $(this).attr('data-attachid');
                 var compID = $(this).attr('data-compid');
                 $.ajax({
-                    url: ajaxurl,
+                    url: SP_AJAX_URL,
                     type: 'POST',
-                    data: {action: 'mediaDeleteAttachmentAJAX', nonce: spNonce, attachmentID: attachmentID, compID: compID },
+                    data: {action: 'mediaDeleteAttachmentAJAX', nonce: SP_NONCE, attachmentID: attachmentID, compID: compID },
                     dataType  : 'json',
                     success  : function(response, statusText, jqXHR){
                         $('#media_thumb-' + attachmentID).remove();
                     },
                     error    : function(jqXHR, statusText, errorThrown){
-                        if(sp_postComponent)
-                            sp_postComponent.showError(errorThrown);
+                            if(smartpost.sp_postComponent)
+                                smartpost.sp_postComponent.showError(errorThrown);
                     }
                 })
             });
@@ -404,8 +406,8 @@
             });
         },
         /**
-         * Initializes a single component with filedrop
-         */
+        * Dynamically initializes a media component
+        */
         initComponent: function(component, postID, autoFocus){
             var webcamLink = $(component).find('.sp_webcam_click');
             this.webcamClick($(webcamLink));
@@ -413,8 +415,8 @@
         },
 
         /**
-         * Initializes all dropfile elements with the filedrop plugin
-         */
+        * Statically initializes all media components on document.ready
+        */
         init: function(){
             this.setTypeID();
             var thisObj = this;
@@ -436,19 +438,10 @@
                 thisObj.initDescEditor($(this));
             });
 
-            $(".fancybox").fancybox({
-                openEffect	 : 'none',
-                closeEffect	: 'none',
-                helpers : {
-                    media : {}
-                }
-            });
-
         }
     }
 
     $(document).ready(function(){
         smartpost.sp_postMedia.init();
     });
-
 })(jQuery);

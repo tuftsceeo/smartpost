@@ -82,7 +82,7 @@
                             url: ajaxurl,
                             type: 'POST',
                             data: {action: 'mediaUploadAJAX',
-                                nonce: spNonce,
+                                nonce: SP_NONCE,
                                 type: 'data',
                                 compID: compID,
                                 image: canvas.toDataURL("image/png")
@@ -113,7 +113,7 @@
                             url: ajaxurl,
                             type: 'POST',
                             data: {action: 'mediaUploadAJAX',
-                                nonce: spNonce,
+                                nonce: SP_NONCE,
                                 type: 'pixel',
                                 compID: compID,
                                 image:  image.join('|')
@@ -206,7 +206,7 @@
                 paramname: 'sp_media_files',
                 data: {
                     action  : 'mediaUploadAJAX',
-                    nonce   : spNonce,
+                    nonce   : SP_NONCE,
                     compID  : compID,
                     postID  : postID
                 },
@@ -296,7 +296,7 @@
                 url				   : ajaxurl,
                 type      : 'POST',
                 data			   : {action: 'saveMediaDescAJAX',
-                    nonce: spNonce,
+                    nonce: SP_NONCE,
                     compID: compID,
                     attachmentID: attachmentID,
                     desc: content},
@@ -376,7 +376,7 @@
                 $.ajax({
                     url: ajaxurl,
                     type: 'POST',
-                    data: {action: 'mediaDeleteAttachmentAJAX', nonce: spNonce, attachmentID: attachmentID, compID: compID },
+                    data: {action: 'mediaDeleteAttachmentAJAX', nonce: SP_NONCE, attachmentID: attachmentID, compID: compID },
                     dataType  : 'json',
                     success  : function(response, statusText, jqXHR){
                         $('#media_thumb-' + attachmentID).remove();

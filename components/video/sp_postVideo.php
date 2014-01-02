@@ -172,7 +172,7 @@ if (!class_exists("sp_postVideo")) {
          * @param $data - unnecessary
          * @return bool|int
          */
-        function update($data){
+        function update($data = null){
             $videoData->beingConverted     = (bool) $this->beingConverted;
             $videoData->videoAttachmentIDs = $this->videoAttachmentIDs;
             $videoData = maybe_serialize($videoData);

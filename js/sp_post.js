@@ -27,7 +27,7 @@
             $.ajax({
                 url		 : ajaxurl,
                 type     : 'POST',
-                data	 : {action: 'savePostTitleAJAX', nonce: spNonce, postID: postID, post_title: title},
+                data	 : {action: 'savePostTitleAJAX', nonce: SP_NONCE, postID: postID, post_title: title},
                 dataType : 'json',
                 success  : function(response, statusText, jqXHR){
                     console.log(response);

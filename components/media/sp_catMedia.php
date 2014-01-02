@@ -97,7 +97,7 @@ if (!class_exists("sp_catMedia")) {
         /**
          * @see parent::renderSettings()
          */
-        function getComponentSettings(){}
+        function globalOptions(){}
 
 		/**
 		 * Returns the allowed media extensions

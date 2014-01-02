@@ -153,8 +153,8 @@ if (!class_exists("sp_postLink")) {
 			}
 			
 			static function enqueueJS(){
-				wp_register_script( 'sp_postLinkJS', plugins_url('/js/sp_postLink.js', __FILE__));
-				wp_enqueue_script( 'sp_postLinkJS', null, array( 'jquery', 'sp_globals', 'sp_postComponentJS', 'sp_tiny_mce' ) );
+				wp_register_script( 'sp_postLinkJS', plugins_url('/js/sp_postLink.js', __FILE__), array( 'jquery', 'sp_globals', 'sp_postComponentJS', 'sp_tiny_mce' ));
+				wp_enqueue_script( 'sp_postLinkJS' );
 			}
 
 			static function enqueueCSS(){

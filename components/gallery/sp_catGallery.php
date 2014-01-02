@@ -58,7 +58,7 @@ if (!class_exists("sp_catGallery")) {
         /**
          * @see parent::renderSettings()
          */
-        function getComponentSettings(){}
+        function globalOptions(){}
 
 		/**
 		 * @see parent::componentOptions()

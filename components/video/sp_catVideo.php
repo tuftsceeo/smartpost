@@ -123,10 +123,10 @@ if (!class_exists("sp_catVideo")) {
         }
 
         /**
-         * @see parent::componentOptions()
+         * @see parent::globalOptions
+         * @return bool|string|void
          */
-        function componentOptions(){
-
+        function globalOptions(){
             $sp_hcli_path   = get_site_option( 'sp_hcli_path' );
             $sp_ffmpeg_path = get_site_option( 'sp_ffmpeg_path' );
 
@@ -138,7 +138,7 @@ if (!class_exists("sp_catVideo")) {
                     <p>HandBrakeCLI path: <?php echo $sp_hcli_path ?></p>
                     <p>ffmpeg path: <?php echo $sp_ffmpeg_path ?></p>
                 </div>
-                <?php
+            <?php
             }
 
             if( $sp_hcli_path && $sp_ffmpeg_path ){
@@ -152,7 +152,7 @@ if (!class_exists("sp_catVideo")) {
                     to enable this option (why should I enable this option?).
                 </label>
 
-                <?php
+            <?php
             }else{
                 ?>
                 <p>
@@ -162,8 +162,16 @@ if (!class_exists("sp_catVideo")) {
                     unsure how to install these utilities, contact your server administrator
                     for help.
                 </p>
-                <?php
+            <?php
             }
+        }
+
+        /**
+         * @see parent::componentOptions()
+         * @return mixed|void
+         */
+        function componentOptions(){
+            echo "No options exist for this component";
         }
 
         /**
@@ -180,7 +188,7 @@ if (!class_exists("sp_catVideo")) {
          * @param $options
          * @return bool|int
          */
-        function setOptions($options){
+        function setOptions($options = null){
             $options = maybe_serialize($options);
             return sp_core::updateVar('sp_catComponents', $this->ID, 'options', $options, '%s');
         }

@@ -3,30 +3,26 @@
  * Use for front-end styling
  */
  .componentHandle{
- 	height: 12px;
- 	cursor: move;
+    height: 12px;
+    cursor: move;
     background-color: #F1F1F1;
-    background-image: -ms-linear-gradient(top,#F9F9F9,#ECECEC);
-    background-image: -moz-linear-gradient(top,#F9F9F9,#ECECEC);
-    background-image: -o-linear-gradient(top,#F9F9F9,#ECECEC);
-    background-image: -webkit-gradient(linear,left top,left bottom,from(#F9F9F9),to(#ECECEC));
-    background-image: -webkit-linear-gradient(top,#F9F9F9,#ECECEC);
-    background-image: linear-gradient(top,#F9F9F9,#ECECEC);
- 	border: 1px solid #EEE;
- 	border-radius: 3px;
- 	-moz-border-radius: 3px;
- 	-webkit-border-radius: 3px;		
+    border: 1px solid #EEE;
+    border-radius: 3px;
     margin-bottom: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    display: none;
+    width: 50px;
  }
  
  .requiredComponent{
  	border: 1px solid red;
  	border-radius: 3px;
  	-moz-border-radius: 3px;
- 	-webkit-border-radius: 3px;		 
-    -moz-box-shadow:    4px 5px 8px -2px red;
+ 	-webkit-border-radius: 3px;
+    -moz-box-shadow: 4px 5px 8px -2px red;
 	-webkit-box-shadow: 4px 5px 8px -2px red;
-    box-shadow:         4px 5px 8px -2px red;
+    box-shadow: 4px 5px 8px -2px red;
  }
  
  .editableCompTitle, .componentTitle{
@@ -50,14 +46,18 @@
  .sp_component{
  	padding: 5px;
  	background-color: white;
- 	border: 1px solid #EEE;
- 	border-radius: 3px;
  	margin-bottom: 10px;
  	min-height: 75px;
+
  }
- 
+
+ div.sp_component:hover .componentHandle{
+     display: block;
+ }
+
  div.sp_component:hover{
- 	border: 1px solid silver;
+     -moz-box-shadow:    4px 5px 8px -2px black;
+     -webkit-box-shadow: 4px 5px 8px -2px black;
  }
  
  .menuItem{

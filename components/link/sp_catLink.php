@@ -44,7 +44,7 @@ if (!class_exists("sp_catLink")) {
         /**
          * @see parent::renderSettings()
          */
-        function getComponentSettings(){}
+        function globalOptions(){}
 
         /**
          * @see parent::componentOptions()

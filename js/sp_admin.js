@@ -312,32 +312,35 @@
          * based off the fields in the form represented by formID.
          * @param formElement
          */
-        submitCategory: function(formElement){
+        submitCategory: function( formElement ){
             var self = this;
             var spCatOptions = {
                 url	 : SP_AJAX_URL,
                 type : 'POST',
-                data : {action: 'newSPCatAJAX', nonce: SP_NONCE},
-                dataType : 'json',
+                data : {
+                    action: 'newSPCatAJAX',
+                    nonce : SP_NONCE
+                },
+                dataType: 'json',
                 success	: function(response){
                     if(response){
                         if(response.error){
                             self.showError(response.error, null);
                         }else{
-                            window.location.href = SP_ADMIN_URL + '?page=smartpost&catID=' + response.catID;
+                            window.location.href = SP_ADMIN_URL + '?page=smartpost&catID=' + response.catID + '&msg_type=new_cat';
                         }
                     }
                 },
-                beforeSubmit : function(formData, jqForm){ // form validation
+                beforeSubmit: function(formData, jqForm){ // form validation
                     var form = jqForm[0];
-                    if(!form.cat_name.value){
-                        self.showError('Please fill in the category name', null);
-                        $('#cat_name').focus();
+                    if(!form.template_name.value){
+                        alert( 'Please fill in the category name' );
+                        form.template_name.focus();
                         return false;
                     }
                 },
                 error: function(data){
-                    self.showError(data.statusText, null);
+                    alert('Error:' + data.statusText);
                 }
             };
             formElement.submit(function(){
@@ -345,6 +348,7 @@
                 return false;
             });
         },
+
         /**
          * "Enables" a wordpress category, or "disables" a SP category.
          * @param caID - The category
@@ -374,6 +378,40 @@
         },
 
         /**
+         * Creates a new jQuery UI dialog with template form submission.
+         * @param templateForm - jQuery object representing the form
+         * @param templateDescTextareaID - Textarea inside the form, will be transformed to a WYSIWYG editor using nicEditor
+         * @param openDialogButton - jQuery object representing the open dialog button
+         */
+        initTemplateForm: function(templateForm, templateDescTextareaID, openDialogButton){
+
+            new nicEditor({
+                iconsPath : SP_IMAGE_PATH + '/nicEditorIcons.gif',
+                buttonList : ['fontSize','bold','italic','underline', 'forecolor','bgcolor','fontFormat']
+            }).panelInstance(templateDescTextareaID);
+
+            //Initialize the dialog
+            templateForm.dialog({
+                resizable: false,
+                draggable: false,
+                autoOpen: false,
+                title: "Create a new template:",
+                modal: true,
+                width: "auto"
+            });
+
+            //Enable dialog for new category form
+            openDialogButton.click(function () {
+                templateForm.dialog( 'open' );
+                //templateForm.find('.tooltip').tooltipster();
+            });
+
+            //Enable new template submission
+            this.submitCategory( templateForm );
+
+        },
+
+        /**
          * Initializes the spAdmin object with click handlers and variables
          * necessary for initialization.
          */
@@ -385,7 +423,6 @@
 
             //Initialize a dynatree instance for the SP category tree.
             this.initComponentTree(sp_catTreeDiv);
-            var sp_dynaTree = sp_catTreeDiv.dynatree( "getTree" );
 
             //Make the component widgets draggable
             this.makeCompDivsDraggable('clone', null, null);
@@ -418,32 +455,34 @@
             //Enable editable component titles
             this.editableCatCompTitle( $('.editableCatCompTitle') );
 
-            //Initialize the dialog
-            $( "#newCategoryForm" ).dialog({
-                resizable: false,
-                draggable: false,
-                autoOpen: false,
-                title: "Create a new template:",
-                width: "auto",
-                modal: true
-            });
-            //Enable dialog for new category form
-            $('#newCatButton').click(function () {
-                $('#newCategoryForm').dialog('open');
-            });
-
-            //Enable new template submission
-            this.submitCategory( $('#cat_form') );
+            //Initialize the new template form dialog
+            self.initTemplateForm( $('#template_form'), 'template_desc', $('#newTemplateButton') )
 
             //Click handler for enable/disable checkboxes
             $('#sp_enabled').click(function(){
                 self.switchCategory($('#catID').val());
+            });
+
+            //Click handler for expand all
+            $( '#expandAll' ).click(function(){
+                sp_catTreeDiv.dynatree("getRoot").visit(function(node){
+                    if( !sp_catTreeDiv.expanded ){
+                        node.expand(true);
+                    }else{
+                        node.expand(false);
+                    }
+                });
+                sp_catTreeDiv.expanded = !sp_catTreeDiv.expanded;
             });
         }
     };
 
     //Initialize admin page behavior.
     $(document).ready(function(){
+        $('.tooltip').tooltipster({
+            delay: 0,
+            interactive: true
+        });
         spAdmin.adminpage.init();
     });
 

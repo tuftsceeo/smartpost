@@ -31,6 +31,7 @@ input.requiredAndDefault{ vertical-align: text-bottom; }
 .dynatree-node{ width: 100%; }
 #normal-sortables .postbox .handlediv{ float: left; }
 #emptyComp{ text-align: center; }
+.editableCatCompTitle { cursor: pointer; }
 .editableCatCompTitle form{ display: inline !important; }
 .editableCatCompTitle input{
     height: inherit;
@@ -60,3 +61,9 @@ input.requiredAndDefault{ vertical-align: text-bottom; }
 }
 #newCategoryForm{ display: none; }
 .hide{ visibility: hidden; position: absolute; top:-9999; left: -9999; }
+#expandAll{ cursor: pointer; }
+#expandAll:hover{ color: #0074a2; }
+#sp_errors{ display: none; }
+#sp_success{ display: none; }
+#the_settings{ position: relative; }
+#newTemplateForm{ visibility: hidden; }

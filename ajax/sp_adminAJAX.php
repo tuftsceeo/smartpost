@@ -36,9 +36,7 @@ if (!class_exists("sp_adminAJAX")) {
             if( !empty( $_POST['includeParent'] ) )
                 $includeParent = $_POST['includeParent'];
 
-            $dynaTree = sp_admin::buildSPDynaTree( array('orderby' => 'name','order' => 'ASC', 'hide_empty' => 0 ), $parent, $includeParent );
-
-            error_log(print_r($dynaTree, true));
+            $dynaTree = sp_admin::buildSPDynaTree( array( 'orderby' => 'name','order' => 'ASC', 'hide_empty' => 0 ), $parent, $includeParent );
 
             echo json_encode($dynaTree);
 
@@ -115,56 +113,65 @@ if (!class_exists("sp_adminAJAX")) {
                 die('Security Check');
             }
 
-            if( empty($_POST['cat_name']) ){
-                echo '<div class="errors">The title field is empty!</div>';
+            $name = stripslashes_deep($_POST['template_name']);
+            $desc = $_POST['template_desc'];
+
+            //Cannot have empty name
+            if(empty($name)){
+                header("HTTP/1.0 409 Error: empty name template name.");
+                exit;
+            }
+
+            //Create a new template
+            $sp_category = new sp_category($name, $desc);
+
+            //Check for any creation errors
+            if(is_wp_error($sp_category->errors)){
+                header("HTTP/1.0 409 " . $sp_category->errors->get_error_message());
+                echo json_encode(array('error' => $sp_category->errors->get_error_message()));
+                exit;
             }else{
 
-                $name = stripslashes_deep($_POST['cat_name']);
-                $desc = stripslashes_deep($_POST['category_description']);
+                $add_to_menu = (bool) $_POST['add_to_menu'];
 
-                //Cannot have empty name
-                if(empty($name)){
-                    header("HTTP/1.0 409 Error: empty name category name.");
-                    exit;
-                }
+                if( $add_to_menu ){
 
-                $iconID = -1;
-                //Validate icon upload
-                if($_FILES['category_icon']['size'] > 0){
-                    if(sp_core::validImageUpload($_FILES, 'category_icon') && sp_core::validateIcon($_FILES['category_icon']['tmp_name'])){
-                        $description = $name . ' icon';
-                        $iconID = sp_core::upload($_FILES, 'category_icon', null, array('post_title' => $description, 'post_content' => $description));
-                    }else{
-                        $icon_error = 'File uploaded does not meet icon requirements.' .
-                            ' Please make sure the file uploaded is ' .
-                            ' 16x16 pixels and is a .png or .jpg file';
-
-                        header("HTTP/1.0 409 " .  $icon_error);
-                        echo json_encode(array('error' => $icon_error));
-                        exit;
+                    $menu_id = (int) $_POST['wp_menus'];
+                    if(!empty($menu_id)){
+                        wp_update_nav_menu_item($menu_id, 0, array(
+                            'menu-item-title'  =>  __( $sp_category->getTitle() ),
+                            'menu-item-url'    => get_category_link( $sp_category->getID() ),
+                            'menu-item-status' => 'publish')
+                        );
                     }
                 }
 
-                //Create a new category
-                $sp_category = new sp_category($name, $desc);
-                $sp_category->setIconID($iconID);
+                $add_widget = (bool) $_POST['add_widget'];
+                if( $add_widget ){
 
-                //Check for any creation errors
-                if(is_wp_error($sp_category->errors)){
+                    //Grab the sidebar ID
+                    $sidebar_id = $_POST['widget_areas'];
+                    error_log( $sidebar_id );
 
-                    //delete the icon since something went wrong
-                    if(!empty($iconID)){
-                        wp_delete_attachment( $iconID, true );
-                    }
+                    //Get active widgets and active SP quickpost widget instances
+                    $sidebars_instances  = get_option( 'sidebars_widgets' );
+                    $sp_widget_instances = get_option( 'widget_sp_quickpostwidget' );
 
-                    header("HTTP/1.0 409 " .  $sp_category->errors->get_error_message());
-                    echo json_encode(array('error' => $sp_category->errors->get_error_message()));
-                    exit;
-                }else{
+                    //Get the new widget instance ID
+                    $new_widget_id = max( array_keys($sp_widget_instances) ) + 1;
+                    $new_widget_name = 'sp_quickpostwidget-' . $new_widget_id;
 
-                    //Otherwise if everything checks out, return the new catID
-                    echo json_encode(array('catID' => $sp_category->getID()));
+                    //Update WP widget instances
+                    $sp_widget_instances[$new_widget_id]['categoryMode'] = "on";
+                    update_option( 'widget_sp_quickpostwidget', $sp_widget_instances);
+
+                    //Add the new widget to the selected side bar
+                    array_push( $sidebars_instances[ $sidebar_id ], $new_widget_name );
+                    update_option( 'sidebars_widgets', $sidebars_instances);
                 }
+
+                //Otherwise if everything checks out, return the new catID
+                echo json_encode( array( 'catID' => $sp_category->getID() ) );
             }
 
             exit;

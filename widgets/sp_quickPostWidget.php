@@ -5,7 +5,7 @@
 class sp_quickPostWidget extends WP_Widget {
     /** constructor */
     function __construct() {
-        parent::__construct(false, $name = 'SP QuickPost');
+        parent::__construct( 'sp_quickpostwidget', 'SP QuickPost' );
         self::init();
     }
 
@@ -24,64 +24,97 @@ class sp_quickPostWidget extends WP_Widget {
     }
 
     static function enqueueJS(){
-        wp_register_script('sp_quickPostWidgetJS', plugins_url('js/sp_quickPostWidget.js', __FILE__));
-        wp_enqueue_script( 'sp_quickPostWidgetJS', array( 'jquery', 'sp_postComponentJS' ) );
+        if( is_admin() ){
+            wp_register_script('sp_qpWidgetAdminJS', plugins_url('js/sp_qpWidgetAdmin.js', __FILE__));
+            wp_enqueue_script( 'sp_qpWidgetAdminJS', array( 'jquery', 'sp_postComponentJS' ) );
+        }else{
+            wp_register_script('sp_quickPostWidgetJS', plugins_url('js/sp_quickPostWidget.js', __FILE__));
+            wp_enqueue_script( 'sp_quickPostWidgetJS', array( 'jquery', 'sp_postComponentJS' ) );
+        }
     }
 
     /** @see WP_Widget::widget */
     function widget($args, $instance, $returnHTML = false, $responseQP = false) {
-        global $current_user;
         extract( $args );
-        $title = apply_filters('widget_title', $instance['title']);
+        $catMode = $instance['categoryMode'];
 
         //Load post components
-        if(current_user_can('edit_posts')){
+        if( current_user_can('edit_posts') ){
 
-            //Get the selected cats
-            if( !empty($instance['displayCats']) ){
+            if( !$catMode && empty($instance['displayCats']) ){
+                if( current_user_can( 'edit_dashboard' ) ){
+                    echo 'This SmartPost widget is not configured! Go to the <a href="' . admin_url('widgets.php') . '"> widgets page </a> to configure it!.';
+                }
+                return;
+            }
+
+            $renderButton = false; //true if only one category needs to be displayed
+            $postButtonOpen = '';
+            $postButtonTxt  = '';
+            $postButtonClose = '';
+            $selectBox = '';
+            $html = '';
+
+            if( $catMode ){
+                $thisCat = get_category( get_query_var('cat'), false);
+                $instance['displayCats'][0] = $thisCat->term_id; //used below in the if statement to render a single button
+            }
+
+            //Display a drop down if more than one categories are selected and we are not in 'category mode'
+            if( count( $instance['displayCats'] ) > 1  && !$catMode ){
+
                 $selectBox = '<select id="sp_selectCat">';
                 $selectBox .= '<option> Select category... </option>';
-                foreach($instance['displayCats'] as $catID){
+
+                foreach ( $instance['displayCats'] as $catID ) {
                     $sp_cat = new sp_category(null, null, $catID);
                     $selectBox .= '<option value="' . $catID . '">' . $sp_cat->getTitle() . '</option>';
                 }
                 $selectBox .= '</select>';
             }
 
-            //$html .= $before_widget;
+            //Display a button if it's only one category that's selected or we are in 'category mode'
+            if ( $catMode || count( $instance['displayCats'] ) === 1 ) {
+                $renderButton = true;
+                $catID        = $instance['displayCats'][0];
+                $sp_cat       = new sp_category(null, null, $catID);
+                $catIcon      = wp_get_attachment_image($sp_cat->getIconID());
+                $postButtonOpen  = '<button type="button" id="sp_addPostButton" class="sp_qp_button" data-catID="' . $catID . '">';
+                $postButtonTxt   = $catIcon . ' Submit a ' . ( $responseQP ? '' : $sp_cat->getTitle() );
+                $postButtonClose = '</button>';
+            }
 
-            //Add an errors div if we're on the front-page or home
-            $html .= (is_home() || is_front_page()) ? '<div id="component_errors" style="display: none;"></div>' : '';
+            //Add an errors div in case we get any errors ..
+            $html .= '<div id="component_errors" style="display: none;"></div>';
 
+            //Handle response categories
             if(!$responseQP){
-                $html .= '<h4 class="sp_add_post"> Add a new ' . $selectBox . ' post</h4>';
+                $html .= $renderButton ? $postButtonOpen . $postButtonTxt . ' post' . $postButtonClose : '<h4 class="sp_add_post"> Add a new ' . $selectBox . ' post</h4>';
             }else{
-                $html .= '<h4 class="sp_add_post"> Post a ' . $selectBox . ' response</h4>';
+                $html .= $renderButton ? $postButtonOpen . $postButtonTxt . ' response' . $postButtonClose : '<h4 class="sp_add_post"> Post a ' . $selectBox . ' response</h4>';
             }
 
             $html .= '<div id="sp_quickpost_form" class="sp_quickpost">';
-            $html .= '<p> Title <font style="color: red;">*</font></p>';
-            $html .=  '<input type="text" id="new_sp_post_title" id="new_sp_post_title" class="sp_new_title" />';
+                $html .= '<p> Title <span style="color: red;">*</span></p>';
+                $html .= '<input type="text" id="new_sp_post_title" id="new_sp_post_title" class="sp_new_title" />';
 
-            //Component Stack
-            $html .= '<div id="sp_qp_stack">';
+                //Component Stack
+                $html .= '<div id="sp_qp_stack">';
+                $html .= '</div>';
+
+                //New component dialog
+                $html .= '<p>';
+                $html .= '<button type="button" id="sp_publish_post" class="sp_qp_button">Publish ' . (!$responseQP ? 'Post' : 'Response') . '</button> or ';
+                $html .= '<button type="button" id="sp_cancel_draft" class="sp_qp_button">Cancel ' . (!$responseQP ? 'Post' : 'Response') . '</button> ';
+                $html .= !$responseQP ? 'Responding to a post? <span id="sp_qp_response">Publish as a response</span>.' : '';
+                $html .= '</p>';
+
+                //Response Post dialog
+                $html .= '<div id="sp_qp_responseDialog">';
+                $html .= '<div id="sp_qp_responsePosts"></div>';
+                $html .= '<div class="clear"></div>';
+                $html .= '</div>';
             $html .= '</div>';
-
-            //New component dialog
-            $html .= '<p>';
-            $html .= '<button type="button" id="sp_publish_post" class="sp_qp_button">Publish ' . (!$responseQP ? 'Post' : 'Response') . '</button> or ';
-            $html .= '<button type="button" id="sp_cancel_draft" class="sp_qp_button">Cancel ' . (!$responseQP ? 'Post' : 'Response') . '</button> ';
-            $html .= !$responseQP ? 'Responding to a post? <span id="sp_qp_response">Publish as a response</span>.' : '';
-            $html .= '</p>';
-
-            //Response Post dialog
-            $html .= '<div id="sp_qp_responseDialog">';
-            $html .= '<div id="sp_qp_responsePosts"></div>';
-            $html .= '<div class="clear"></div>';
-            $html .= '</div>';
-
-            $html .= '</div>';
-            $html .= $after_widget;
 
             if($returnHTML){
                 return $html;
@@ -93,45 +126,58 @@ class sp_quickPostWidget extends WP_Widget {
 
     /** @see WP_Widget::update */
     function update($new_instance, $old_instance) {
-        $instance['displayCats'] = $new_instance['displayCats'];
+        $instance['displayCats']  = $new_instance['displayCats'];
+        $instance['categoryMode'] = $new_instance['categoryMode'];
+        $instance['title'] = ( ! empty( $new_instance['title'] ) ) ? strip_tags( $new_instance['title'] ) : '';
         return $instance;
     }
 
     /** @see WP_Widget::form */
     function form($instance) {
-        $sp_cats =  get_option('sp_categories');
+        $catMode = (bool) $instance[ 'categoryMode' ];
+        $title   = isset( $instance[ 'title' ] ) ? $instance[ 'title' ] : __( 'New title', 'text_domain' );
+        ?>
+        <p>
+            <label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label>
+            <input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>" />
+        </p>
+        <p>
+            <input type="checkbox" class="sp_catMode" data-widget-num="<?php echo $this->number ?>" id="<?php echo $this->get_field_id( 'categoryMode') ?>" name="<?php echo $this->get_field_name( 'categoryMode') ?>" <?php echo $catMode ? 'checked="checked"' : ''; ?> />
+            <label for="<?php echo $this->get_field_id( 'categoryMode') ?>" class="tooltip" title="">Category Mode</label>
+        </p>
+        <?php
+        $sp_cats = get_option( 'sp_categories' );
 
         //If there are no SP Cats, indicate so
-        if( empty($sp_cats) ){
-            $html = "<p> No SP Categories exist! Go to the SmartPost settings and add new categories! </p>";
-            echo $html;
+        if( empty($sp_cats) ) {
+            ?>
+            <p> No SP Categories exist! Go to the SmartPost settings and add new categories! </p>
+            <?php
             return;
         }
-
-        //Otherwise set displayCats
-        if ( !is_array($instance['displayCats']) ){
-
-            //Transform $sp_cats so that all categories are included by default
-            $displayCats = array_flip($sp_cats);
-            foreach($displayCats as $catID => $display){
-                $displayCats[$catID] = true;
-            }
-            $instance['displayCats'] = $displayCats;
-        }
-
-
+        $instance['displayCats'] = is_array($instance['displayCats']) ? $instance['displayCats'] : array();
+        $id      = $this->get_field_id( 'displayCats' );
+        $name    = $this->get_field_name( 'displayCats' );
+        $display = $catMode ? 'style="display: none;"' : '';
+        $counter = 0;
+        ?>
+        <div id="sp_qp_categories-<?php echo $this->number ?>" <?php echo $display ?>>
+        <?php
         foreach ($sp_cats as $catID) {
-            $checked = in_array($catID, $instance['displayCats']) ? 'checked="checked"' : '';
-            $id      = $this->get_field_id( 'displayCats' );
-            $name    = $this->get_field_name( 'displayCats' );
-            $cat     = get_category($catID);
-
-            $html   .= '<input type="checkbox" id="' . $id . '[]" name="'. $name .'[]" value="' . $catID . '" ' . $checked . ' /> ';
-            $html   .= '<label for="' . $id . '[]">' . $cat->cat_name . '</label>';
-            $html   .= '<br />';
+            $cat = get_category( $catID );
+            if( !is_null($cat) && !is_wp_error($cat) ){
+                $checked = in_array($catID, $instance['displayCats']) ? 'checked="checked"' : '';
+                ?>
+                <input type="checkbox" id="<?php echo $id . '[' . $counter . ']' ?>" name="<?php echo $name . '[' . $counter .']' ?>" value="<?php echo $catID ?>" <?php echo $checked ?> />
+                <label for="<?php echo $id . '[' . $counter . ']' ?>"><?php echo $cat->cat_name ?></label>
+                <br />
+                <?php
+                $counter++;
+            }
         }
-
-        echo $html;
+        ?>
+        </div>
+        <?php
     }
 
 }

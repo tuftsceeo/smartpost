@@ -356,11 +356,10 @@ if (!class_exists("sp_admin")) {
                 <?php self::renderNewTemplateForm(); ?>
                 <div id="poststuff">
                     <div id="post-body" class="metabox-holder columns-2">
-
                         <div id="post-body-content" style="margin-bottom: 0;">
                             <div id="category_settings" class="postbox">
                                 <div id="the_settings">
-                                    <img src="" id="delete-cat-<?php echo $catID ?>" cat-id="<?php echo $catID ?>">
+                                    <span id="delete-<?php echo $catID ?>" class="deleteCat xButton" data-cat-id="<?php echo $catID ?>" title="Delete template"></span>
                                     <?php self::renderCatSettings($catID, $sp_categories); ?>
                                     <div class="clear"></div>
                                 </div><!-- end #the_settings -->

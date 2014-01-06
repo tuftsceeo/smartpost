@@ -15,6 +15,40 @@ if (!class_exists("sp_adminAJAX")) {
             add_action('wp_ajax_switchCategoryAJAX', array('sp_adminAJAX', 'switchCategoryAJAX'));
             add_action('wp_ajax_setCompOrderAJAX', array('sp_adminAJAX', 'setCompOrderAJAX'));
             add_action('wp_ajax_getCategoryJSONTreeAJAX', array('sp_adminAJAX', 'getCategoryJSONTreeAJAX'));
+            add_action('wp_ajax_deleteTemplateAJAX', array('sp_adminAJAX', 'deleteTemplateAJAX'));
+        }
+
+        /**
+         * AJAX handler for deleting SmartPost templates
+         */
+        function deleteTemplateAJAX(){
+            $nonce = $_POST['nonce'];
+            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+                header("HTTP/1.0 409 Security Check.");
+                die('Security Check');
+            }
+
+            if( empty($_POST['catID']) ){
+                header("HTTP/1.0 409 Could not find catID.");
+                exit;
+            }
+
+            $catID = (int) $_POST['catID'];
+
+            $success = wp_delete_category($catID);
+
+            if($success !== false || !is_wp_error($success) || $success !== 0){
+                echo json_encode( array('success' => true) );
+            }else if( is_wp_error($success) ){
+                header( "HTTP/1.0 409 Error: " . $success->get_error_message() );
+            }else if( $success === false ){
+                header( "HTTP/1.0 409 Error: A category with an ID of " . $catID . " does not exist!" );
+            }else if( $success === 0){
+                header( "HTTP/1.0 409 Error: attempted to delete the default category!" );
+            }else{
+                header( "HTTP/1.0 409 A very bad error occurred. Data dump:" . print_r($success, true) );
+            }
+            exit;
         }
 
         /**

@@ -1,0 +1,22 @@
+/**
+ * @author Rafi Yagudin
+ * @date 1/2/2014
+ * @project SmartPost
+ * @version 2.0
+ * Contains "global" SmartPost CSS shared among all SmartPost classes
+ */
+.xButton:before{
+    content: '\f153';
+    display: block!important;
+    font: 400 16px/1 dashicons;
+    speak: none;
+    height: 20px;
+    margin: 2px 0;
+    text-align: center;
+    width: 20px;
+    -webkit-font-smoothing: antialiased!important;
+    color: #bbb;
+}
+.xButton:hover:before{
+    color: red;
+}

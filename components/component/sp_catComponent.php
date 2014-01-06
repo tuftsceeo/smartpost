@@ -314,8 +314,8 @@ if (!class_exists("sp_catComponent")) {
             $title .= '<span class="editableCatCompTitle tooltip" title="Click to edit the title of the component" comp-id="' . $this->ID . '">';
             $title .= $this->name;
             $title .= '</span>';
+            $title .= '<span class="delComp xButton" id="del-' . $this->ID . '" comp-id="' . $this->getCompType() . '-' . $this->ID . '" alt="Delete Component" title="Delete Component"></span>';
             $title .=  $checkBoxes;
-            $title .= '<div class="delComp" id="del-' . $this->ID . '" comp-id="' . $this->getCompType() . '-' . $this->ID . '" style="background: url(\'' . IMAGE_PATH . '/delete.png' . '\'); " alt="Delete Component" title="Delete Component"><br></div>';
 
             add_meta_box(
                 $id,

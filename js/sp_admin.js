@@ -97,6 +97,41 @@
         },
 
         /**
+         *
+         * @param deleteElem
+         */
+        handleDeleteCat: function(deleteElem){
+            var self = this;
+            deleteElem.click(function(){
+                var confirm_ok = confirm( 'Are you sure you want to delete this template?' );
+                if(confirm_ok){
+                    var catID = $(this).attr("data-cat-id");
+                    $.ajax({
+                        url	 : SP_AJAX_URL,
+                        type : 'POST',
+                        data : {
+                            action    : 'deleteTemplateAJAX',
+                            nonce     : SP_NONCE,
+                            catID     : catID
+                        },
+                        dataType : 'json',
+                        success  : function(response){
+                            if(response.success){
+                                window.location.href = SP_ADMIN_URL + '?page=smartpost';
+                            }else{
+                                console.log(response);
+                                self.showError('Something bad happened! Dump: ' + response, null);
+                            }
+                        },
+                        error : function(jqXHR, statusText, errorThrown){
+                            self.showError(errorThrown, null);
+                        }
+                    })
+                }
+            })
+        },
+
+        /**
          * Category Response Update
          */
         submitResponseCatForm: function(){
@@ -446,8 +481,11 @@
                 tolerance: "intersect"
             });
 
+            //Enable template deletion
+            this.handleDeleteCat( $('.deleteCat') )
+
             //Enable component deletion
-            this.handleDeleteComp($('.delComp'));
+            this.handleDeleteComp( $('.delComp') );
 
             //Limit click event only to hndl class
             $('.postbox h3').unbind('click.postboxes');

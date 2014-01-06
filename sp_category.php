@@ -204,10 +204,11 @@ if (!class_exists("sp_category")) {
         }
 
         /**
-         *	Pre-condition: called via the WP delete_category action. Function should not
+         * Pre-condition: called via the WP delete_category action. Function should not
          * be called from an instantiated sp_category object
          *
          * @param int catID The ID of the category being deleted
+         * @todo remove templateID from any SP QP instances
          */
         function deleteCategory($catID){
             $sp_categories = get_option('sp_categories');
@@ -512,23 +513,6 @@ if (!class_exists("sp_category")) {
                 }
             }
             return true;
-        }
-
-        /*
-         * Category menu that is displayed in the top right corner of
-         * each category in the SmartPost settings page.
-         */
-        function categoryMenu()
-        {
-            ?>
-            <ul class="simpleMenu">
-                <li class="stuffbox"><a href="#"><img src="<?php echo IMAGE_PATH . '/downArrow.png'; ?>" /></a>
-                    <ul class="stuffbox">
-                        <li><a href="#" class="delete_category" data-compid="<?php echo $this->ID ?>">Delete Category</a></li>
-                    </ul>
-                </li>
-            </ul>
-        <?php
         }
     }
 }

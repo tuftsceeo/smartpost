@@ -28,16 +28,13 @@ if( !empty( $WPMU_ARGS['IS_WPMU'] ) ){
     $_SERVER['HTTP_HOST'] = $WPMU_ARGS['HTTP_HOST'];
 
     ini_set('display_errors', true);
-
     define( 'BASE_PATH', $ARGS['BASE_PATH'] );
     global $wp, $wp_query, $wp_the_query, $wp_rewrite, $wp_did_header;
     require( BASE_PATH . 'wp-load.php' );
     switch_to_blog( $WPMU_ARGS['BLOG_ID'] );
 
 } else {
-
     require_once( $ARGS['BASE_PATH'] . 'wp-load.php' );
-
 }
 
 //Get the paths of ffmpeg and HandBrakeCLI

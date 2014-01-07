@@ -565,8 +565,7 @@ if (!class_exists("sp_post")) {
                 $tableName = $wpdb->prefix . 'sp_postComponents';
                 foreach($reqdComps as $reqdComp){
                     $catCompID = $reqdComp->getID();
-                    $requiredCount += $wpdb->get_var( $wpdb->prepare(
-                        "SELECT COUNT(*) FROM $tableName WHERE postID = $postID AND catCompID = $catCompID;" ) );
+                    $requiredCount += $wpdb->get_var( "SELECT COUNT(*) FROM $tableName WHERE postID = $postID AND catCompID = $catCompID;" );
                 }
                 return $requiredCount;
             }else{
@@ -590,8 +589,7 @@ if (!class_exists("sp_post")) {
             if( !empty($defaultComps)){
                 foreach($defaultComps as $defaultComp){
                     $catCompID = $defaultComp->getID();
-                    $defaultCount += $wpdb->get_var( $wpdb->prepare(
-                        "SELECT COUNT(*) FROM $tableName WHERE postID = $postID AND catCompID = $catCompID;" ) );
+                    $defaultCount += $wpdb->get_var( "SELECT COUNT(*) FROM $tableName WHERE postID = $postID AND catCompID = $catCompID;" );
                 }
                 return $defaultCount;
             }else{
@@ -604,9 +602,7 @@ if (!class_exists("sp_post")) {
             if(!empty($catCompID)){
                 $postID = $this->wpPost->ID;
                 $tableName = $wpdb->prefix . 'sp_postComponents';
-                $compCount = (int) $wpdb->get_var($wpdb->prepare(
-                    "SELECT COUNT(*) FROM $tableName	WHERE postID = $postID AND catCompID = $catCompID;"
-                ));
+                $compCount = (int) $wpdb->get_var( "SELECT COUNT(*) FROM $tableName	WHERE postID = $postID AND catCompID = $catCompID;" );
                 return $compCount;
             }else{
                 return 0;
@@ -617,7 +613,8 @@ if (!class_exists("sp_post")) {
          * Returns the post's SP Category object if the post is a SP-enabled post, otherwise null.
          * If multiple SP categories exist, the function returns the first one it finds.
          *
-         * @return object|null sp_category object if it's a SP-post, otherwise null
+         * @param $postID
+         * @return null|sp_category sp_category object if it's a SP-post, otherwise null
          */
         function getSPCategory($postID){
             $sp_categories = get_option('sp_categories');

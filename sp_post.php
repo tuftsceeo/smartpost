@@ -77,7 +77,6 @@ if (!class_exists("sp_post")) {
             require_once('ajax/sp_postAJAX.php');
             sp_postAJAX::init();
             add_filter( 'the_content', array('sp_post', 'renderPost'));
-            add_filter( 'the_title', array('sp_post', 'renderTitle'));
             add_filter( 'category_save_pre', array('sp_post', 'validatePostCatSave'), 10);
             add_action( 'new_to_publish', array('sp_post', 'newSPPost'));
             add_action( 'new_to_draft', array('sp_post', 'newSPPost'));
@@ -210,7 +209,7 @@ if (!class_exists("sp_post")) {
          * Action hook for wp_insert_post, called whenever a new post is created
          *
          * @link http://codex.wordpress.org/Plugin_API/Action_Reference/save_post
-         * @param int $postID ID of the post
+         * @param $post
          */
         function newSPPost($post){
             if(self::isSPPost($post->ID) &&  !wp_is_post_revision( $post->ID )){
@@ -313,7 +312,8 @@ if (!class_exists("sp_post")) {
          * a linkable breadcrumbs to ancestor posts. It omits a breadcrumb
          * if there are no ancestors for the current post.
          *
-         * @param int $post_id The ID of the post to start with
+         * @param $post_id The ID of the post to start with
+         * @param bool $traversing
          * @return string The HTML representations of the breadcrumbs
          */
         static function sp_breadcrumbs($post_id, $traversing = false){
@@ -323,27 +323,6 @@ if (!class_exists("sp_post")) {
             }elseif( empty($post->post_parent) && $traversing){
                 return ' <a "breadcrumb-' . $post->ID . '" href="' . get_permalink($post->ID) . '" >' . stripslashes($post->post_title) . '</a> ';
             }
-        }
-
-        /**
-         * Filter for the_title
-         *
-         * @link http://codex.wordpress.org/Plugin_API/Filter_Reference/the_content
-         * @param string $title The title of the current post
-         * @return string The modified title
-         */
-        function renderTitle($title){
-            global $id;
-            global $post;
-            global $current_user;
-
-            $owner = ($current_user->ID == $post->post_author) || current_user_can('administrator');
-
-            if( is_single() && self::isSPPost($post->ID) && $id){
-                $title = $owner ? $breadcrumbs . '<span class="sp_postTitle">' . $title . '</span>' : $breadcrumbs . $title;
-            }
-
-            return $title;
         }
 
         /**

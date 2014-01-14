@@ -4,7 +4,7 @@
  */
 
 (function($) {
-    spAdmin.adminpage = {
+    sp_admin.adminpage = {
 
         /**
          * Displays errors to the user.
@@ -13,10 +13,10 @@
          */
         showError: function(errorText, errorDivID){
             if(errorDivID == undefined)
-                errorDivID = '#setting_errors';
+                errorDivID = '#sp_errors';
 
-            $(errorDivID).show().html(
-                '<h4> Error: ' +	errorText + '<h4>').attr("class", "error");
+            $(errorDivID).html('<p>Error: ' + errorText + '</p>');
+            $(errorDivID).parent().show();
         },
         /**
          * Saves the component order for a category template on the admin page.
@@ -92,7 +92,7 @@
                     if(node)
                         node.remove();
                 };
-                spAdmin.sp_catComponent.deleteComponent(compID, cl);
+                sp_admin.sp_catComponent.deleteComponent(compID, cl);
             })
         },
 
@@ -173,8 +173,8 @@
 
             titleElems.editable(function(value, settings){
                     var compID = $(this).attr('comp-id');
-                    if(spAdmin.sp_catComponent){
-                        spAdmin.sp_catComponent.saveCatCompTitleAJAX(compID, value, function(response){});
+                    if(sp_admin.sp_catComponent){
+                        sp_admin.sp_catComponent.saveCatCompTitleAJAX(compID, value, function(response){});
                         var node = $("#sp_catTree").dynatree("getTree").getNodeByKey('comp-' + compID);
                         if(node){
                             node.data.title = value;
@@ -199,6 +199,7 @@
         initComponentTree: function(sp_catTree){
             var self = this;
 
+            // AJAX handler to load in all the nodes dynamically
             sp_catTree.dynatree({
                 initAjax: {
                     url: SP_AJAX_URL,
@@ -224,6 +225,18 @@
                 debugLevel: 0
             });
             sp_catTree.dynatree("getTree").renderInvisibleNodes();
+
+            //Click handler for expand/collapse all
+            $( '#expandAll' ).click(function(){
+                sp_catTree.dynatree("getRoot").visit(function(node){
+                    if( !sp_catTree.expanded ){
+                        node.expand(true);
+                    }else{
+                        node.expand(false);
+                    }
+                });
+                sp_catTree.expanded = !sp_catTree.expanded;
+            });
         },
 
         /**
@@ -274,8 +287,8 @@
             self.handleDeleteComp(component.find('.delComp'));
 
             //Enable required and default checkboxes
-            if(spAdmin.sp_catComponent)
-                spAdmin.sp_catComponent.disableDefault(component.find('.requiredAndDefault input'));
+            if(sp_admin.sp_catComponent)
+                sp_admin.sp_catComponent.disableDefault(component.find('.requiredAndDefault input'));
 
             //Enable component rename
             self.editableCatCompTitle();
@@ -304,7 +317,7 @@
             if ( ui.item.hasClass('catCompDraggable') ){
 
                 var typeID = ui.item.attr("type-id").split("-")[1];
-                spAdmin.sp_catComponent.addComponent(catID, typeID, newCompHndlr);
+                sp_admin.sp_catComponent.addComponent(catID, typeID, newCompHndlr);
 
             //Handle drag n' drop via dynaTree
             }else if( ui.item.hasClass('dynatree-node') ){
@@ -312,7 +325,7 @@
                 var node = $.ui.dynatree.getNode(ui.item.context);
 
                 if(node.data.compID){
-                    spAdmin.sp_catComponent.copyComponent(node.data.compID, catID, newCompHndlr);
+                    sp_admin.sp_catComponent.copyComponent(node.data.compID, catID, newCompHndlr);
                 }
 
                 if(node.data.catID){
@@ -326,7 +339,7 @@
                             });
                             self.saveCompOrder( $(".meta-box-sortables").sortable( 'toArray' ) );
                         }
-                        spAdmin.sp_catComponent.copyTemplate(node.data.catID, catID, copyTemplateHndlr);
+                        sp_admin.sp_catComponent.copyTemplate(node.data.catID, catID, copyTemplateHndlr);
                     }else{
                         self.showError( 'The template you are trying to copy has no components!', null );
                     }
@@ -347,7 +360,7 @@
          * based off the fields in the form represented by formID.
          * @param formElement
          */
-        submitCategory: function( formElement ){
+        submitNewTemplate: function( formElement ){
             var self = this;
             var spCatOptions = {
                 url	 : SP_AJAX_URL,
@@ -362,7 +375,7 @@
                         if(response.error){
                             self.showError(response.error, null);
                         }else{
-                            window.location.href = SP_ADMIN_URL + '?page=smartpost&catID=' + response.catID + '&msg_type=new_cat';
+                            window.location.href = SP_ADMIN_URL + '?page=smartpost&catID=' + response.catID + '&update_msg=new_cat';
                         }
                     }
                 },
@@ -421,7 +434,7 @@
         initTemplateForm: function(templateForm, templateDescTextareaID, openDialogButton){
 
             new nicEditor({
-                iconsPath : SP_IMAGE_PATH + '/nicEditorIcons.gif',
+                iconsPath : sp_globals.SP_IMAGE_PATH + '/nicEditorIcons.gif',
                 buttonList : ['fontSize','bold','italic','underline', 'forecolor','bgcolor','fontFormat']
             }).panelInstance(templateDescTextareaID);
 
@@ -442,75 +455,70 @@
             });
 
             //Enable new template submission
-            this.submitCategory( templateForm );
+            this.submitNewTemplate( templateForm );
 
         },
 
         /**
-         * Initializes the spAdmin object with click handlers and variables
+         * Initializes the sp_admin object with click handlers and variables
          * necessary for initialization.
          */
         init: function(){
             var self = this;
-            var catID = $( '#catID').val();
-            var sortableDiv = $( "#normal-sortables" );
-            var sp_catTreeDiv  = $( "#sp_catTree" );
 
-            //Initialize a dynatree instance for the SP category tree.
-            this.initComponentTree(sp_catTreeDiv);
+            if( $( '#catID' ).exists() ){
+                var catID = $( '#catID' ).val();
+                var sortableDiv = $( "#normal-sortables" );
 
-            //Make the component widgets draggable
-            this.makeCompDivsDraggable('clone', null, null);
+                //Initialize a dynatree instance for the SP category tree.
+                this.initComponentTree( $( "#sp_catTree" ) );
 
-            //Re-define sortable behavior on the admin page.
-            sortableDiv.sortable({
-                axis: "y",
-                revert: true,
-                stop: function(e, ui){
-                    self.replaceDroppedItem(e, ui);
-                },
-                start: function(e, ui){
-                    var node = $.ui.dynatree.getNode(ui.item.context);
-                    if(node){
-                        if(node.data.catID > 0){
-                            ui.placeholder.html('<div id="catCompIndicator" style="position: relative;"><div class="catDragCompCount">' + node.data.compCount + '</div></div>');
+                //Make the component widgets draggable
+                this.makeCompDivsDraggable('clone', null, null);
+
+                //Re-define sortable behavior on the admin page.
+                sortableDiv.sortable({
+                    axis: "y",
+                    revert: true,
+                    stop: function(e, ui){
+                        self.replaceDroppedItem(e, ui);
+                    },
+                    start: function(e, ui){
+                        var node = $.ui.dynatree.getNode(ui.item.context);
+                        if(node){
+                            if(node.data.catID > 0){
+                                ui.placeholder.html('<div id="catCompIndicator" style="position: relative;"><div class="catDragCompCount">' + node.data.compCount + '</div></div>');
+                            }
                         }
-                    }
-                },
-                placeholder: "sortable-placeholder",
-                tolerance: "intersect"
-            });
-
-            //Enable template deletion
-            this.handleDeleteCat( $('.deleteCat') )
-
-            //Enable component deletion
-            this.handleDeleteComp( $('.delComp') );
-
-            //Limit click event only to hndl class
-            $('.postbox h3').unbind('click.postboxes');
-
-            //Enable editable component titles
-            this.editableCatCompTitle( $('.editableCatCompTitle') );
-
-            //Initialize the new template form dialog
-            self.initTemplateForm( $('#template_form'), 'template_desc', $('#newTemplateButton') )
-
-            //Click handler for enable/disable checkboxes
-            $('#sp_enabled').click(function(){
-                self.switchCategory($('#catID').val());
-            });
-
-            //Click handler for expand all
-            $( '#expandAll' ).click(function(){
-                sp_catTreeDiv.dynatree("getRoot").visit(function(node){
-                    if( !sp_catTreeDiv.expanded ){
-                        node.expand(true);
-                    }else{
-                        node.expand(false);
-                    }
+                    },
+                    placeholder: "sortable-placeholder",
+                    tolerance: "intersect"
                 });
-                sp_catTreeDiv.expanded = !sp_catTreeDiv.expanded;
+
+                //Enable template deletion
+                this.handleDeleteCat( $('.deleteCat') )
+
+                //Enable component deletion
+                this.handleDeleteComp( $('.delComp') );
+
+                //Limit click event only to hndl class
+                $('.postbox h3').unbind('click.postboxes');
+
+                //Enable editable component titles
+                this.editableCatCompTitle( $('.editableCatCompTitle') );
+
+                //Initialize the new template form dialog
+                self.initTemplateForm( $('#template_form'), 'template_desc', $('#newTemplateButton') )
+
+                //Click handler for enable/disable checkboxes
+                $( '#sp_enabled' ).click(function(){
+                    self.switchCategory($('#catID').val());
+                });
+            }
+
+            //Click handler for hiding messages
+            $( '.hideMsg' ).click(function(){
+                $(this).parent().hide();
             });
         }
     };
@@ -521,7 +529,7 @@
             delay: 0,
             interactive: true
         });
-        spAdmin.adminpage.init();
+        sp_admin.adminpage.init();
     });
 
 })(jQuery);

@@ -8,7 +8,9 @@ if (!class_exists("sp_catVideo")) {
      *
      * @see sp_catComponent
      */
-    define("DEBUG_SP_VIDEO", FALSE); //set to true to debug the video component
+    define( 'DEBUG_SP_VIDEO', false); // Set to true to debug the video component
+    define( 'SP_DEFAULT_VIDEO_PATH', '/usr/local/bin/' ); // Default path to begin our search for ffmpeg
+    define( 'SP_DEFAULT_VIDEO_ENCODING', true); // Encode by default
 
     class sp_catVideo extends sp_catComponent{
 
@@ -22,20 +24,21 @@ if (!class_exists("sp_catVideo")) {
                                 "options",	"order", "default", "required");
 
 
-            //Set default video options
+            // Set default video options
             if($compID == 0){
-                $sp_hcli_path   = get_site_option('sp_hcli_path');
-                $sp_ffmpeg_path = get_site_option('sp_ffmpeg_path');
-                if( $sp_ffmpeg_path && $sp_hcli_path ){
+                $sp_ffmpeg_path = get_site_option( 'sp_ffmpeg_path' );
+
+                if( $sp_ffmpeg_path !== false ){
                     $options->convertToHTML5 = true;
                 }else{
                     $options->convertToHTML5 = false;
                 }
+
                 $this->options = $options;
             }
             $this->initComponent($compInfo);
 
-            //Get updated media options after initializing the component
+            // Get updated video options after initializing the component
             $this->convertToHTML5 = $this->options->convertToHTML5;
         }
 
@@ -46,54 +49,31 @@ if (!class_exists("sp_catVideo")) {
 
             self::installComponent('Video', 'Basic HTML5 video player', __FILE__);
 
-            $sp_hcli_path   = get_site_option( 'sp_hcli_path' );
-            $sp_ffmpeg_path = get_site_option( 'sp_ffmpeg_path' );
+            // Use /usr/local/bin/ by default
+            update_site_option( 'sp_ffmpeg_path', SP_DEFAULT_VIDEO_PATH );
+            update_site_option( 'sp_html5_encoding', SP_DEFAULT_VIDEO_ENCODING );
 
-            if( !$sp_hcli_path && !$sp_ffmpeg_path ){
+            // See if ffmpeg exists...
+            exec( 'command -v ' . $sp_ffmpeg_path . 'ffmpeg', $ffmpeg_output, $ffmpeg_status );
 
-                $vidTool = array( 'HandBrakeCLI', 'ffmpeg' );
-                $paths   = array( '', '/usr/bin/', '/usr/local/bin/' );
-
-                if(DEBUG_SP_VIDEO){
-                    error_log( 'Installing Video component.. ' );
-                }
-
-                foreach($paths as $path){
-                    exec($path . $vidTool[0] . ' 2>&1', $hb_output, $hb_status);
-                    exec($path . $vidTool[1] . ' 2>&1', $ffmpeg_output, $ffmpeg_status);
-
-                    if( $hb_status != 127 ){
-                        $path = empty($path) ? 'empty' : $path;
-                        update_site_option( 'sp_hcli_path', $path );
-                    }
-
-                    if( $ffmpeg_status != 127 ){
-                        $path = empty($path) ? 'empty' : $path;
-                        update_site_option( 'sp_ffmpeg_path', $path );
-                    }
-
-                    if(DEBUG_SP_VIDEO){
-                        error_log( 'hb_status: ' . $hb_status );
-                        error_log( 'ffmpeg_status: ' . $ffmpeg_status );
-                        error_log( 'HandBrakeCLI path: ' . $path . $vidTool[0] );
-                        error_log( 'ffmpeg path: ' . $path . $vidTool[1] );
-                        error_log( 'HandBrakeCLI output: ' . print_r($hb_output, true) );
-                        error_log( 'ffmpeg output: ' . print_r($ffmpeg_output, true) );
-                    }
-
-                    if( $hb_status != 127 && $ffmpeg_status != 127 ){
-                        break;
-                    }
-                }
+            // If command exited successfully, then update the sp_ffmpeg_path site option with the path, otherwise update it to false.
+            if( $ffmpeg_status === '0' ){
+                update_site_option( 'sp_ffmpeg_path', $ffmpeg_output );
+            }else{
+                update_site_option( 'sp_ffmpeg_path', false );
             }
 
+            if( DEBUG_SP_VIDEO ){
+                error_log( 'ffmpeg_status: ' . $ffmpeg_status );
+                error_log( 'ffmpeg output: ' . print_r($ffmpeg_output, true) );
+            }
         }
 
         /**
          * !TODO: Add as another abstract method to all components and call when plugin is deleted.
+         * Removes video component options when plugin is deleted.
          */
         function uninstall(){
-            delete_site_option( 'sp_hcli_path' );
             delete_site_option( 'sp_ffmpeg_path' );
         }
 
@@ -101,69 +81,10 @@ if (!class_exists("sp_catVideo")) {
          * Adds CSS / JS to stylize and handle any UI actions
          */
         static function init(){
-            require_once('ajax/sp_catVideoAJAX.php');
+            require_once( 'ajax/sp_catVideoAJAX.php' );
             sp_catVideoAJAX::init();
-            wp_register_script( 'sp_catVideoJS', plugins_url('js/sp_catVideo.js', __FILE__), array('jquery', 'sp_admin_globals', 'sp_admin_js') );
+            wp_register_script( 'sp_catVideoJS', plugins_url('js/sp_catVideo.js', __FILE__), array('jquery', 'sp_admin_js') );
             wp_enqueue_script( 'sp_catVideoJS' );
-        }
-
-        /**
-         * @see parent::componentMenu()
-         */
-        function componentMenu(){
-            ?>
-            <ul class="simpleMenu">
-                <li class="stuffbox"><a href="#"><img src="<?php echo IMAGE_PATH . '/downArrow.png'; ?>" /></a>
-                    <ul class="stuffbox">
-                        <li><a href="#" class="delete_component" data-compid="<?php echo $this->ID ?>">Delete Component</a></li>
-                    </ul>
-                </li>
-            </ul>
-        <?php
-        }
-
-        /**
-         * @see parent::globalOptions
-         * @return bool|string|void
-         */
-        function globalOptions(){
-            $sp_hcli_path   = get_site_option( 'sp_hcli_path' );
-            $sp_ffmpeg_path = get_site_option( 'sp_ffmpeg_path' );
-
-            if(DEBUG_SP_VIDEO){
-
-                ?>
-                <div style="border: 1px solid red;">
-                    <p>Debug Info:</p>
-                    <p>HandBrakeCLI path: <?php echo $sp_hcli_path ?></p>
-                    <p>ffmpeg path: <?php echo $sp_ffmpeg_path ?></p>
-                </div>
-            <?php
-            }
-
-            if( $sp_hcli_path && $sp_ffmpeg_path ){
-                $checked = $this->convertToHTML5 ? 'checked' : '';
-                ?>
-
-                <input type="checkbox" class="enableHTML5Video" id="html5video-<?php echo $this->ID ?>" compID="<?php echo $this->ID ?>" <?php echo $checked ?> />
-                <label for="html5video-<?php echo $this->ID ?>">
-                    The video component has detected that your server is able to convert
-                    videos to a HTML5 video format. It is recommended to check the box
-                    to enable this option (why should I enable this option?).
-                </label>
-
-            <?php
-            }else{
-                ?>
-                <p>
-                    The video component has not detected ffmpeg2theora or HandBrakeCLI for
-                    video conversion. To convert uploaded videos to HTML5 compatible video
-                    format, install ffmpeg2theora and HandBrakeCLI on your server. If you are
-                    unsure how to install these utilities, contact your server administrator
-                    for help.
-                </p>
-            <?php
-            }
         }
 
         /**
@@ -191,6 +112,60 @@ if (!class_exists("sp_catVideo")) {
         function setOptions($options = null){
             $options = maybe_serialize($options);
             return sp_core::updateVar('sp_catComponents', $this->ID, 'options', $options, '%s');
+        }
+
+        /**
+         * Renders the global options for this component, otherwise returns false.
+         * @return bool|string
+         */
+        public static function globalOptions(){
+            ?>
+            <p>
+            The Video component uses <a href="http://www.ffmpeg.org/">ffmpeg</a> to format uploaded videos to HTML5 supported *.webm and *.mp4 formats.
+            It will try to detect if ffmpeg is available on the server. If it cannot find ffmpeg, it will not attempt at
+                formatting uploaded videos via SmartPost.
+            </p>
+            <?php
+
+            $sp_ffmpeg_path = get_site_option( 'sp_ffmpeg_path' );
+            $html5_encoding = get_site_option( 'sp_html5_encoding' ); // whether to enable html5 video encoding
+
+            if(DEBUG_SP_VIDEO){
+                exec('command -v ' . $sp_ffmpeg_path . 'ffmpeg', $cmd_output, $cmd_status);
+                ?>
+                <div class="error">
+                    <p>Command: <?php echo 'command -v ' . $sp_ffmpeg_path . 'ffmpeg' ?></p>
+                    <p>Status code: <?php echo $cmd_status ?></p>
+                    <p>Command ouput: <?php echo print_r( $cmd_output, true) ?></p>
+                </div>
+            <?php
+            }
+
+            if( $sp_ffmpeg_path ){
+                $checked = $html5_encoding ? 'checked' : '';
+                ?>
+                <input type="checkbox" class="enableHTML5Video" id="html5video" <?php echo $checked ?> />
+                <label for="html5video">
+                    Encode uploaded video to HTML5 compatible formats. It is recommended to check the box
+                    to enable this option.
+                </label>
+            <?php
+            }else{
+                ?>
+                <div id="ffmpeg_not_found" class="error">
+                    <p>
+                    Doh! ffmpeg was not detected. If you are unsure what to do next, contact your server administrator or post to the WordPress forums for further help.</p>
+                </div>
+            <?php
+            }
+            ?>
+            <p>
+                Full path to the ffmpeg executable:
+                <input type="text" id="ffmpeg_path" name="ffmpeg_path" value="<?php echo $sp_ffmpeg_path ?>" />
+                <button class="button" type="button" id="check_ffmpeg_path" name="check_ffmpeg_path">Test</button>
+            </p>
+            <span id="check_ffmpeg_results" style="color: green;"></span>
+            <?php
         }
     }
 }

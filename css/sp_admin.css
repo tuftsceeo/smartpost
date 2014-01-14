@@ -29,6 +29,8 @@
 input.requiredAndDefault{ vertical-align: text-bottom; }
 .dynatree-node{ width: 100%; }
 #normal-sortables .postbox .handlediv{ float: left; }
+#normal-sortables { border: 2px dashed silver; padding-top: 20px; }
+.sp-admin-tutorial{ min-height: 400px !important; content: 'test'; }
 #emptyComp{ text-align: center; }
 .editableCatCompTitle { cursor: pointer; }
 .editableCatCompTitle form{ display: inline !important; }
@@ -60,10 +62,10 @@ input.requiredAndDefault{ vertical-align: text-bottom; }
 }
 #newCategoryForm{ display: none; }
 .hide{ visibility: hidden; position: absolute; top:-9999; left: -9999; }
+#sp_errors, #sp_update{ float: left; }
+.hideMsg{ float: right; cursor: pointer; margin: .5em;}
 #expandAll{ cursor: pointer; }
 #expandAll:hover{ color: #0074a2; }
-#sp_errors{ display: none; }
-#sp_success{ display: none; }
 #newTemplateForm{ visibility: hidden; }
 #the_settings{ position: relative; }
 .deleteCat{
@@ -72,7 +74,5 @@ input.requiredAndDefault{ vertical-align: text-bottom; }
     top: 0px;
     right: 0px;
 }
-.delComp{
-    float: right;
-    cursor: pointer;
-}
+.delComp{ float: right; cursor: pointer; }
+.component-settings{ padding: 10px; }

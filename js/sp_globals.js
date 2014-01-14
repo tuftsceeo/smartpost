@@ -7,12 +7,14 @@
 var smartpost  = smartpost  || {};
 var sp_widgets = sp_widgets || {};
 var sp_globals = sp_globals || {};
+var sp_admin   = sp_admin   || {};
 
 //To-do: remove these global variables to minimize namespace pollution
 var SP_AJAX_URL    = sp_globals.SP_AJAX_URL;
 var SP_NONCE       = sp_globals.SP_NONCE;
 var SP_IMAGE_PATH  = sp_globals.SP_IMAGE_PATH;
 var SP_PLUGIN_PATH = sp_globals.SP_PLUGIN_PATH;
+var SP_ADMIN_URL   = sp_globals.SP_ADMIN_URL;
 var SP_MAX_UPLOAD_SIZE = sp_globals.MAX_UPLOAD_SIZE;
 
 if(jQuery){

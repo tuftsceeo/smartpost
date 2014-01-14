@@ -39,7 +39,8 @@ if (!class_exists("sp_admin")) {
             wp_register_style( 'sp_admin_css', plugins_url('/css/sp_admin.css', __FILE__) );
             wp_enqueue_style( 'sp_admin_css' );
 
-            //Default WP styles
+            // Default WP styles
+            wp_enqueue_style( 'media-views' );
             wp_enqueue_style( 'buttons' );
             wp_enqueue_style( 'wp-admin' );
         }
@@ -48,22 +49,17 @@ if (!class_exists("sp_admin")) {
          * JS/CSS for the admin pages
          */
         function enqueueScripts($hook){
-            if('toplevel_page_smartpost' != $hook){
+
+            if( 'toplevel_page_smartpost' != $hook && 'smartpost_page_sp-cat-page' != $hook ){
                 return;
             }
+
             self::enqueueCSS();
 
-            wp_register_script( 'sp_admin_globals', plugins_url('/js/sp_admin_globals.js', __FILE__), array( 'jquery') );
-            wp_register_script( 'sp_admin_js', plugins_url('/js/sp_admin.js', __FILE__), array('sp_admin_globals', 'post', 'postbox', 'jquery-dynatree'));
+            // load sp_admin.js only on the toplevel page
+            wp_register_script( 'sp_admin_js', plugins_url('/js/sp_admin.js', __FILE__), array( 'post', 'postbox', 'jquery-dynatree' ) );
             wp_enqueue_script( 'post' );
             wp_enqueue_script( 'postbox' );
-            wp_enqueue_script( 'sp_admin_globals' );
-            wp_localize_script( 'sp_admin_globals', 'sp_admin', array(
-                    'ADMIN_NONCE' => wp_create_nonce( 'sp_admin_nonce'),
-                    'ADMIN_URL'	  => admin_url( 'admin.php'),
-                    'PLUGIN_PATH' => PLUGIN_PATH,
-                    'IMAGE_PATH'  => IMAGE_PATH )
-            );
             wp_enqueue_script( 'sp_admin_js' );
         }
 
@@ -72,11 +68,11 @@ if (!class_exists("sp_admin")) {
          * Adds a top-level menu item to the Dashboard called SmartPost
          */
         function sp_admin_add_template_page() {
-            add_menu_page( PLUGIN_NAME, 'SmartPost', 'edit_users', 'smartpost', array('sp_admin', 'sp_template_page'), null, null );
+            add_menu_page( SP_PLUGIN_NAME, 'SmartPost', 'edit_users', 'smartpost', array('sp_admin', 'sp_template_page'), null, null );
         }
 
         function sp_admin_add_category_page(){
-            add_submenu_page( 'smartpost', 'Settings', 'Settings', 'edit_users', 'sp-cat-page', array('sp_admin', 'sp_component_page') );
+            add_submenu_page( 'smartpost', 'Settings', 'Settings', 'edit_users', 'sp-cat-page', array('sp_admin', 'sp_settings_page') );
         }
 
         /**
@@ -126,7 +122,7 @@ if (!class_exists("sp_admin")) {
                     echo '<input type="text" class="postbox closed hide" id="' . $box_id . '" />';
                 }
             }else{
-                echo "<div id='normal-sortables' class='meta-box-sortables ui-sortable'></div>";
+                echo '<div id="normal-sortables" class="meta-box-sortables ui-sortable"></div>';
             }
         }
 
@@ -134,6 +130,8 @@ if (!class_exists("sp_admin")) {
          * Renders a new category form that users can fill out
          */
         function renderNewTemplateForm(){
+            //If a SP QP widget exists, do not check off "Add Widget" checkbox by default (minimizes confusion with unnecessary widgets)
+            $sp_widget_instances = count( get_option( 'widget_sp_quickpostwidget' ) );
             ?>
             <div id="newTemplateForm">
                 <form id="template_form" method="post" action="">
@@ -154,6 +152,10 @@ if (!class_exists("sp_admin")) {
                                 <textarea class="regular-text" id="template_desc" name="template_desc" style="width: 100%; background: white;" rows="10" ></textarea>
                             </td>
                         </tr>
+                        <?php
+                            $nav_menus = wp_get_nav_menus();
+                            if ( !empty( $nav_menus ) ){
+                        ?>
                         <tr>
                             <td>
                                 <input type="checkbox" checked="checked" id="add_to_menu" name="add_to_menu" /><label for="add_to_menu" id="add_to_menu_label" class="tooltip" title="Select the menu you'd like to add the template to. <br/> The template will then be accessible on the front-end via a menu item.">Add to menu</label>
@@ -171,9 +173,10 @@ if (!class_exists("sp_admin")) {
                                 </select>
                             </td>
                         </tr>
+                        <?php } ?>
                         <tr>
                             <td>
-                                <input type="checkbox" checked="checked" id="add_widget" name="add_widget" /><label for="add_widget" id="add_widget_label" class="tooltip" title="Select the sidebar you'd like to add the SP QuickPost widget to.<br />This widget makes this template accessible to users on the front-end of the site.">Add SP widget</label>
+                                <input type="checkbox" <?php echo $sp_widget_instances < 2 ? 'checked="checked"' : '' ?> id="add_widget" name="add_widget" /><label for="add_widget" id="add_widget_label" class="tooltip" title="Select the sidebar you'd like to add the SP QuickPost widget to.<br />This widget makes this template accessible to users on the front-end of the site.">Add SP widget</label>
                             </td>
                             <td>
                                 <select id="widget_areas" name="widget_areas">
@@ -318,26 +321,32 @@ if (!class_exists("sp_admin")) {
         }
 
         /**
-         * Handles notifications on the SmartPost template page
-         * @param null $message_type
-         * @param null $message
+         * Processes incoming messages from $_GET parameter
+         * @param $msg
          * @return string
          */
-        function sp_admin_notification($message_type = null, $message = null){
-            switch( $message_type ){
+        private static function sp_message( $msg ){
+            $msg = (string) $msg;
+
+            switch( $msg ){
                 case 'new_cat':
-                    return 'Your new template was successfully created. <a href="' . admin_url('nav-menus.php') . '">Click here </a> to change the way it appears on the menu. Click here to view it.';
-                case 'custom':
-                    return $message;
+                    $catID = (int) $_GET['catID'];
+                    if( !empty($catID) ){
+                        $newTemplate = get_category( $catID );
+                        $newTemplateName = $newTemplate->name;
+                        return '<p>Template \'' . $newTemplateName . '\' successfully created! To modify the way it appears on the menu, click <a href="' . admin_url('nav-menus.php') . '">here</a>. To view the template on your site, click <a href="' . get_category_link($catID) . '" target="_blank">here</a>.</p>';
+                    }else{
+                        return '';
+                    }
                 default:
-                    return '';
+                    return $msg;
             }
         }
 
         /**
          * Renders the dashboard admin page for the SmartPost plugin.
          * @see sp_admin::sp_admin_add_page()
-         * @todo Use add_meta_box() instead of hard-coding meta boxes.
+         * @todo Use add_meta_box() instead of hard-coding meta boxes - specifically for the template-tree and component-palette widgets.
          */
         function sp_template_page(){
             if (!current_user_can('manage_options'))  {
@@ -347,29 +356,32 @@ if (!class_exists("sp_admin")) {
             $sp_categories = get_option('sp_categories');
             $catID         = empty($_GET['catID']) ? $categories[0]->term_id : (int) $_GET['catID'];
             $sp_category   = new sp_category(null, null, $catID);
+
+            $error_msg  =  self::sp_message( $_GET['error_msg'] );
+            $update_msg =  self::sp_message( $_GET['update_msg'] );
+
             ?>
 
             <div class="wrap">
-                <div id="sp_errors" class="error"></div>
-                <div id="sp_success" class="updated"><?php echo self::sp_admin_notification( $_POST['msg_type'], $_POST['msg'] ) ?></div>
-                <h2><?php echo PLUGIN_NAME . ' Templates' ?> <button id="newTemplateButton" class="button button-primary button-large" title="Create a new category template">New Template</button></h2>
+                <div class="error" <?php echo empty( $error_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_errors"><?php echo $error_msg ?></span><span class="hideMsg xButton" title="Ok, got it"></span><div class="clear"></div></div>
+                <div class="updated" <?php echo empty( $update_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_update"><?php echo $update_msg ?></span><span class="hideMsg xButton" title="Ok, got it"></span><div class="clear"></div></div>
+                <h2><img src="<?php echo SP_IMAGE_PATH ?>/sp-icon.png" style="height: 17px;" /> <span style="color: #89b0ff;">Smart<span style="color: #07e007">Post</span> Templates</span> <button id="newTemplateButton" class="button button-primary button-large" title="Create a new category template">New Template</button></h2>
                 <?php self::renderNewTemplateForm(); ?>
                 <div id="poststuff">
                     <div id="post-body" class="metabox-holder columns-2">
                         <div id="post-body-content" style="margin-bottom: 0;">
                             <div id="category_settings" class="postbox">
                                 <div id="the_settings">
-                                    <span id="delete-<?php echo $catID ?>" class="deleteCat xButton" data-cat-id="<?php echo $catID ?>" title="Delete template"></span>
+                                    <span id="delete-<?php echo $catID ?>" class="deleteCat xButton" data-cat-id="<?php echo $catID ?>" title="Delete Template"></span>
                                     <?php self::renderCatSettings($catID, $sp_categories); ?>
                                     <div class="clear"></div>
                                 </div><!-- end #the_settings -->
                                 <div class="clear"></div>
                             </div><!-- end #category_settings -->
-                        </div>
+                        </div><!-- end #post-body-content -->
 
                         <div id="postbox-container-1" class="postbox-container">
                             <div id="sp_cat_list" class="postbox" style="display: block;">
-                                <div class="handlediv" title="Click to toggle"><br></div>
                                 <h3 class="hndle" style="cursor: default"><span>SmartPost Templates</span></h3>
                                 <div class="inside">
                                     <div id="sp_catTreeSettings">
@@ -380,21 +392,20 @@ if (!class_exists("sp_admin")) {
                             </div><!-- end sp_cat_list -->
 
                             <div id="sp_components" class="postbox" style="display: block;">
-                                <div class="handlediv" title="Click to toggle"><br></div>
                                 <h3 class="hndle" style="cursor: default;"><span>SmartPost Components</span></h3>
                                 <div class="inside">
                                     <p>Drag the below components to the template on the left:</p>
                                     <?php self::listCompTypes() ?>
                                 </div>
                             </div><!-- end sp_components -->
-
                         </div><!-- end #postbox-container-1 -->
+
                         <?php
                         if( in_array($catID, $sp_categories) ){
                         ?>
-                            <div id="postbox-container-2" class="postbox-container">
-                                <?php self::listCatComponents($sp_category) ?>
-                            </div><!-- end #postbox-container-1 -->
+                        <div id="postbox-container-2" class="postbox-container">
+                            <?php self::listCatComponents($sp_category) ?>
+                        </div><!-- end #postbox-container-2 -->
                         <?php
                             //handle toggling for meta boxes
                             wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false );
@@ -405,16 +416,58 @@ if (!class_exists("sp_admin")) {
         <?php
         }
 
-        function sp_component_page(){
+        /**
+         * Renders the settings page in the dashboard. Contains global configuration/settings for each components.
+         * @see sp_catComponent::renderGlobalOptions
+         */
+        function sp_settings_page(){
+            $components = sp_core::getTypes();
+            $currCompID = (int) empty( $_GET['compID'] ) ? $components[0]->id : $_GET[ 'compID' ] ;
+            $currCompType = sp_core::getType( $currCompID );
+            $currCompClass = 'sp_cat' . $currCompType->name;
+
             ?>
             <div class="wrap">
-            <h2><?php echo PLUGIN_NAME ?> Component Settings</h2>
-            <?php
-                $components = sp_core::getTypes();
-                foreach($components as $comp){
-                    echo $comp->name . '<br />';
-                }
-            ?>
+                <div class="error" <?php echo empty( $error_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_errors"><?php echo $error_msg ?></span><span class="hideMsg xButton" title="Ok, got it"></span><div class="clear"></div></div>
+                <div class="updated" <?php echo empty( $update_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_update"><?php echo $update_msg ?></span><span class="hideMsg xButton" title="Ok, got it"></span><div class="clear"></div></div>
+            <h2><img src="<?php echo SP_IMAGE_PATH ?>/sp-icon.png" style="height: 17px;" /> <span style="color: #89b0ff;">Smart<span style="color: #07e007">Post</span> Templates</span> - Settings</h2>
+            <div id="poststuff">
+                <div id="post-body" class="metabox-holder columns-2">
+
+                    <div id="postbox-container-1" class="postbox-container">
+                        <div id="sp_cat_list" class="postbox">
+                            <div class="handlediv" title="Click to toggle"><br></div>
+                            <h3 class="hndle" style="cursor: default"><span>SmartPost Components:</span></h3>
+                            <div class="inside">
+                                <?php
+                                foreach($components as $comp){
+                                    echo '<a href="' . admin_url('admin.php?page=sp-cat-page') . '&compID=' . $comp->id . '" style="text-decoration: none;"><img src="' . $comp->icon . '" /> ' . $comp->name . '</a><br />';
+                                }
+                                ?>
+                            </div>
+                        </div><!-- end sp_cat_list -->
+                    </div><!-- end #postbox-container-1 -->
+
+                    <div id="post-body-content">
+                        <div class="postbox component-settings">
+                            <h2><?php echo $currCompType->name ?> Component Settings</h2>
+                            <p>Description: <?php echo $currCompType->description ?></p>
+                            <div id="the_settings">
+                                <?php
+                                    if( class_exists( $currCompClass ) ){
+                                        $settings = $currCompClass::globalOptions();
+                                        if( $settings !== false ){
+                                            echo $settings;
+                                        }
+                                    }
+                                ?>
+                            </div>
+                            <div class="clear"></div>
+                        </div><!-- end #category_settings -->
+                    </div>
+
+                </div><!-- end #post-body -->
+            </div><!-- end #poststuff -->
         <?php
         }
     }

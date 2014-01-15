@@ -3,10 +3,10 @@
  * User: ryagudin
  * Date: 8/14/13
  * Time: 1:17 PM
- * Converts a video file to .webm and .mp4 formats using FFMpeg and HandBrakeCLI respectively.
+ * Converts a video file to .webm and .mp4 formats using ffmpeg.
  */
 
-//Collect video info arguments
+// Collect video info arguments
 $ARGS = array(
     'BASE_PATH' => $argv[1],
     'POST_ID'   => $argv[2],
@@ -14,15 +14,18 @@ $ARGS = array(
     'COMP_ID'   => $argv[4],
     'AUTH_ID'   => $argv[5],
     'MOV_ID'    => $argv[6],
+    'WIDTH'     => $argv[7],
+    'HEIGHT'    => $argv[8]
 );
 
-//Collect info on wpmu
+// Collect info on wpmu
 $WPMU_ARGS = array(
-    'HTTP_HOST' => $argv[7],
-    'BLOG_ID'   => $argv[8],
-    'IS_WPMU'   => $argv[9]
+    'HTTP_HOST' => $argv[9],
+    'BLOG_ID'   => $argv[10],
+    'IS_WPMU'   => $argv[11]
 );
 
+// If this is a WPMU instance, switch to the blog we're on
 if( !empty( $WPMU_ARGS['IS_WPMU'] ) ){
 
     $_SERVER['HTTP_HOST'] = $WPMU_ARGS['HTTP_HOST'];
@@ -37,15 +40,14 @@ if( !empty( $WPMU_ARGS['IS_WPMU'] ) ){
     require_once( $ARGS['BASE_PATH'] . 'wp-load.php' );
 }
 
-//Get the paths of ffmpeg and HandBrakeCLI
-$sp_hcli_path   = get_site_option('sp_hcli_path');
+// Get full ffmpeg path
 $sp_ffmpeg_path = get_site_option('sp_ffmpeg_path');
 
-//Check that everything is in order before we start converting..
-if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && isset($sp_hcli_path) && isset($sp_ffmpeg_path) ){
+// Check that everything is in order before we start converting..
+if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && isset( $sp_ffmpeg_path ) ){
 
-    $name = basename($ARGS['VID_FILE'], '.mov');
-    $path = dirname($ARGS['VID_FILE']);
+    $name = basename( $ARGS['VID_FILE'], '.mov' );
+    $path = dirname( $ARGS['VID_FILE'] );
 
     $filename = $path . DIRECTORY_SEPARATOR . $name;
 
@@ -60,6 +62,9 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && isset($sp_hcli_path) && isset($sp_f
 
     $mp4_filename  = $filename . '.mp4';
     $webm_filename = $filename . '.webm';
+    $ogv_filename  = $filename . '.ogv';
+    $png_filename  = $filename . '.png';
+    $content = $filename;
 
     $videoComponent = new sp_postVideo( $ARGS['COMP_ID'] );
 
@@ -68,35 +73,61 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && isset($sp_hcli_path) && isset($sp_f
         exit();
     }
 
-    $sp_hcli_path   = ($sp_hcli_path == 'empty') ? '' : $sp_hcli_path;
     $sp_ffmpeg_path = ($sp_ffmpeg_path == 'empty') ? '' : $sp_ffmpeg_path;
 
-    system( $sp_hcli_path . 'HandBrakeCLI -i ' . $ARGS['VID_FILE'] . ' -o ' . $filename . '.mp4 -v -m -E aac,ac3 -e x264 --maxHeight 480 --maxWidth 640' );
-    system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -acodec libvorbis -ac 2 -ab 96k -ar 44100 -b 345k -vf scale=320:-1 ' . $filename . '.webm' );
+    /**
+     *
+     * -q:v - Use video quality 2 (where 0 is equivalent to input video, and 31 is worst quality).
+     * -vf  - Scaling and padding for videos that are not in 16:9 ratios
+     */
+    $filter = '"scale=iw*sar*min(' . $ARGS['WIDTH'] . '/(iw*sar)\,' . $ARGS['HEIGHT'] . '/ih):ih*min(' . $ARGS['WIDTH'] . '/(iw*sar)\,' . $ARGS['HEIGHT'] . '/ih),pad=' . $ARGS['WIDTH'] . ':' . $ARGS['HEIGHT'] . ':(ow-iw)/2:(oh-ih)/2"';
+
+    system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -q:v 2 -vf ' . $filter . ' ' . $filename . '.mp4' );
+    system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -q:v 2 -vf ' . $filter . ' ' . $filename . '.webm' );
+    system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -q:v 2 -vf ' . $filter . ' ' . $filename . '.ogv' );
+    system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -f image2 -vframes 1 ' . $filename  .'.png');
 
     $uploads = wp_upload_dir();
 
-    //Create .webm and  .mp4 WordPress attachments!
+    // Create a .mp4 attachment
     if( file_exists( $mp4_filename ) ){
-        $videoComponent->videoAttachmentIDs['mp4'] = sp_core::create_attachment( $mp4_filename, $ARGS['POST_ID'], $content, $ARGS['AUTH_ID'] );
+        $videoComponent->videoAttachmentIDs['mp4'] = sp_core::create_attachment( $mp4_filename, $ARGS['POST_ID'], $mp4_filename, $ARGS['AUTH_ID'] );
     }else{
         echo 'Could not generate ' . $mp4_filename . '!' . PHP_EOL;
         exit(1);
     }
 
+    // Create a .webm attachment
     if( file_exists( $webm_filename ) ){
-        $videoComponent->videoAttachmentIDs['webm'] = sp_core::create_attachment( $webm_filename, $ARGS['POST_ID'], $content, $ARGS['AUTH_ID'] );
+        $videoComponent->videoAttachmentIDs['webm'] = sp_core::create_attachment( $webm_filename, $ARGS['POST_ID'], $webm_filename, $ARGS['AUTH_ID'] );
     }else{
         echo 'Could not generate ' . $webm_filename . '!' . PHP_EOL;
         exit(1);
     }
 
+    // Create a .ogv attachment
+    if( file_exists( $ogv_filename ) ){
+        $videoComponent->videoAttachmentIDs['ogv'] = sp_core::create_attachment( $ogv_filename, $ARGS['POST_ID'], $ogv_filename, $ARGS['AUTH_ID'] );
+    }else{
+        echo 'Could not generate ' . $ogv_filename . '!' . PHP_EOL;
+        exit(1);
+    }
+
+    // Add a featured image if one doesn't already exist
+    if( file_exists( $png_filename ) ){
+        $videoComponent->videoAttachmentIDs['img'] = sp_core::create_attachment( $png_filename, $ARGS['POST_ID'], $content, $ARGS['AUTH_ID'] );
+        if( !has_post_thumbnail( $ARGS['POST_ID'] ) ){
+            set_post_thumbnail( $ARGS['POST_ID'], $videoComponent->videoAttachmentIDs['img']);
+        }
+    }else{
+        echo 'Could not generate ' . $png_filename . '!' . PHP_EOL;
+    }
+
     $videoComponent->videoAttachmentIDs['mov'] = $ARGS['MOV_ID'];
-    $videoComponent->beingConverted = FALSE;
+    $videoComponent->beingConverted = false;
     $success = $videoComponent->update(null);
 
     exit(0);
-
 }else{
     exit(1);
 }

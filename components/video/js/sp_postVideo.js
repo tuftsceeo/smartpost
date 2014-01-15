@@ -8,20 +8,20 @@
  * @project SmartPost 
  */
 (function($){
-    var sp_postVideo = {
+    smartpost.sp_postVideo = {
         /**
          * Required for all post component JS objects.
-         * Used in sp_globals.types to determine which
+         * Used in sp_globals.SP_TYPES to determine which
          * methods to call for different post component types
          */
         setTypeID: function(){
             if(sp_globals){
-                var types = sp_globals.types;
+                var types = sp_globals.SP_TYPES;
 
                 //!Important - the raw name of the type
                 if(types['Video']){
                     this.typeID = types['Video'];
-                    sp_globals.types[this.typeID] = this;
+                    sp_globals.SP_TYPES[this.typeID] = this;
                 }
             }else{
                 return 0;
@@ -67,7 +67,8 @@
                 },
                 max_file_size : '1gb',
                 filters : [
-                        {title : "MOV files", extensions : "mov, MOV"}
+                        {title : "MOV files", extensions : "mov, MOV"},
+                        {title : "AVI files", extensions : "avi, AVI"},
                 ],
                 init: {
 
@@ -131,10 +132,19 @@
                 thisObj.initFileDrop($(this));
             });
 
+            $('.sp-video-player').mediaelementplayer({
+                enablePluginDebug: true,
+                plugins: ['flash', 'silverlight'],
+                pluginPath: _wpmejsSettings.pluginPath,
+                defaultVideoWidth: 560,
+                // if the <video height> is not specified, this is the default
+                defaultVideoHeight: 315
+            });
+
         }
     }
 
     $(document).ready(function(){
-        sp_postVideo.init();
+        smartpost.sp_postVideo.init();
     });
 })(jQuery);

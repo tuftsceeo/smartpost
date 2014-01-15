@@ -25,7 +25,8 @@
                 dataType : 'json',
                 success : function(response){
                     if( response.success ){
-                        $( '#check_ffmpeg_results' ).html('Success! ffmpeg was successfully called using "' + response.output + '". This path has been saved and will be used to invoke ffmpeg.');
+
+                        $( '#check_ffmpeg_results').html('Success! ffmpeg was successfully called using "' + response.output + '". This path has been saved and will be used to invoke ffmpeg.');
 
                         var ffmpeg_not_found = $( '#ffmpeg_not_found' );
 

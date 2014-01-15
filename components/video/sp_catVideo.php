@@ -11,6 +11,8 @@ if (!class_exists("sp_catVideo")) {
     define( 'DEBUG_SP_VIDEO', false); // Set to true to debug the video component
     define( 'SP_DEFAULT_VIDEO_PATH', '/usr/local/bin/' ); // Default path to begin our search for ffmpeg
     define( 'SP_DEFAULT_VIDEO_ENCODING', true); // Encode by default
+    define( 'SP_DEFAULT_PLAYER_WIDTH', 560) ; // Default player width
+    define( 'SP_DEFAULT_PLAYER_HEIGHT', 320 ); // Default player height
 
     class sp_catVideo extends sp_catComponent{
 
@@ -52,6 +54,8 @@ if (!class_exists("sp_catVideo")) {
             // Use /usr/local/bin/ by default
             update_site_option( 'sp_ffmpeg_path', SP_DEFAULT_VIDEO_PATH );
             update_site_option( 'sp_html5_encoding', SP_DEFAULT_VIDEO_ENCODING );
+            update_site_option( 'sp_player_width', SP_DEFAULT_PLAYER_WIDTH );
+            update_site_option( 'sp_player_height', SP_DEFAULT_PLAYER_HEIGHT );
 
             // See if ffmpeg exists...
             exec( 'command -v ' . $sp_ffmpeg_path . 'ffmpeg', $ffmpeg_output, $ffmpeg_status );

@@ -2,6 +2,22 @@
  * Front-end CSS for sp_postVideo component
  */
  
-.videoProgBarContainer{ width: 100px; height: 5px; margin-left: auto; margin-right: auto; display: none; }
-.videoProgressBar{ height:5px; background: silver; border: 1px gray solid; border-radius: 3px; float: left; }
-.sp_videoDropZone{ border: 2px dashed silver; border-radius: 3px; }
+.videoProgBarContainer{
+    width: 100px;
+    height: 5px;
+    margin-left: auto;
+    margin-right: auto;
+    display: none;
+}
+.videoProgressBar{
+    height:5px;
+    background: silver;
+    border: 1px gray solid;
+    float: left;
+}
+.sp_videoDropZone{
+    border: 2px dashed silver;
+}
+.sp_video{
+    text-align: center;
+}

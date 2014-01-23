@@ -10,6 +10,8 @@ if (!class_exists("sp_postVideo")) {
 
         public $beingConverted = false;
         public $videoAttachmentIDs = array(); // An array of video attachment IDs, format: array('{video format}' => {attachment ID})
+        public $errors = array();
+        public $description;
 
         function __construct($compID = 0, $catCompID = 0, $compOrder = 0,
                                $name = '', $value = '', $postID = 0){
@@ -27,6 +29,7 @@ if (!class_exists("sp_postVideo")) {
             // Update any post component options
             $this->beingConverted     = $this->value->beingConverted;
             $this->videoAttachmentIDs = $this->value->videoAttachmentIDs;
+            $this->description = $this->value->description;
             $this->convertToHTML5  = get_site_option( 'sp_html5_encoding' );
         }
 
@@ -56,6 +59,16 @@ if (!class_exists("sp_postVideo")) {
             $html = '<div id="sp_video-' . $this->ID . '" class="sp_video" data-compid="' . $this->ID . '" style="text-align: center;">';
                 $html .= $this->renderPlayer();
                 if( !$this->beingConverted ) {
+
+                    // Create an editor area for a video description
+                    $html .= sp_core::sp_editor(
+                        $this->description,
+                        $this->ID,
+                        true,
+                        'Click here to add a video description ...',
+                        array('data-action' => 'saveVideoDescAJAX', 'data-compid' => $this->ID, 'data-postid' => $this->postID )
+                    );
+
                     $html .= '<div id="videoUploader-' . $this->ID .'" class="videoUploader">';
                         $html .= '<p id="videoProgressMsg-' . $this->ID .'" class="videoProgressMsg"></p>';
                         $html .= '<div id="videoProgBarContainer-' . $this->ID . '" class="videoProgBarContainer">';
@@ -64,7 +77,7 @@ if (!class_exists("sp_postVideo")) {
                         $html .= '<div class="clear"></div>';
                     $html .= '</div>';
 
-                    $html .= '<p id="sp_videoDropZone-' . $this->ID . '" class="sp_videoDropZone">';
+                    $html .= '<p id="sp_videoDropZone-' . $this->ID . '" class="sp_videoDropZone sp-upload-dropzone">';
                         $html .= 'Drag and drop a video file here';
                         $html .= '<br /><br /> Or <br /><br />';
                         $html .= 'Browse for a video: <input id="sp_videoBrowse-' . $this->ID .'" data-compid="' . $this->ID . '" type="file">';
@@ -84,45 +97,38 @@ if (!class_exists("sp_postVideo")) {
             $html = '';
 
             if( $this->beingConverted ){
-                $html .= '<p><img src="' . SP_IMAGE_PATH . '/loading.gif" /> This video is currently being processed. Please check back in a few minutes.</p>';
+                $html .= '<p><img src="' . SP_IMAGE_PATH . '/loading.gif" /> Your video is being processed, thank you for your patience!</p>';
+                return $html;
+            }
+
+            if( $this->errors ){
+                $html .= '<div class="error">';
+                foreach( $this->errors as $error){
+                    $html .= $error;
+                }
+                $html .= '</div>';
                 return $html;
             }
 
             $width  = get_site_option( 'sp_player_width' );
             $height = get_site_option( 'sp_player_height' );
-            $media_elem_path = includes_url('js/mediaelement');
 
-
-            // If the video is done converting and we have both .mp4 and .webm files, render <video> elem with both
-            if( !$this->beingConverted && isset( $this->videoAttachmentIDs['mp4'] ) && isset( $this->videoAttachmentIDs['webm'] ) && isset( $this->videoAttachmentIDs['ogv'] ) ){
-
+            // If the video is done converting and we have the .mp4 file, render the <video> elem
+            if( !$this->beingConverted && isset( $this->videoAttachmentIDs['mp4'] ) ){
                 $mp4_vid  = wp_get_attachment_url( $this->videoAttachmentIDs['mp4'] );
-                $webm_vid = wp_get_attachment_url( $this->videoAttachmentIDs['webm'] );
-                $ogv_vid  = wp_get_attachment_url( $this->videoAttachmentIDs['ogv'] );
-                $img_vid  = wp_get_attachment_url( $this->videoAttachmentIDs['img'] );
 
                 $html .= '<div id="playerContainer-' . $this->ID . '" style="width: ' . $width . 'px; height: ' . $height . 'px; margin-right: auto; margin-left: auto;">';
-                    $html .= '<video class="sp-video-player" width="' . $width . '" height="' . $height . '" preload="metadata" controls>';
+                    $html .= '<video class="wp-video-shortcode" width="' . $width . '" height="' . $height . '" preload="metadata">';
                         $html .= '<source type="video/mp4" src="' . $mp4_vid . '">';
-                        $html .= '<source type="video/webm" src="' . $webm_vid . '">';
-                        $html .= '<source type="video/ogg" src="' . $ogv_vid . '">';
-                        $html .= '<object width="' . $width . '" height="' . $height . '" type="application/x-shockwave-flash" data="' . $media_elem_path . '/flashmediaelement.swf">';
-                            $html .= '<param name="movie" value="' . $media_elem_path . '/flashmediaelement.swf" />';
-                            $html .= '<param name="flashvars" value="controls=true&file=' . $mp4_vid . '" />';
-                            $html .= '<!-- Image as a last resort -->';
-                            $html .= '<img src="' . $img_vid . '" width="' . $width . '" height="' . $height . '" title="No video playback capabilities" />';
-                        $html .= '</object>';
                     $html .= '</video>';
                 $html .= '</div>';
             }else if( $this->videoAttachmentIDs['mov'] ){ // Otherwise just render the original
                 $html .= '<div id="playerContainer-' . $this->ID . '" style="width: ' . $width . 'px; height: ' . $height . 'px; margin-right: auto; margin-left: auto;">';
-                    $html .= '<video class="sp-video-player" width="' . $width . '" height="' . $height . '" preload="metadata" controls>';
+                    $html .= '<video class="wp-video-shortcode" width="' . $width . '" height="' . $height . '" preload="metadata" controls>';
                         $html .= '<source src="' . wp_get_attachment_url( $this->videoAttachmentIDs['mov'] ) . '" type="video/mp4">';
-                        $html .= 'Your browser does not support HTML5 video playback!';
                     $html .= '</video>';
                 $html .= '</div>';
             }
-
             return $html;
         }
 
@@ -141,7 +147,7 @@ if (!class_exists("sp_postVideo")) {
          * @return string
          */
         function renderPreview(){
-            return '';
+            return $this->description;
         }
 
         /**
@@ -173,9 +179,8 @@ if (!class_exists("sp_postVideo")) {
 
         /**
          * Writes member variables to the database:
-         * - $this->beingConverted      - Whether the video is in the process of being converted
-         * - $this->videoAttachmentIDs - array containing the formats and attachment IDs of video files
-         *                                    in the format: array({format} => {attachment id});
+         * - $this->beingConverted     : Whether the video is in the process of being converted
+         * - $this->videoAttachmentIDs : array containing the formats and attachment IDs of video files in the format: array({format} => {attachment id});
          * @param $data - unnecessary
          * @return bool|int
          */
@@ -183,6 +188,8 @@ if (!class_exists("sp_postVideo")) {
             $videoData = new stdClass();
             $videoData->beingConverted     = (bool) $this->beingConverted;
             $videoData->videoAttachmentIDs = $this->videoAttachmentIDs;
+            $videoData->description = $this->description;
+            $videoData->errors = $this->errors;
             $videoData = maybe_serialize($videoData);
             return sp_core::updateVar('sp_postComponents', $this->ID, 'value', $videoData, '%s');
         }

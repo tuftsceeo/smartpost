@@ -36,9 +36,10 @@
          * @see $plupload_init array in /wp-admin/includes/media.php
          */
         initFileDrop: function(component, postID){
+            var self = this;
             var compID    = component.attr('data-compid');
             var browse_id = 'sp_videoBrowse-' + compID;
-            var prev_onbeforeunload = window.onbeforeunload
+            var prev_onbeforeunload = window.onbeforeunload;
 
             if(postID == undefined){
                 postID = jQuery('#postID').val();
@@ -57,6 +58,7 @@
                 dragdrop        : true,
                 drop_element    : component.attr('id'),
                 file_data_name  : 'sp_videoUpload',
+                multi_selection : false,
                 multipart       : true,
                 urlstream_upload: true,
                 multipart_params: {
@@ -73,19 +75,26 @@
                 init: {
 
                     FilesAdded: function(up, files) {
-                        up.start();
-                        $('#sp_videoDropZone-' + compID).hide()
-                        $('#videoProgBarContainer-' + compID).show();
-                        $('#sp_simpleMenu-' + compID).remove();
-
-                        //Add a dialogue in case window is closed
-                        window.onbeforeunload = function (e) {
-                            e = e || window.event;
-                            if (e) {
-                                e.returnValue = 'Warning: A file is being uploaded. If you interrupt file upload you will have to restart the upload.';
+                        if(files.length > 1){
+                            alert('Please upload one file at a time.')
+                            while (up.files.length > 0) {
+                                up.removeFile(up.files[0]);
                             }
-                            return 'Warning: A file is being uploaded. If you interrupt file upload you will have to restart the upload.';
-                        };
+                        }else{
+                            up.start();
+                            $('#sp_videoDropZone-' + compID).remove();
+                            $('#playerContainer-' + compID).remove();
+                            $('#videoProgBarContainer-' + compID).show();
+
+                            //Add a dialogue in case window is closed
+                            window.onbeforeunload = function (e) {
+                                e = e || window.event;
+                                if (e) {
+                                    e.returnValue = 'Warning: A file is being uploaded. If you interrupt file upload you will have to restart the upload.';
+                                }
+                                return 'Warning: A file is being uploaded. If you interrupt file upload you will have to restart the upload.';
+                            };
+                        }
                     },
 
                     UploadProgress: function(up, file) {
@@ -105,7 +114,8 @@
                         if(response){
                             $('#videoProgressMsg-' + compID).html('');
                             $('#videoProgBarContainer-' + compID).hide();
-                            $('#playerContainer-' + compID).html( response.response );
+                            $('#sp_video-' + compID).prepend( response.response );
+                            self.checkVideoStatus(compID);
                         }
                         window.onbeforeunload = prev_onbeforeunload;
                     }
@@ -113,6 +123,64 @@
             });
             uploader.init();
         }, //end initFileDrop
+
+        /**
+         * Makes an AJAX call every 5 seconds to check on the encoding status of an uploaded video.
+         * @param compID - The component ID the video belongs to
+         */
+        checkVideoStatus: function(compID){
+            var self = this;
+            $.ajax({
+                url	 : SP_AJAX_URL,
+                type : 'POST',
+                data: {
+                    action : 'checkVideoStatusAJAX',
+                    nonce  : SP_NONCE,
+                    compID : compID
+                },
+                dataType : 'json',
+                success  : function(response, statusText, jqXHR){
+                    if( response.converted ){
+                        if( $('#sp_qp_stack').exists() ){
+                            alert( 'The video processed successfully! Submit your post to view the video.' );
+                        }else{
+                            alert( 'The video processed successfully! Refresh the page to view it.' );
+                        }
+                    }else{
+                        setTimeout( function(){ self.checkVideoStatus(compID) }, 5000 );
+                    }
+                },
+                error : function(jqXHR, statusText, errorThrown){
+                    console.log(errorThrown);
+                }
+            });
+        },
+
+        /**
+         * Saves video description.
+         * @param description
+         */
+        saveVideoDesc: function(content, elemID, editor){
+            var self = this;
+            var compID = $('#' + elemID).attr('data-compid');
+            $.ajax({
+                url	 : SP_AJAX_URL,
+                type : 'POST',
+                data: {
+                    action : 'saveVideoDescAJAX',
+                    nonce  : SP_NONCE,
+                    compID : compID,
+                    content: content
+                },
+                dataType : 'json',
+                success  : function(response, statusText, jqXHR){
+                    console.log( response );
+                },
+                error : function(jqXHR, statusText, errorThrown){
+                    console.log(errorThrown);
+                }
+            });
+        },
 
         /**
          * Dynamically initializes the video component
@@ -126,21 +194,11 @@
          */
         init: function(){
             this.setTypeID();
-            var thisObj = this;
+            var self = this;
 
             $('.sp_video').each(function(){
-                thisObj.initFileDrop($(this));
+                self.initFileDrop($(this));
             });
-
-            $('.sp-video-player').mediaelementplayer({
-                enablePluginDebug: true,
-                plugins: ['flash', 'silverlight'],
-                pluginPath: _wpmejsSettings.pluginPath,
-                defaultVideoWidth: 560,
-                // if the <video height> is not specified, this is the default
-                defaultVideoHeight: 315
-            });
-
         }
     }
 

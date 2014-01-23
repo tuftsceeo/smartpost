@@ -10,8 +10,77 @@ if (!class_exists("sp_postVideoAJAX")) {
 
         static function init(){
             add_action('wp_ajax_videoUploadAJAX', array('sp_postVideoAJAX', 'videoUploadAJAX'));
+            add_action('wp_ajax_checkVideoStatusAJAX', array('sp_postVideoAJAX', 'checkVideoStatusAJAX'));
+            add_action('wp_ajax_saveVideoDescAJAX', array('sp_postVideoAJAX', 'saveVideoDescAJAX'));
         }
 
+        static function saveVideoDescAJAX(){
+            $nonce = $_POST['nonce'];
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
+                header("HTTP/1.0 403 Security Check.");
+                die('Security Check');
+            }
+
+            if( !class_exists( 'sp_postVideo' ) ){
+                header("HTTP/1.0 409 Could not instantiate sp_postMedia class.");
+                exit;
+            }
+
+            if( empty( $_POST['compid'] ) ){
+                header("HTTP/1.0 409 Could find component ID to udpate.");
+                exit;
+            }
+
+            // Update video description
+            $compID = (int) $_POST['compid'];
+            $videoComponent = new sp_postVideo($compID);
+
+            if( !empty($videoComponent->errors) ){
+                header( "HTTP/1.0 409 Error: " . $videoComponent->errors->get_error_message() );
+                exit;
+            }
+
+            $videoComponent->description = stripslashes_deep( $_POST['content'] );
+            $videoComponent->update(null);
+            echo json_encode( array('success' => true) );
+            exit;
+        }
+
+        /**
+         * Checks on the status of the video.
+         */
+        static function checkVideoStatusAJAX(){
+            $nonce = $_POST['nonce'];
+
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
+                header("HTTP/1.0 403 Security Check.");
+                die('Security Check');
+            }
+
+            if(!class_exists('sp_postVideo')){
+                header("HTTP/1.0 409 Could not instantiate sp_postMedia class.");
+                exit;
+            }
+
+            if( empty($_POST['compID']) ){
+                header("HTTP/1.0 409 Could find component ID to udpate.");
+                exit;
+            }
+
+            $compID = (int) $_POST['compID'];
+            $videoComponent = new sp_postVideo($compID);
+            if( $videoComponent->beingConverted ){
+                echo json_encode( array( 'converted' => false ) );
+            }else{
+                echo json_encode( array( 'converted' => true ) );
+            }
+            exit;
+        }
+
+        /**
+         * Handles video uploads using chunking.
+         * @todo Abstract out chunk uploading to sp_core.php class
+         */
         static function videoUploadAJAX(){
             $nonce = $_POST['nonce'];
 
@@ -41,9 +110,9 @@ if (!class_exists("sp_postVideoAJAX")) {
             }
 
             // Get a file name
-            if (isset($_REQUEST["name"])) {
+            if ( isset( $_REQUEST["name"] ) ) {
                 $fileName = $_REQUEST["name"];
-            } elseif (!empty($_FILES)) {
+            } elseif ( !empty( $_FILES ) ) {
                 $fileName = $_FILES["sp_videoUpload"]["name"];
             } else {
                 $fileName = uniqid("file_");
@@ -61,7 +130,7 @@ if (!class_exists("sp_postVideoAJAX")) {
                 die('{ "jsonrpc" : "2.0", "error" : {"code": 102, "message": "Failed to open output stream."} }');
             }
 
-            if (!empty($_FILES)) {
+            if ( !empty($_FILES) ) {
                 if ($_FILES["sp_videoUpload"]["error"] || !is_uploaded_file($_FILES["sp_videoUpload"]["tmp_name"])) {
                     die('{ "jsonrpc" : "2.0", "error" : {"code": 103, "message": "Failed to move uploaded file."} }');
                 }
@@ -86,14 +155,15 @@ if (!class_exists("sp_postVideoAJAX")) {
             // Check if file has been uploaded
             if (!$chunks || $chunk == $chunks - 1) {
 
-                // Strip the temp .part suffix off
-                $newFilePath = preg_replace( '/\s+/', '', $filePath );
-                rename( "{$filePath}.part", $newFilePath);
+                // Format the file name
+                $newFilePath = preg_replace( '/\s+/', '', $filePath ); // Remove all whitespace
+                $newFilePath = str_replace( '.', '_' . uniqid() . '.', $newFilePath ); // Add a unique ID to keep file names unique
+                rename( "{$filePath}.part", $newFilePath ); // Strip the temp .part suffix off
 
+                // Create a new attachment
                 $compID = (int) $_POST['compID'];
                 $videoComponent = new sp_postVideo($compID);
                 $postID = $videoComponent->getPostID();
-
                 $vid_id = sp_core::create_attachment( $newFilePath, $postID, $fileName, get_current_user_id() );
 
                 if( !$vid_id ){
@@ -105,7 +175,7 @@ if (!class_exists("sp_postVideoAJAX")) {
                 if( !empty($videoComponent->videoAttachmentIDs) ){
                     foreach($videoComponent->videoAttachmentIDs as $attach_id){
                         if( $attach_id )
-                            wp_delete_attachment($attach_id, true);
+                            wp_delete_attachment( $attach_id, true );
                     }
                 }
 
@@ -113,7 +183,9 @@ if (!class_exists("sp_postVideoAJAX")) {
                 $videoComponent->videoAttachmentIDs['mov'] = $vid_id;
                 $videoComponent->update(null);
 
-                if($videoComponent->convertToHTML5){
+                $html5_encoding = (bool) get_site_option('sp_html5_encoding');
+
+                if( $html5_encoding ){
 
                     $videoComponent->beingConverted = true;
                     $videoComponent->update(null);
@@ -127,23 +199,22 @@ if (!class_exists("sp_postVideoAJAX")) {
                         'COMP_ID'   => $compID,
                         'AUTH_ID'   => get_current_user_id(),
                         'MOV_ID'    => $vid_id,
+                        'WIDTH'     => get_site_option('sp_player_width'),
+                        'HEIGHT'    => get_site_option('sp_player_height'),
                         'HTTP_HOST' => $_SERVER['HTTP_HOST'],
                         'BLOG_ID'   => get_current_blog_id(),
                         'IS_WPMU'   => is_multisite()
                     );
 
                     if(DEBUG_SP_VIDEO){
-
                         error_log( 'SCRIPT ARGS: ' . print_r($script_args, true) );
                         exec('php ' . $script_path . ' ' . implode(' ', $script_args) . ' 2>&1', $output, $status);
                         error_log( print_r($output, true) );
                         error_log( print_r($status, true) );
-
                     }else{
                         shell_exec('php ' . $script_path . ' ' . implode(' ', $script_args) . ' &> /dev/null &');
                     }
                 }
-
                 echo $videoComponent->renderPlayer();
             }
 

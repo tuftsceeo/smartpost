@@ -29,7 +29,6 @@ $WPMU_ARGS = array(
 if( !empty( $WPMU_ARGS['IS_WPMU'] ) ){
 
     $_SERVER['HTTP_HOST'] = $WPMU_ARGS['HTTP_HOST'];
-
     ini_set('display_errors', true);
     define( 'BASE_PATH', $ARGS['BASE_PATH'] );
     global $wp, $wp_query, $wp_the_query, $wp_rewrite, $wp_did_header;
@@ -44,9 +43,10 @@ if( !empty( $WPMU_ARGS['IS_WPMU'] ) ){
 $sp_ffmpeg_path = get_site_option('sp_ffmpeg_path');
 
 // Check that everything is in order before we start converting..
-if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && isset( $sp_ffmpeg_path ) ){
+if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && !is_wp_error( $sp_ffmpeg_path ) ){
 
-    $name = basename( $ARGS['VID_FILE'], '.mov' );
+    $file_info = pathinfo( $ARGS['VID_FILE'] );
+    $name = $file_info['filename'];
     $path = dirname( $ARGS['VID_FILE'] );
 
     $filename = $path . DIRECTORY_SEPARATOR . $name;
@@ -61,8 +61,6 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && isset( $sp_ffmpeg_path ) ){
     }
 
     $mp4_filename  = $filename . '.mp4';
-    $webm_filename = $filename . '.webm';
-    $ogv_filename  = $filename . '.ogv';
     $png_filename  = $filename . '.png';
     $content = $filename;
 
@@ -73,8 +71,6 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && isset( $sp_ffmpeg_path ) ){
         exit();
     }
 
-    $sp_ffmpeg_path = ($sp_ffmpeg_path == 'empty') ? '' : $sp_ffmpeg_path;
-
     /**
      *
      * -q:v - Use video quality 2 (where 0 is equivalent to input video, and 31 is worst quality).
@@ -82,10 +78,8 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && isset( $sp_ffmpeg_path ) ){
      */
     $filter = '"scale=iw*sar*min(' . $ARGS['WIDTH'] . '/(iw*sar)\,' . $ARGS['HEIGHT'] . '/ih):ih*min(' . $ARGS['WIDTH'] . '/(iw*sar)\,' . $ARGS['HEIGHT'] . '/ih),pad=' . $ARGS['WIDTH'] . ':' . $ARGS['HEIGHT'] . ':(ow-iw)/2:(oh-ih)/2"';
 
-    system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -q:v 2 -vf ' . $filter . ' ' . $filename . '.mp4' );
-    system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -q:v 2 -vf ' . $filter . ' ' . $filename . '.webm' );
-    system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -q:v 2 -vf ' . $filter . ' ' . $filename . '.ogv' );
-    system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -f image2 -vframes 1 ' . $filename  .'.png');
+    system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -q:v 2 -vf ' . $filter . ' ' . $filename . '.mp4' ); // .mp4 conversion
+    system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -f image2 -vframes 1 ' . $filename  .'.png'); // Video thumb creation
 
     $uploads = wp_upload_dir();
 
@@ -93,24 +87,7 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && isset( $sp_ffmpeg_path ) ){
     if( file_exists( $mp4_filename ) ){
         $videoComponent->videoAttachmentIDs['mp4'] = sp_core::create_attachment( $mp4_filename, $ARGS['POST_ID'], $mp4_filename, $ARGS['AUTH_ID'] );
     }else{
-        echo 'Could not generate ' . $mp4_filename . '!' . PHP_EOL;
-        exit(1);
-    }
-
-    // Create a .webm attachment
-    if( file_exists( $webm_filename ) ){
-        $videoComponent->videoAttachmentIDs['webm'] = sp_core::create_attachment( $webm_filename, $ARGS['POST_ID'], $webm_filename, $ARGS['AUTH_ID'] );
-    }else{
-        echo 'Could not generate ' . $webm_filename . '!' . PHP_EOL;
-        exit(1);
-    }
-
-    // Create a .ogv attachment
-    if( file_exists( $ogv_filename ) ){
-        $videoComponent->videoAttachmentIDs['ogv'] = sp_core::create_attachment( $ogv_filename, $ARGS['POST_ID'], $ogv_filename, $ARGS['AUTH_ID'] );
-    }else{
-        echo 'Could not generate ' . $ogv_filename . '!' . PHP_EOL;
-        exit(1);
+        $videoComponent->errors['mp4'] = 'Could not generate ' . $mp4_filename . '!' . PHP_EOL;
     }
 
     // Add a featured image if one doesn't already exist
@@ -120,7 +97,7 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && isset( $sp_ffmpeg_path ) ){
             set_post_thumbnail( $ARGS['POST_ID'], $videoComponent->videoAttachmentIDs['img']);
         }
     }else{
-        echo 'Could not generate ' . $png_filename . '!' . PHP_EOL;
+        $videoComponent->errors['img'] = 'Could not generate ' . $png_filename . '!' . PHP_EOL;
     }
 
     $videoComponent->videoAttachmentIDs['mov'] = $ARGS['MOV_ID'];
@@ -128,6 +105,9 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && isset( $sp_ffmpeg_path ) ){
     $success = $videoComponent->update(null);
 
     exit(0);
-}else{
+} else {
+    if( empty( $ARGS['VID_FILE'] ) ){ echo 'VID_FILE argument not provided' . PHP_EOL; }
+    if( empty( $ARGS['POST_ID'] ) ){ echo 'POST_ID argument not provided' . PHP_EOL; }
+    if( empty( $sp_ffmpeg_path ) ){ echo 'FFmpeg path not found' . PHP_EOL; }
     exit(1);
 }

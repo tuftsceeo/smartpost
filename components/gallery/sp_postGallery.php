@@ -5,26 +5,28 @@ if (!class_exists("sp_postGallery")) {
 	 * Front end of the gallery component (used in posts).
      *
 	 * @see sp_postComponent
-	 */	
+	 */
 	class sp_postGallery extends sp_postComponent{
-        private $attachmentIDs = array(); //An array of attachment IDs
+        public $attachmentIDs = array(); // An array of attachment IDs of the form array( 0 => id1, 1 => id2, etc.. )
+        public $description   = ''; // Gallery Description
 
         function __construct($compID = 0, $catCompID = 0, $compOrder = 0,
                              $name = '', $value = '', $postID = 0){
 
-                $compInfo = compact("compID", "catCompID", "compOrder", "name", "value", "postID");
+            $compInfo = compact("compID", "catCompID", "compOrder", "name", "value", "postID");
 
-                if($compID == 0){
-                    //Set default options from category component
-                    $this->options = sp_catComponent::getOptionsFromID($catCompID);
-                }
+            if($compID == 0){
+                // Set default options from category component
+                $this->options = sp_catComponent::getOptionsFromID($catCompID);
+            }
 
-                $this->initComponent($compInfo);
+            $this->initComponent($compInfo);
 
-                //Get image IDs (in WP land they're called attachments)
-                if( !empty($this->value) ){
-                    $this->attachmentIDs = $this->value;
-                }
+            // Get attachments IDs
+            if( !empty($this->value) ){
+                $this->attachmentIDs = $this->value->attachmentIDs;
+                $this->description   = $this->value->description;
+            }
         }
 			
         /**
@@ -37,242 +39,163 @@ if (!class_exists("sp_postGallery")) {
             self::enqueueJS();
         }
 			
-			static function enqueueCSS(){
-                /*
-					wp_register_style( 'sp_postGalleryCSS', plugins_url('css/sp_postGallery.css', __FILE__) );
-					wp_enqueue_style( 'sp_postGalleryCSS' );
-                */
-			}
+        static function enqueueCSS(){
+            wp_register_style( 'sp_postGalleryCSS', plugins_url('css/sp_postGallery.css', __FILE__) );
+            wp_enqueue_style( 'sp_postGalleryCSS' );
+        }
 			
-			static function enqueueJS(){
-                //enqueue photo gallery related JS files
+        static function enqueueJS(){
+            //enqueue photo gallery related JS files
+            wp_register_script( 'sp_postGalleryJS', plugins_url('/js/sp_postGallery.js', __FILE__) );
+            wp_enqueue_script( 'sp_postGalleryJS', null, array( 'jquery', 'sp_globals', 'sp_postComponentJS' ) );
+        }
+
+        /**
+         * @see parent::renderEditMode()
+         */
+        function renderEditMode(){
+
+            $html = '<div id="sp-gallery-' . $this->ID .'" class="sp-gallery" data-compid="' . $this->ID .'">';
+                // Create an editor area for a video description
+                $html .= sp_core::sp_editor(
+                    $this->description,
+                    $this->ID,
+                    true,
+                    'Click here to add a gallery description ...',
+                    array('data-action' => 'saveGalleryDescAJAX', 'data-compid' => $this->ID, 'data-postid' => $this->postID )
+                );
+
+                $html .= '<div id="sp-gallery-container">';
+                    $html .= '<div id="sp-gallery-pics-' . $this->ID . '" class="sp-gallery-pics">';
+                        if( !empty($this->attachmentIDs) ){
+                            foreach($this->attachmentIDs as $id){
+                                $html .= self::renderThumb($id, $this->ID);
+                            }
+                        }
+                    $html .= '</div><!-- end .sp-gallery-pic -->';
+                    $html .= '<div class="clear"></div>';
+                $html .= '</div><!-- end #sp-gallery-container -->';
+
+                // Render drop-zone/uploads area
+                $html .= '<div id="sp-gallery-uploads-' . $this->ID . '" class="sp-gallery-uploads">';
+                    $html .= '<span id="sp-gallery-progress-msg-' . $this->ID . '"></span>';
+                    $html .= '<span id="sp-gallery-progress-' . $this->ID . '"></span>';
+                    $html .= '<p class="sp-upload-dropzone">';
+                        $html .= 'Drag and drop pictures here';
+                        $html .= '<br /><br />Or<br /><br />';
+                        $html .= 'Browse for pictures here: <input type="file" id="sp-upload-' . $this->ID . '" />';
+                    $html .= '</p>';
+                    $html .= '<div class="clear"></div>';
+                $html .= '</div><!-- end .sp-gallery-uploads -->';
+
+                $html .= '<div class="clear"></div>';
+            $html .= '</div>';
+            return $html;
+        }
+			
+        /**
+         * @see parent::renderViewMode()
+         */
+        function renderViewMode(){
+
+            $html = '<div id="sp-gallery-pics-' . $this->ID . '" class="sp-gallery-pics">';
+            if( !empty($this->attachmentIDs) ){
+                foreach($this->attachmentIDs as $id){
+                    $html .= self::renderThumb($id, $this->ID, false);
+                }
+            }
+            $html .= '</div><!-- end .sp-gallery-pic -->';
+            return $html;
+        }
+
+
+        /**
+         * Renders a single attachment thumbnail
+         */
+        static function renderThumb($id, $compID, $editMode = true){
+            $attachment = get_post($id);
+            $html = "";
+            if( !is_null($attachment) ){
+                $html .= '<div id="sp-gallery-thumb-' . $id . '" data-thumbid="' . $id . '" data-compid="' . $compID . '" class="sp-gallery-thumb">';
+                    $html .= '<a href="' . wp_get_attachment_url($id) . '" class="fancybox" rel="gallery-' . $compID .'" title="' .$attachment->post_title . '">';
+                        $html .= wp_get_attachment_image($id, array(125, 125), true);
+                    $html .= '</a>';
+
+                    if($editMode){
+                        /*
+                        $captionEditor = sp_core::sp_editor( $attachment->post_content, $id, true, 'Add a caption ...', array( 'data-action' => 'gallerySetThumbCaptionAJAX', 'data-thumbid' => $id, 'title' => 'Photo caption' ) );
+                        $html .= '<div id="sp-gallery-caption-' . $id . '" class="sp-gallery-caption">' . $captionEditor . '</div>';
+                        $html .= '<span id="sp-gallery-edit-caption-' . $id .'" name="sp-gallery-edit-caption-' . $id .'" data-thumbid="' . $id . '" data-compid="' . $compID . '" class="sp-gallery-edit-caption sp_textIcon" alt="Edit Caption" title="Edit Caption"></span>';
+                        */
+                        $html .= '<span id="sp-gallery-delete-thumb-' . $id .'" name="sp-gallery-delete-thumb-' . $id .'" data-thumbid="' . $id . '" data-compid="' . $compID . '" class="sp-gallery-delete-thumb sp_xButton" alt="Delete Photo" title="Delete Photo"></span>';
+                    }else{
+                        // $html .= '<div id="sp-gallery-caption-' . $id . '" class="sp-gallery-caption" data-compid="' . $compID . '">' . $attachment->post_content . '</div>';
+                    }
+
+                $html .= '</div>';
+            }
+            return $html;
+        }
+			
+        function renderPreview(){
+            return $this->description;
+        }
+
+        /**
+         * Overload parent function since we need to delete all the attachments
+         * As we delete all the attachments
+         *
+         * @return bool|int false on failure, number of rows affected on success
+         */
+        function delete(){
+            global $wpdb;
+
+            if( !empty($this->attachmentIDs) ){
+                foreach($this->attachmentIDs as $id){
+                    wp_delete_attachment($id, true);
+                }
             }
 
-			/**
-			 * @see parent::renderEditMode()
-			 */			
-			function renderEditMode(){
-				
-				$html .= '<div id="sp_Gallery-' . $this->ID .'" class="sp_Gallery" data-compid="' . $this->ID .'" data-isgallery="' . (string) $this->isGallery . '">';
-					$html .= '<div id="sp_uploads-' . $this->ID . '" class="sp_uploads">';
+            $tableName = $wpdb->prefix . 'sp_postComponents';
+            return $wpdb->query( $wpdb->prepare( "DELETE FROM $tableName WHERE id = %d", $this->ID ) );
+        }
+			
+        function isEmpty(){
+            return empty($this->attachmentIDs);
+        }
 
-						$html .= '<p>';
-							$html .= 'Drag and drop files here! ';
-							$html .= $this->imagesAllowed ? 'Uploading photo(s)? Use your <a href="#" data-compid="' . $this->ID . '" class="sp_webcam_click"> webcam </a>!' : '';
-						$html .= '</p>';
-						
-						if($this->imagesAllowed){
-								$html .= '<p></p>';
-								$html .= '<div id="sp_Gallery_webcam-' . $this->ID .'" data-compid="' . $this->ID . '" class="sp_Gallery_webcam">';
-									$html .= '<div class="clear"></div>';								
-									$html .= '<a href="javascript:webcam.capture();">Take photo!</a> | <a href="javascript:sp_postGallery.cancelCam(' . $this-> ID . ');"> Cancel </a>';
-								$html .= '</div>';
-						}
-						
-						//Fallback upload browser
-						$html .= '<div id="sp_browse-' . $this->ID . '" class="sp_browse">';
-							$html .= '<form id="sp_browse_upload-' . $this->ID . '" method="post" action="">';
-								$html .= '<input type="file" id="sp_upload-' . $this->ID . '" />';
-								$html .= '<button type="submit">Upload</button>';
-							$html .= '</form>';
-						$html .= '</div>';
-
-						$html .= '<div class="clear"></div>';
-					$html .= '</div><!-- end #sp_uploads-' . $this->ID . ' -->';
-					
-					$html .= '<div id="sp_attachments-' . $this->ID . '" class="sp_attachments">';					
-						if( !empty($this->attachmentIDs) ){
-								foreach($this->attachmentIDs as $id){
-									$html .= self::renderSingleThumb($id, $this->ID, $this->isGallery);
-								}
-						}					
-						
-						if( !$this->isGallery && !empty($this->attachmentIDs) ){
-							$html .= self::renderSingleDesc($this->attachmentIDs[0], $this->ID);
-						}
-					$html .= '</div>';
-					
-					$html .= '<div class="clear"></div>';
-				$html .= '</div>';
-				return $html;
-			}
-			
-			/**
-			 * @see parent::renderViewMode()
-			 */			
-			function renderViewMode(){
-				$html .= '<div id="sp_Gallery-' . $this->ID .'" class="sp_Gallery" data-isgallery="' . (string) $this->isGallery . '">';
-					$html .= '<div id="sp_attachments-' . $this->ID . '" class="sp_attachments">';					
-						if( !empty($this->attachmentIDs) ){
-								foreach($this->attachmentIDs as $id){
-									$html .= self::renderSingleThumb($id, $this->ID, $this->isGallery, false);
-								}
-						}
-						
-						if( !$this->isGallery && !empty($this->attachmentIDs) ){
-							$html .= self::renderSingleDesc($this->attachmentIDs[0], $this->ID, false);
-						}
-					$html .= '</div>';
-						
-					$html .= '<div class="clear"></div>';
-					$html .= '</div>';
-				return $html;		
-			}			
-
-			/**
-			 * Renders single attachment description
-			 */
-			static function renderSingleDesc($id, $compID, $editMode = true){
-				$html = "";
-				if ( !empty($id) )
-						$attachment = get_post($id);
-				
-				if( !empty($attachment) ){
-					$descPlaceholder = $editMode ? 'Click to add a description' : '';
-					$editable        = $editMode ? 'editable' : '';
-					$html .= '<div id="sp_Gallery_desc-' . $id .'" class="sp_Gallery_desc ' . $editable . '" data-compid="' . $compID . '" attach-id="' . $attachment->ID . '">';
-						$html .= empty( $attachment->post_content ) ? $descPlaceholder : $attachment->post_content;
-					$html .= '</div>';
-				}
-				
-				return $html;
-			}
-
-			/**
-			 * Renders a single attachment thumbnail
-			 */
-			static function renderSingleThumb($id, $compID, $gallery = false, $editMode = true){
-				$attachment = get_post($id);
-				$html = "";
-				if( !is_null($attachment) ){
-					$class = $gallery ? 'gallery_thumb' : 'sp_Gallery_thumb';
-					$html .= '<div id="Gallery_thumb-' . $attachment->ID . '" data-compid="' . $compID . '" class="' . $class . '">';
-						
-						if( strpos($attachment->post_mime_type, 'image') !== false && $gallery ){
-							$hrefAttrs = 'class="fancybox" rel="gallery-' . $compID .'" title="' .$attachment->post_title . '" ';
-						}
-						
-						$html .= '<a href="' . wp_get_attachment_url($id) . '"' . $hrefAttrs .'>';
-							$html .= wp_get_attachment_image($id, array(100, 60), true);
-						$html .= '</a>';
-						
-						$html .= '<p id="Gallery_caption-' . $attachment->ID . '" class="sp_GalleryCaption">' . $attachment->post_title . '</p>';
-						$html .= $editMode ? '<img src="' . IMAGE_PATH . '/no.png" id="deleteThumb-' . $id .'" name="deleteThumb-' . $id .'" data-attachid="' . $id . '" data-compid="' . $compID . '" class="sp_GalleryDelete" alt="Delete Attachment" title="Delete Attachment">' : '';
-					$html .= '</div>';
-				}
-				return $html;
-			}
-			
-			function renderPreview(){
-				//!To-do: include Gallery description
-				if(!$this->isGallery){
-					$attachmentIDs = $this->attachmentIDs;
-					$attachment    = get_post($attachmentIDs[0]);
-					$html = $attachment->post_content;
-				}else{
-					$html = $this->galleryDesc;
-				}
-				
-				return $html;
-			}
-
-			/**
-			 * @see parent::addMenuOptions()
-			 */			
-			function addMenuOptions(){
-				return array();
-			}
-			
-			/**
-			 * Overload parent function since we need to delete all the attachments
-			 * As we delete all the attachments
-			 * 
-			 * @return bool|int false on failure, number of rows affected on success
-			 */
-			function delete(){
-				global $wpdb;
-				
-				if( !empty($this->attachmentIDs) ){
-					foreach($this->attachmentIDs as $id){
-						if(get_post_thumbnail_id($this->postID) == $id){
-							
-						}
-						wp_delete_attachment($id, true);
-					}
-				}
-				
-				$tableName = $wpdb->prefix . 'sp_postComponents';
-				return $wpdb->query( 
-					$wpdb->prepare( 
-						"DELETE FROM $tableName
-						 WHERE id = %d",
-					  $this->ID
-				 )
-				);
-			}			
-			
-			/**
-			 * Changes the acceptable extensions of the 
-			 * 
-			 * @param array $extensions Extensions of the form array( ".jpg" => 0|1 ), 
-			 *																										where 1 is enabled, and 0 is disabled
-			 */
-			function update($extensions = null){ return null; }
-			
-			function isEmpty(){
-				return empty($this->attachmentIDs);
-			}
-			
-			function getExtensions(){
-				return $this->allowedExts;
-			}
-			
-			function getCustomExts(){
-				return $this->customExts;
-			}
-			
-			function isGallery(){
-				return $this->isGallery;
-			}
-			
-			function getDescription($id){
-				$attachment = get_post($id);
-				return $attachment->post_content;
-			}
-			
-			/**
-			 * Sets the description of a particular attachment 
-			 *
-			 * @param string $description The description of the attachment
-			 * @param int $attachmentID The ID of the attachment
-			 */
-			static function setDescription($description, $attachmentID){
+        /**
+         * Sets the description of a particular thumbnnail
+         * @param $description The description of the attachment
+         * @param $attachmentID The ID of the attachment
+         * @return int|WP_Error
+         */
+        static function setThumbDescription($description, $attachmentID){
 				$attachment = get_post($attachmentID);
 				$attachment->post_content = $description;
 				return wp_update_post($attachment);
-			}
-			
-			function getAttachments(){
-				return $this->attachmentIDs;
-			}
-			
-			/**
-			 * Sets the attachmentIDs. $idArray should be of the form array( 0 => id1, 1 => id2, etc.. )
-			 *
-			 * @param array $idArray An array contain attachment IDs
-			 * @return bool True if update was succesful, otherwise false
-			 */
-			function setAttachmentIDs($idArray){
-				
-				if( !empty($idArray) ){
-					$this->attachmentIDs = $idArray;
-				}else{
-					$this->attachmentIDs = array();
-				}
-				$attachmentIDs = maybe_serialize($this->attachmentIDs);
-				return sp_core::updateVar('sp_postComponents', $this->ID, 'value', $attachmentIDs, '%s');			
-			}
+        }
+
+        /**
+         * Returns an array of all the image attachments of this particular gallery instance.
+         * @return array
+         */
+        function getAttachments(){
+            return $this->attachmentIDs;
+        }
+
+        /**
+         * Write member variables to database - i.e. equivalent to 'saving' the component instance in the
+         * state that it's currently in.
+         * @see parent::update();
+         * @return bool|null
+         */
+        function update(){
+            $galleryData = new stdClass();
+            $galleryData->attachmentIDs = $this->attachmentIDs;
+            $galleryData->description   = $this->description;
+            $galleryData = maybe_serialize( $galleryData );
+            return sp_core::updateVar('sp_postComponents', $this->ID, 'value', $galleryData, '%s');
+        }
 	}
 }
-			
-?>

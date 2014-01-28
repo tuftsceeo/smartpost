@@ -1,0 +1,45 @@
+/*
+ * CSS for the sp_postMedia class
+ * Used in front-end posts
+ */
+.sp-gallery-thumb{
+    float: left;
+    margin: 23px;
+    position: relative;
+}
+.sp-gallery-caption{
+    position: absolute;
+    top: 130px;
+    border: 1px solid silver;
+    background: white;
+    display: none;
+    max-width: 200px;
+}
+.sp-gallery-thumb:hover .sp-gallery-delete-thumb,
+.sp-gallery-thumb:hover .sp-gallery-edit-caption{
+    display: block;
+}
+.sp-gallery-edit-caption{
+    color: white;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    background: #ffffff;
+    height: 20px;
+    cursor: pointer;
+    display: none;
+}
+.sp-gallery-delete-thumb{
+    color: white;
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    background: #ffffff;
+    height: 20px;
+    cursor: pointer;
+    display: none;
+}
+.sp-gallery-pics{
+    clear: both;
+
+}

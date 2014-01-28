@@ -371,7 +371,7 @@ if (!class_exists("sp_post")) {
 
                     //Check for post errors
                     if( is_wp_error($sp_post->errors) ){
-                        $errors .= '<p>' . $sp_post->errors->get_error_message() . '</p>';
+                        $errors = '<p>' . $sp_post->errors->get_error_message() . '</p>';
                     }
 
                     //Check if post is currently locked for editing
@@ -387,9 +387,7 @@ if (!class_exists("sp_post")) {
                     }
 
                     //Add an errors div and display errors if necessary
-                    $content = '<div id="component_errors"' . (!empty($errors) ? ' style="display: block;"' : '') . '>' .
-                        $errors .
-                        '</div>' . $content;
+                    $content = '<div id="component_errors"' . (!empty($errors) ? ' style="display: block;"' : '') . '>' . $errors . '</div>' . $content;
 
                     //load the components
                     $postComponents = $sp_post->getComponents();
@@ -645,9 +643,10 @@ if (!class_exists("sp_post")) {
          * @param $catCompID int The post component's category component ID
          * @param string $name
          * @param string $value
-         * @return WP_Error|object The components ID on success, otherwise WP_Error object on failure
+         * @param int $postID
+         * @return WP_Error|int The components ID on success, otherwise WP_Error object on failure
          */
-        function addComponent($catCompID, $name = '', $value = ''){
+        function addComponent($catCompID, $name = '', $value = '', $postID = null){
 
             //We need the catCompID or else this won't flow
             if(empty($catCompID) || $catCompID <= 0 ){
@@ -665,7 +664,11 @@ if (!class_exists("sp_post")) {
                 return new WP_Error('broke', ('Could not instantiate component. Please make sure a ' . $postCompType . ' class exists and has constructor.'));
             }
 
-            $postComponent = new $postCompType(0, $catCompID, $compOrder, $name, $value, $this->wpPost->ID);
+            if( empty($postID) ){
+                $postID = $this->wpPost->ID;
+            }
+
+            $postComponent = new $postCompType(0, $catCompID, $compOrder, $name, $value, $postID);
 
             if(is_wp_error($postComponent->errors)){
                 $errors = $postComponent->errors;
@@ -698,7 +701,7 @@ if (!class_exists("sp_post")) {
                 $postComponents = array();
                 $i = 0;
                 foreach($componentResults as $index => $rawComponent){
-                    $postCompType         = 'sp_post' . sp_core::getType($rawComponent->typeID);
+                    $postCompType         = 'sp_post' . sp_core::getTypeName($rawComponent->typeID);
                     $sp_postComponent     = new $postCompType($rawComponent->id);
                     $postComponents[$i++] = $sp_postComponent;
                 }
@@ -775,8 +778,7 @@ if (!class_exists("sp_post")) {
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_postComponents';
             $postID = $this->wpPost->ID;
-            $sql = "SELECT COUNT(*) FROM $tableName where postID = $postID";
-            return $wpdb->get_var($wpdb->prepare($sql));
+            return $wpdb->get_var( "SELECT COUNT(*) FROM $tableName where postID = $postID" );
         }
 
         /**************************************

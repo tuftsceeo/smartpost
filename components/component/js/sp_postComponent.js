@@ -85,23 +85,23 @@
          * Make component titles editable
          */
         editableCompTitle: function(titleElems){
-                var thisObj = this;
+            var self = this;
 
-                if( titleElems == undefined){
-                    titleElems = $('.editableCompTitle');
-                }
+            if( titleElems == undefined){
+                titleElems = $( '.editableCompTitle' );
+            }
 
-                titleElems.editable(function(value, settings){
-                    var compID = $(this).attr('data-compid');
-                    thisObj.saveCompTitle(value, compID);
-                    return value;
-                },
-                {
-                    placeholder: 'Click to add a title',
-                    onblur     : 'submit',
-                    cssclass   : 'sp_compTitleEditable',
-                    maxlength  : 65
-                })
+            titleElems.editable(function(value, settings){
+                var compID = $(this).data( 'compid' );
+                self.saveCompTitle(value, compID);
+                return value;
+            },
+            {
+                placeholder: 'Click to add a title',
+                onblur     : 'submit',
+                cssclass   : 'sp_compTitleEditable',
+                maxlength  : 50
+            });
         },
 
         /**
@@ -128,88 +128,41 @@
             }
 
             //Used to bind new component to its necessary events
-            //Finds the right component type via sp_globals.types[] and typeID
-            if(sp_globals.types){
-                var componentJS   = sp_globals.types[typeID];
+            //Finds the right component type via sp_globals.SP_TYPES[] and typeID
+            if(sp_globals.SP_TYPES){
+                var componentJS   = sp_globals.SP_TYPES[typeID];
             }
 
             $.ajax({
-                    url	 : SP_AJAX_URL,
-                    type : 'POST',
-                    data :
-                    {
-                        action      : 'newPostComponentAJAX',
-                        nonce       : SP_NONCE,
-                        catCompID   : catCompID,
-                        postID      : postID
-                    },
-                    dataType : 'html',
-                    success  : function(response, statusText, jqXHR){
-                        newComponent = $(response);
+                url	 : SP_AJAX_URL,
+                type : 'POST',
+                data :
+                {
+                    action      : 'newPostComponentAJAX',
+                    nonce       : SP_NONCE,
+                    catCompID   : catCompID,
+                    postID      : postID
+                },
+                dataType : 'html',
+                success  : function(response, statusText, jqXHR){
+                    newComponent = $(response);
 
-                        //Add the new component to the DOM window if necessary
-                        if(componentStack){
-                            newComponent.appendTo(componentStack);
-                        }
-
-                        //Call compHandler now that we have the component
-                        if(compHandler){
-                            compHandler(newComponent);
-                        }
-
-                        thisObj.initializeComponent(newComponent, typeID);
-
-                    },
-                    error    : function(jqXHR, statusText, errorThrown){
-                            thisObj.showError(errorThrown);
+                    //Add the new component to the DOM window if necessary
+                    if(componentStack){
+                        newComponent.appendTo(componentStack);
                     }
-            })
-        },
 
-        /**
-         * Adds a nicEditor to the DOM. Used in the link and media components.
-         *
-         * @param elementID - The DOMElem id attribute to bind the editor to
-         * @param panelID - The DOMelem id attribute to bind the coinciding panel to. If left empty, the panel will not be displayed.
-         * @param placeHolder - A placeholder in case the editor is left empty after onblur.
-         * @param saveContentFn - A save function to be called. Will be passed content, content container ID, and the editor instance.
-         */
-        addNicEditor: function(elementID, panelID, saveContentFn, placeHolder){
-            var thisObj   = this;
-            var buttons   = ['save','bold','italic','underline','left','center','right','justify',
-                             'ol','ul','strikethrough','removeformat','indent','outdent','image',
-                             'forecolor','bgcolor','link','unlink','fontFormat','xhtml']
-            var editor    = new nicEditor({
-                                buttonList: buttons, iconsPath : SP_IMAGE_PATH + '/nicEditorIcons.gif',
-                                onSave : function(content, id, instance){ saveContentFn(content, id, instance) }
-                                }).addInstance(elementID);
-            var counter   = 1;
-
-            //Reset counter so it saves after onfocus
-            editor.addEvent('focus', function(){
-                counter = 0;
-                if(panelID){
-                    editor.setPanel(panelID);
-                }
-                var content = editor.instanceById(elementID).getContent();
-                if(content == placeHolder){
-                    editor.instanceById(elementID).setContent('');
-                    $('#' + elementID).click().focus();
-                }
-            });
-
-            //Save content only after 1st onblur event
-            editor.addEvent('blur', function(){
-                if(counter < 1){
-                    if(panelID){	$('#' + panelID).html('');	}
-                    var content = editor.instanceById(elementID).getContent();
-                    if($.trim($('#' + elementID).text()) == ''){
-                        editor.instanceById(elementID).setContent(placeHolder);
-                    }else{
-                        saveContentFn(content, elementID, editor.instanceById(elementID));
+                    //Call compHandler now that we have the component
+                    if(compHandler){
+                        compHandler(newComponent);
                     }
+
+                    thisObj.initializeComponent(newComponent, typeID);
+
+                },
+                error    : function(jqXHR, statusText, errorThrown){
+                        thisObj.showError(errorThrown);
                 }
-                counter++;
             });
         },
 
@@ -225,8 +178,8 @@
                 typeID = $(component).attr('data-typeid');
             }
 
-            if(sp_globals.types){
-                var componentJS = sp_globals.types[typeID];
+            if(sp_globals.SP_TYPES){
+                var componentJS = sp_globals.SP_TYPES[typeID];
             }else{
                 alert('sp_globals var missing, could not initialize component!');
             }
@@ -271,22 +224,22 @@
                     });
 
                 $.ajax({
-                        url  : SP_AJAX_URL,
-                        type : 'POST',
-                        data : {
-                            action    : 'setPostCompOrderAJAX',
-                            nonce     : SP_NONCE,
-                            compOrder : compOrder,
-                            postID    : postID
-                        },
-                        dataType : 'json',
-                        success  : function(response, statusText, jqXHR){
-                            console.log(response);
-                        },
-                        error    : function(jqXHR, statusText, errorThrown){
-                            thisObj.showError(errorThrown);
-                        }
-                    })
+                    url  : SP_AJAX_URL,
+                    type : 'POST',
+                    data : {
+                        action    : 'setPostCompOrderAJAX',
+                        nonce     : SP_NONCE,
+                        compOrder : compOrder,
+                        postID    : postID
+                    },
+                    dataType : 'json',
+                    success  : function(response, statusText, jqXHR){
+                        console.log(response);
+                    },
+                    error    : function(jqXHR, statusText, errorThrown){
+                        thisObj.showError(errorThrown);
+                    }
+                });
                 }
         },
 
@@ -297,9 +250,8 @@
          * @param string errorText The error text to display
          */
         showError: function(errorText){
-                $('#component_errors').show().html(
-                                'Error: ' +	errorText);
-                $('html, body').animate({ scrollTop: 0 }, 0);
+            $('#component_errors').show().html('Error: ' +	errorText);
+            $('html, body').animate({ scrollTop: 0 }, 0);
         },
 
         /**
@@ -340,7 +292,7 @@
 
                             var components = thisObj.getComponents(filter[0] = catCompID);
                             if(components.length == 1 ){
-                                var componentJS = sp_globals.types ? sp_globals.types[typeID] : false;
+                                var componentJS = sp_globals.SP_TYPES ? sp_globals.SP_TYPES[typeID] : false;
                                 if(componentJS.isEmpty(components[0])){
                                     $(components[0]).addClass('requiredComponent');
                                 }
@@ -374,33 +326,32 @@
         isRequired: function(compID){
             return Boolean( $('#comp-' + compID).attr("data-required") );
         },
+
         /**
          * Returns an array of components based off the filter, otherwise it will
          * return all the components in the post.
-         *
-         * @param array filter An array containing catCompID's to filter, i.e. filter[0] = "7", filter[1] = "4", etc
-         * @return array The components
+         * @param filter An array containing catCompID's to filter, i.e. filter[0] = "7", filter[1] = "4", etc
+         * @returns {Array}
          */
         getComponents: function(filter){
-
-         var components = new Array();
-         if(filter){
-            for(var i=0; i < filter.length; i++){
-                components[i] = $('.sp_component[data-catcompid="' + filter[i] + '"]');
-            }
-         }else{
+            var components = [];
+            if( filter ){
+                for(var i=0; i < filter.length; i++){
+                    components[i] = $('.sp_component[data-catcompid="' + filter[i] + '"]');
+                }
+            }else{
              components[0] = $('.sp_component').length;
-         }
-         return components;
+            }
+            return components;
         },
         /**
          * Initializes components with any necessary init methods
          */
         init: function(){
-                this.makeSortable()
-                this.makeWidgetDraggable('.sortableSPComponents');
-                this.deleteComponent();
-                this.editableCompTitle();
+            this.makeSortable()
+            this.makeWidgetDraggable('.sortableSPComponents');
+            this.deleteComponent();
+            this.editableCompTitle();
         }
     }
 

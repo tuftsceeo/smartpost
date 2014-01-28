@@ -3,47 +3,39 @@
  * Used on the front end for new posts
  */
 
+.sp_qp_component{
+    cursor: pointer;
+}
+.sp_qp_component:hover{
+    text-decoration: underline;
+}
 .quickPostComps{
 	min-height: inherit !important;
 }
-
-.sp_add_post{	padding: 5px; 	cursor: pointer; margin-top: 0px; }
-h4.sp_add_post:hover{
-	cursor: pointer;
-	color: green;
-	background: #F6F6F6;
-	border-radius: 3px;
+.sp_add_post{
+    padding: 5px;
+    cursor: pointer;
+    margin-top: 0px;
 }
-
-.sp_new_title{	margin-bottom: 5px; }
 .sp_new_title{
-	border-radius: 3px;
-	border: 1px solid	silver;
+    margin-bottom: 5px;
+}
+.sp_new_title{
 	height: 25px;
 	width: 100%;
+    font-size: 24px;
 }
-
 button.sp_qp_button{
-	color: green;
-	background: white;
-	border: 1px solid silver;
-	border-radius: 3px;
 	cursor: pointer;
 }
-button.sp_qp_button:hover{ background: #F6F6F6;	}
-
-span.sp_qp_component:hover{	color: green; cursor: pointer; }
-
 #sp_qp_response{
 	color: green;
 	cursor: pointer;
 }
-
 #sp_qp_responseDialog{
 	max-height: 400px;
 }
-
-#sp_quickpost_form{ 
+#sp_quickpost_form{
 	display: none; padding: 5px; 
 	border-bottom: 1px solid silver;
 	margin-bottom: 10px;

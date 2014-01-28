@@ -60,10 +60,10 @@ if (!class_exists("sp_postLinkAJAX")) {
 					exit;					
 				}
 
-				$compID  						= (int) $_POST['compID'];
-				$link 									= (string) stripslashes_deep($_POST['link']);
+				$compID = (int) $_POST['compID'];
+				$link 	= (string) stripslashes_deep($_POST['link']);
 				$linkComponent = new sp_postLink($compID);
-				$success   				= $linkComponent->setLink($link);
+				$success = $linkComponent->setLink($link);
 
 				if( !empty($link) ){
 					echo $linkComponent->renderThumbs() . $linkComponent->renderDesc();
@@ -140,7 +140,7 @@ if (!class_exists("sp_postLinkAJAX")) {
 				//remove existing thumb if one exists
 				$linkComponent->removeThumb();
 				
-				$id = sp_core::upload( $_FILES, 'sp_link_thumb', $postID, array('post_title' => $_FILE['sp_link_thumb']['name']) );
+				$id = sp_core::upload('sp_link_thumb', $postID, array('post_title' => $_FILE['sp_link_thumb']['name']));
 				if(is_wp_error($id)){
 					header("HTTP/1.0 409 Could not successfully upload file, " . $id->get_error_message());
 					exit;		
@@ -170,8 +170,8 @@ if (!class_exists("sp_postLinkAJAX")) {
 					exit;					
 				}
 	
-				$compID		= (int) $_POST['compID'];
-				$thumb			= (string) stripslashes_deep($_POST['thumb']);
+				$compID = (int) $_POST['compID'];
+				$thumb	= (string) stripslashes_deep($_POST['thumb']);
 				$linkComponent = new sp_postLink($compID);
 
 				if( is_wp_error($linkComponent->errors) ){

@@ -41,7 +41,7 @@ if (!class_exists("sp_postVideoAJAX")) {
             }
 
             $videoComponent->description = stripslashes_deep( $_POST['content'] );
-            $videoComponent->update(null);
+            $videoComponent->update();
             echo json_encode( array('success' => true) );
             exit;
         }
@@ -83,7 +83,6 @@ if (!class_exists("sp_postVideoAJAX")) {
          */
         static function videoUploadAJAX(){
             $nonce = $_POST['nonce'];
-
             if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 header("HTTP/1.0 403 Security Check.");
                 die('Security Check');
@@ -181,14 +180,14 @@ if (!class_exists("sp_postVideoAJAX")) {
 
                 //Update the component with at least the .mov in case something is up with converting..
                 $videoComponent->videoAttachmentIDs['mov'] = $vid_id;
-                $videoComponent->update(null);
+                $videoComponent->update();
 
                 $html5_encoding = (bool) get_site_option('sp_html5_encoding');
 
                 if( $html5_encoding ){
 
                     $videoComponent->beingConverted = true;
-                    $videoComponent->update(null);
+                    $videoComponent->update();
 
                     $script_path = dirname(dirname(__FILE__)) . '/html5video.php';
 

@@ -4,7 +4,7 @@
  * options.
  */
 (function($){
-    var sp_postWidget = {
+    sp_widgets.sp_postWidget = {
 
         rotateImgs: function(){
             var thisObj = this;
@@ -136,6 +136,6 @@
     }
 
     $(document).ready(function(){
-        sp_postWidget.init();
+        sp_widgets.sp_postWidget.init();
     });
 })(jQuery);

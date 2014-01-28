@@ -69,7 +69,7 @@ if (!class_exists("sp_category")) {
 
                     if( !empty($componentResults) ){
                         foreach($componentResults as $componentRow){
-                            $type = 'sp_cat' . sp_core::getType($componentRow->typeID);
+                            $type = 'sp_cat' . sp_core::getTypeName($componentRow->typeID);
                             //if(class_exists($type)){
                                 $component = new $type($componentRow->id);
                                 array_push($this->catComponents, $component);
@@ -397,7 +397,7 @@ if (!class_exists("sp_category")) {
          */
         function addCatComponent($name, $description, $typeID, $isDefault, $isRequired){
             $compOrder = self::getNextOrder();
-            $type = 'sp_cat' . sp_core::getType($typeID);
+            $type = 'sp_cat' . sp_core::getTypeName($typeID);
 
             if(!class_exists($type)){
                 return new WP_Error('broke', ('Could not find ' . $type . ' class!'));

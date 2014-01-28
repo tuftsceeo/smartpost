@@ -66,7 +66,7 @@ if (!class_exists("sp_postMedia")) {
 				
 				wp_enqueue_script( 'jquery-filedrop', null, array( 'jquery' ) );
 				wp_enqueue_script( 'jquery-webcam',   null, array( 'jquery' ) );				
-				wp_enqueue_script( 'sp_postMediaJS',  null, array( 'jquery', 'sp_globals', 'sp_postComponentJS', 'sp_tiny_mce' ) );
+				wp_enqueue_script( 'sp_postMediaJS',  null, array( 'jquery', 'sp_globals', 'sp_postComponentJS', 'tiny_mce' ) );
 			}
 
 			/**
@@ -178,7 +178,7 @@ if (!class_exists("sp_postMedia")) {
 						$html .= '</a>';
 						
 						$html .= '<p id="media_caption-' . $attachment->ID . '" class="sp_mediaCaption">' . $attachment->post_title . '</p>';
-						$html .= $editMode ? '<img src="' . IMAGE_PATH . '/no.png" id="deleteThumb-' . $id .'" name="deleteThumb-' . $id .'" data-attachid="' . $id . '" data-compid="' . $compID . '" class="sp_mediaDelete" alt="Delete Attachment" title="Delete Attachment">' : '';
+						$html .= $editMode ? '<img src="' . SP_IMAGE_PATH . '/no.png" id="deleteThumb-' . $id .'" name="deleteThumb-' . $id .'" data-attachid="' . $id . '" data-compid="' . $compID . '" class="sp_mediaDelete" alt="Delete Attachment" title="Delete Attachment">' : '';
 					$html .= '</div>';
 				}
 				return $html;

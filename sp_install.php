@@ -87,9 +87,9 @@ if (!class_exists("sp_install")) {
                 require_once($filename);
                 $component = basename($filename, ".php");
 
-                //ignore sp_catComponent as it's an abstract class
-                if(method_exists($component, 'install') && $component != 'sp_catComponent'){
-                    call_user_func(array($component, 'install'));
+                // ignore sp_catComponent as it's an abstract class
+                if( method_exists($component, 'install') && $component != 'sp_catComponent' ){
+                    call_user_func( array($component, 'install') );
                 }
 			}
 		}

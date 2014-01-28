@@ -61,7 +61,7 @@ class sp_myPostsWidget extends WP_Widget {
         $drafts = $published = "";
         $pCount = $dCount = 0;
         if($posts){
-            $deleteImgSrc = IMAGE_PATH . '/no.png';
+            $deleteImgSrc = SP_IMAGE_PATH . '/no.png';
             foreach($posts as $post){
                 $deleteImg  = '<img src="' . $deleteImgSrc . '" id="delete-' . $post->ID .'" name="' . $post->ID . '" class="sp_deletePost" data-postid="' . $post->ID . '"" alt="Delete Post" title="Delete Post" />';
                 if($post->post_status == 'publish'){

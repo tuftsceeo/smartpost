@@ -18,13 +18,6 @@ if (!class_exists("sp_catContent")) {
             $compInfo = compact("compID", "catID", "name", "description", "typeID",
                 "options",	"order", "default", "required");
 
-
-            //Set default content options
-            if($compID == 0){
-                $this->options->plaintext = false;
-                $this->options->richtext = true;
-            }
-
             $this->initComponent($compInfo);
         }
 
@@ -66,87 +59,36 @@ if (!class_exists("sp_catContent")) {
         }
 
         /**
-         * @see parent::componentMenu()
-         */
-        function componentMenu(){
-            ?>
-            <ul class="simpleMenu">
-                <li class="stuffbox"><a href="#"><img src="<?php echo IMAGE_PATH . '/downArrow.png'; ?>" /></a>
-                    <ul class="stuffbox">
-                        <li><a href="#" class="delete_component" data-compid="<?php echo $this->ID ?>">Delete Component</a></li>
-                    </ul>
-                </li>
-            </ul>
-        <?php
-        }
-
-        /**
          * @see parent::componentOptions()
          */
         function componentOptions(){
             $options = $this->options;
             ?>
-            <p>Select editor mode:</p>
-            <table>
-                <tr>
-                    <td>
-                        <input type="radio" name="content-mode-<?php echo $this->ID ?>" id="plaintext-mode-<?php echo $this->ID ?>" value="plaintext" <?php echo $options->plaintext ? 'checked="checked"' : '' ?> class="content-comp" />
-                        <label for="plaintext-mode-<?php echo $this->ID ?>">Plaintext mode - Users will <b>not</b> have access to a formatting toolbar.</label>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <input type="radio" name="content-mode-<?php echo $this->ID ?>" id="richtext-mode-<?php echo $this->ID ?>" value="richtext" <?php echo $options->richtext ? 'checked="checked"' : '' ?> />
-                        <label for="richtext-mode-<?php echo $this->ID ?>">Richtext mode - Users will have access to a formatting toolbar.</label>
-                    </td>
-                </tr>
-            </table>
+            <p>No options exist for this component.</p>
         <?php
-        }
-
-        /**
-         * @see parent::renderSettings()
-         */
-        function globalOptions(){
-            return false;
         }
 
         /**
          * @see parent::getOptions()
          */
         function getOptions(){
-            return $this->options;
+            return null;
         }
 
-        /**
-         * Returns true whether the content component is plaintext, otherwise false
-         *
-         * @return bool
-         */
-        function isPlaintext(){
-            return $this->options->plaintext;
-        }
-
-        /**
-         * Returns true whether the content component is richttext, otherwise false
-         *
-         * @return bool
-         */
-        function isRichtext(){
-            return $this->options->richtext;
-        }
-
-        /**
+          /**
          * @see parent::setOptions()
          */
-        function setOptions($data = null){}
-
-        //Converts all instances from Richtext to Plaintext
-        private function convertToPlaintext(){
+        function setOptions($data = null){
+            return $data;
         }
 
-
-
+        /**
+         * Renders the global options for this component, otherwise returns false.
+         * @return bool|string
+         */
+        public static function globalOptions(){
+            return false;
+        }
     }
 }
 ?>

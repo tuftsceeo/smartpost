@@ -99,13 +99,13 @@ if (!class_exists("sp_postLink")) {
 						$html .= '<a href="' . $this->url . '" class="sp_link_thumb_link fancybox">';
 							$html .= $img;
 						$html .=	'</a>';
-						$html .= $editMode ? '<img src="' . IMAGE_PATH . '/no.png" id="removeThumb-' . $this->ID . '" name="removeThumb-' . $this->ID . '" data-thumbid="' . $this->urlThumb . '" class="removeLinkThumb" alt="Remove Thumbnail" title="Remove Thumbnail" />' : '';
+						$html .= $editMode ? '<img src="' . SP_IMAGE_PATH . '/no.png" id="removeThumb-' . $this->ID . '" name="removeThumb-' . $this->ID . '" data-thumbid="' . $this->urlThumb . '" class="removeLinkThumb" alt="Remove Thumbnail" title="Remove Thumbnail" />' : '';
 						$html .= '<div class="clear"></div>';
 					$html .= '</div>';
 				}elseif( empty($img) && $editMode){
 					$html .= '<div id="sp_link_thumb-' . $this->ID . '" data-compid="' . $this->ID . '" class="sp_link_' . $this->urlType . ' emptyLinkThumb">';
 						$html .= '<p>Drag and drop your own thumbnail!</p>';
-	     $html .= $editMode ? '<img src="' . IMAGE_PATH . '/no.png" id="removeThumb-' . $this->ID . '" name="removeThumb-' . $this->ID . '" class="removeLinkThumb" alt="Remove Thumbnail" title="Remove Thumbnail" />' : '';
+	     $html .= $editMode ? '<img src="' . SP_IMAGE_PATH . '/no.png" id="removeThumb-' . $this->ID . '" name="removeThumb-' . $this->ID . '" class="removeLinkThumb" alt="Remove Thumbnail" title="Remove Thumbnail" />' : '';
 	     $html .= '<input type="file" id="sp_link_browse-' . $this->ID . '" name="sp_link_browse-' . $this->ID . '" style="display: none" />';
 					$html .= '</div>';
 				}
@@ -153,7 +153,7 @@ if (!class_exists("sp_postLink")) {
 			}
 			
 			static function enqueueJS(){
-				wp_register_script( 'sp_postLinkJS', plugins_url('/js/sp_postLink.js', __FILE__), array( 'jquery', 'sp_globals', 'sp_postComponentJS', 'sp_tiny_mce' ));
+				wp_register_script( 'sp_postLinkJS', plugins_url('/js/sp_postLink.js', __FILE__), array( 'jquery', 'sp_globals', 'sp_postComponentJS', 'tiny_mce' ));
 				wp_enqueue_script( 'sp_postLinkJS' );
 			}
 
@@ -332,7 +332,7 @@ if (!class_exists("sp_postLink")) {
 								break;
 						}
 						
-						//Create an attachment!
+				  //Create an attachment!
 				  $wp_filetype = wp_check_filetype(basename($filename), null );
 				  
 				  $attachment = array(
@@ -567,14 +567,14 @@ if (!class_exists("sp_postLink")) {
 								$count++;
 						}
 						$html .= '</div><!-- end #thumb_results-' . $this->ID . ' -->';
-						$html .= '<img src="' . IMAGE_PATH . '/no.png" id="removeThumb-' . $this->ID . '" name="removeThumb-' . $this->ID . '" data-thumbid="' . $this->urlThumb . '" class="removeLinkThumb" alt="Remove Thumbnail" title="Remove Thumbnail" />';
+						$html .= '<img src="' . SP_IMAGE_PATH . '/no.png" id="removeThumb-' . $this->ID . '" name="removeThumb-' . $this->ID . '" data-thumbid="' . $this->urlThumb . '" class="removeLinkThumb" alt="Remove Thumbnail" title="Remove Thumbnail" />';
 						$html .= '<div class="clear"></div>';
 					$html .= '</div><!-- end #sp_link_thumbs-' . $this->ID . ' -->';
 				
 				}else{ //No Thumbnails were found			  
 					$html .= '<div id="sp_link_thumb-' . $this->ID . '" data-compid="' . $this->ID . '" class="sp_link_' . $this->urlType . ' emptyLinkThumb">';
 						$html .= '<p>Drag and drop your own thumbnail!</p>';
-						$html .= '<img src="' . IMAGE_PATH . '/no.png" id="removeThumb-' . $this->ID . '" name="removeThumb-' . $this->ID . '" class="removeLinkThumb" alt="Remove Thumbnail" title="Remove Thumbnail" />';
+						$html .= '<img src="' . SP_IMAGE_PATH . '/no.png" id="removeThumb-' . $this->ID . '" name="removeThumb-' . $this->ID . '" class="removeLinkThumb" alt="Remove Thumbnail" title="Remove Thumbnail" />';
 					$html .= '</div>';				
 				}
 				

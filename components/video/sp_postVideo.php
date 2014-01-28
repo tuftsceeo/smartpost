@@ -57,8 +57,8 @@ if (!class_exists("sp_postVideo")) {
          */
         function renderEditMode($value = ""){
             $html = '<div id="sp_video-' . $this->ID . '" class="sp_video" data-compid="' . $this->ID . '" style="text-align: center;">';
-                $html .= $this->renderPlayer();
-                if( !$this->beingConverted ) {
+
+            if( !$this->beingConverted ) {
 
                     // Create an editor area for a video description
                     $html .= sp_core::sp_editor(
@@ -68,6 +68,8 @@ if (!class_exists("sp_postVideo")) {
                         'Click here to add a video description ...',
                         array('data-action' => 'saveVideoDescAJAX', 'data-compid' => $this->ID, 'data-postid' => $this->postID )
                     );
+
+                    $html .= $this->renderPlayer();
 
                     $html .= '<div id="videoUploader-' . $this->ID .'" class="videoUploader">';
                         $html .= '<p id="videoProgressMsg-' . $this->ID .'" class="videoProgressMsg"></p>';
@@ -83,7 +85,9 @@ if (!class_exists("sp_postVideo")) {
                         $html .= 'Browse for a video: <input id="sp_videoBrowse-' . $this->ID .'" data-compid="' . $this->ID . '" type="file">';
                         $html .= '<p>Note: We currently only support .mov and .avi video files.</p>';
                     $html .= '</p>';
-                }
+            }else{
+                $html .= '<p><img src="' . SP_IMAGE_PATH . '/loading.gif" /> Your video is being processed, thank you for your patience!</p>';
+            }
             $html .= '</div>';
             return $html;
         }
@@ -137,6 +141,7 @@ if (!class_exists("sp_postVideo")) {
          */
         function renderViewMode(){
             $html .= '<div id="sp_video-' . $this->ID . '" class="sp_video" data-compid="' . $this->ID . '">';
+                $html .= $this->description;
                 $html .= $this->renderPlayer();
             $html .= '</div>';
             return $html;
@@ -181,10 +186,9 @@ if (!class_exists("sp_postVideo")) {
          * Writes member variables to the database:
          * - $this->beingConverted     : Whether the video is in the process of being converted
          * - $this->videoAttachmentIDs : array containing the formats and attachment IDs of video files in the format: array({format} => {attachment id});
-         * @param $data - unnecessary
          * @return bool|int
          */
-        function update($data = null){
+        function update(){
             $videoData = new stdClass();
             $videoData->beingConverted     = (bool) $this->beingConverted;
             $videoData->videoAttachmentIDs = $this->videoAttachmentIDs;

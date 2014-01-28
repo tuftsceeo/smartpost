@@ -187,6 +187,8 @@
          */
         initComponent: function(component, postID, autoFocus){
             this.initFileDrop($(component));
+            var editor = $( component ).find( '.sp-editor-content' );
+            smartpost.sp_post.initCkEditors(editor);
         },
 
         /**

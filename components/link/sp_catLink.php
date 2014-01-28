@@ -42,11 +42,6 @@ if (!class_exists("sp_catLink")) {
         static function init(){}
 
         /**
-         * @see parent::renderSettings()
-         */
-        function globalOptions(){}
-
-        /**
          * @see parent::componentOptions()
          * @return mixed|void
          */
@@ -64,6 +59,14 @@ if (!class_exists("sp_catLink")) {
          * @return mixed|null
          */
         function setOptions($data = null){ return null; }
+
+        /**
+         * Renders the global options for this component, otherwise returns false.
+         * @return bool|string
+         */
+        public static function globalOptions(){
+            return false;
+        }
 	}
 }
 ?>

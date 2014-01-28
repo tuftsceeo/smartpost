@@ -3,7 +3,7 @@
  * front-end posts for handling widget events.
  */
 (function($){
-    var sp_myPostsWidget = {
+    sp_widgets.sp_myPostsWidget = {
         deletePost: function(postID, postLbl){
             $.ajax({
                 url				  : SP_AJAX_URL,
@@ -74,6 +74,6 @@
     }
 
     $(document).ready(function(){
-        sp_myPostsWidget.init();
+        sp_widgets.sp_myPostsWidget.init();
     });
 })(jQuery);

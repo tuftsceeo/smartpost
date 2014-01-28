@@ -21,8 +21,6 @@ if (!class_exists("sp_postComponent")) {
         protected $postID;
         protected $options;
         protected $typeID;
-        protected $menuOptions;
-        protected $defaultMenuOptions = array('Delete' => 'sp_delete');
         public $errors;
 
         /**
@@ -52,21 +50,12 @@ if (!class_exists("sp_postComponent")) {
         abstract protected function renderPreview();
 
         /**
-         * Adds extra menu options to the component menu
-         * @return array Array containing array("MenuItem" => "functionName") where
-         *               MenuItem is the item to be displayed and functionName is the function
-         *               to call when MenuItem is clicked on. Current menu items can only be 1
-         *               level deep.
-         */
-        abstract protected function addMenuOptions();
-
-        /**
-         * Update the component with data
+         * Updates the DB record associated with the component instance.
          *
-         * @param mixed The data to update with
-         * @return bool Whether the update operation succeeded
+         * @param mixed - Data to update with
+         * @return bool - Whether the update operation succeeded
          */
-        abstract public function update($data = null);
+        abstract public function update();
 
 
         /**
@@ -109,8 +98,8 @@ if (!class_exists("sp_postComponent")) {
                         array(
                             'catCompID'   => $this->catCompID,
                             'compOrder'   => $this->compOrder,
-                            'name'     			=> $this->name,
-                            'value'						 => maybe_serialize($this->value),
+                            'name'     	  => $this->name,
+                            'value'		  => maybe_serialize($this->value),
                             'postID'      => $this->postID,
                             'options'     => maybe_serialize($this->options),
                             'typeID'      => $this->typeID
@@ -121,8 +110,6 @@ if (!class_exists("sp_postComponent")) {
                     $this->errors = new WP_Error ('broke', __("Could insert component into the database succesfully: " . $wpdb->print_error()));
                 }else{
                     $this->ID = $wpdb->insert_id;
-                    $extraMenuOptions  = $this->addMenuOptions();
-                    $this->menuOptions = array_merge($this->defaultMenuOptions, $extraMenuOptions);
                 }
             }
         }
@@ -150,9 +137,6 @@ if (!class_exists("sp_postComponent")) {
                     $this->postID    = $component->postID;
                     $this->options   = maybe_unserialize($component->options);
                     $this->typeID    = $component->typeID;
-
-                    $extraMenuOptions       = $this->addMenuOptions();
-                    $this->menuOptions      = array_merge($this->defaultMenuOptions, $extraMenuOptions);
                 }else{
                     $this->errors = new WP_Error ('broke', __("Could not find component with ID: " . $compID));
                 }
@@ -227,19 +211,20 @@ if (!class_exists("sp_postComponent")) {
             global $current_user;
             global $wp_query;
             $post    = get_post($this->postID);
-            $canEdit = current_user_can('edit_posts');
-            $owner = ($current_user->ID == $post->post_author);
-            $admin = current_user_can('administrator');
+            $canEdit = current_user_can( 'edit_posts' );
+            $owner = ( $current_user->ID == $post->post_author );
+            $admin = current_user_can( 'administrator' );
+            $editMode = (bool) $_GET['edit_mode'];
 
             require_once(ABSPATH . 'wp-admin/includes/post.php');
             $isLocked = (bool) wp_check_post_lock( $this->postID );
 
-            //Return preview mode if we're listing posts
-            if( !is_single() && !$ajax ){
+            $html = '';
+
+            // Return preview mode if we're listing posts
+            if( !is_single() ){
                 if( !$this->isEmpty() ){
-                    $title = $this->renderCompTitle();
                     $html .= '<div id="comp-' .  $this->ID . '" class="sp_component">';
-                    $html .= empty($title) ? '' : $title . ' - ';
                     $html .= $this->renderPreview() . ' ';
                     $html .= '<div class="clear"></div>';
                     $html .= '</div><!-- end #comp-' . $this->ID .' -->';
@@ -247,21 +232,21 @@ if (!class_exists("sp_postComponent")) {
                 return $html;
             }
 
-            //Return edit mode component if we're an admin or an owner
-            if( (( $canEdit &&  $owner) ||  $admin) && !$isLocked ){
-                $html .= '<div id="comp-' . $this->ID . '" data-compid="' . $this->ID . '" data-required="' . $this->isRequired() . '" data-catcompid="' . $this->catCompID . '" data-typeid="' . $this->typeID . '" class="sp_component' . (($this->isRequired() && $this->lastOne() && $this->isEmpty()) ?  ' requiredComponent' : '') . '">';
-                $html .= '<div class="componentHandle"></div>';
-                $html .= $this->renderCompTitle(true);
+            // Return edit mode component if we're an admin or an owner
+            if( ( ( $canEdit &&  $owner) ||  $admin ) && !$isLocked ){
+                $html .= '<div id="comp-' . $this->ID . '" data-compid="' . $this->ID . '" data-required="' . $this->isRequired() . '" data-catcompid="' . $this->catCompID . '" data-typeid="' . $this->typeID . '" class="sp_component' . ( ($this->isRequired() && $this->lastOne() && $this->isEmpty() ) ?  ' requiredComponent' : '') . '">';
+                $html .= $this->renderCompTitle($owner);
+                $html .= '<span id="del" data-compid="' . $this->ID . '" class="sp_delete sp_xButton" title="Delete Component"></span>';
+                $html .= '<div class="componentHandle tooltip" title="Drag up or down"><div class="theHandle"></div></div>';
                 $html .= $this->renderEditMode();
                 $html .= '<div class="clear"></div>';
                 $html .= '</div><!-- end #comp-' . $this->ID .' -->';
                 return $html;
 
-            }else{ //Otherwise return viewMode
+            }else{ // Otherwise return viewMode
 
                 if( !$this->isEmpty() ){
                     $html .= '<div id="comp-' .  $this->ID . '" class="sp_component">';
-                    $html .= $this->renderCompTitle();
                     $html .= $this->renderViewMode();
                     $html .= '<div class="clear"></div>';
                     $html .= '</div><!-- end #comp-' . $this->ID .' -->';
@@ -278,20 +263,16 @@ if (!class_exists("sp_postComponent")) {
             $editable = 'componentTitle';
             if($owner){
                 $editable = 'editableCompTitle editable';
-                $html .= '<div id="comp-' . $this->ID .'-title" data-compid="' . $this->ID . '" class="' . $editable .'">';
+                $html .= '<div id="comp-' . $this->ID .'-title" data-compid="' . $this->ID . '" class="' . $editable .'" title="Click to edit title">';
                 $html .= trim($this->name);
                 $html .= '</div>';
             }else{
-
                 if( empty($this->name) ){
                     return "";
                 }else{
                     $html .= trim($this->name);
                 }
-
             }
-
-
             return $html;
         }
 
@@ -332,14 +313,14 @@ if (!class_exists("sp_postComponent")) {
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_postComponents';
             $typeID = $wpdb->get_var("SELECT typeID FROM $tableName where id = $compID;");
-            return sp_core::getType($typeID);
+            return sp_core::getTypeName($typeID);
         }
 
         /**************************************
          * Getters/Setters					  *
          **************************************/
         function getCompType(){
-            return sp_core::getType($this->typeID);
+            return sp_core::getTypeName($this->typeID);
         }
 
         function getCompTypeID(){

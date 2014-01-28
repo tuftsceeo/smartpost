@@ -3,7 +3,7 @@
  * Used in dashboard/admin page
  */
 (function($){
-    spAdmin.sp_catMedia = {
+    sp_admin.sp_catMedia = {
         /**
          * Save media component settings
          * @param compID
@@ -30,7 +30,7 @@
                     }
                 },
                 error : function(data){
-                    spAdmin.adminpage.showError(data.statusText, null);
+                    sp_admin.adminpage.showError(data.statusText, null);
                 }
             };
 
@@ -58,6 +58,6 @@
     }
 
     $(document).ready(function(){
-        spAdmin.sp_catMedia.init();
+        sp_admin.sp_catMedia.init();
     });
 })(jQuery);

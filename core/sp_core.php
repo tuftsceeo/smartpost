@@ -305,7 +305,10 @@ if (!class_exists("sp_core")) {
          * @param $authID - Author of attachment
          * @return int - The attachment ID
          */
-        public static function create_attachment($filename, $postID, $content, $authID){
+        public static function create_attachment($filename, $postID, $content = '', $authID = null){
+
+            $authID = empty( $authID ) ? get_current_user_id() : $authID;
+
             $wp_filetype = wp_check_filetype(basename($filename), null );
             $wp_upload_dir = wp_upload_dir();
             $attachment = array(

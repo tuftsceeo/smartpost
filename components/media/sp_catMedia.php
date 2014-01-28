@@ -95,13 +95,8 @@ if (!class_exists("sp_catMedia")) {
 		}
 
         /**
-         * @see parent::renderSettings()
-         */
-        function globalOptions(){}
-
-		/**
 		 * Returns the allowed media extensions
-		 */ 
+		 */
 		function getOptions(){
 			return $this->options;
 		}
@@ -113,19 +108,27 @@ if (!class_exists("sp_catMedia")) {
         function setExtensions($exts){
 			$this->options->allowedExts = $exts;
 		}
-		
-		/**
+
+        /**
 		 * Sets the option for the media component. The $data param should be an object
 		 * with a 'isGallery' boolean and 'extensions' array. @see this class definition
-		 * 
+		 *
 		 * @param object $data
-		 * @return bool True on success, null or false on failure 
+		 * @return bool True on success, null or false on failure
 		 */
 		function setOptions($data = null){
 			$options = maybe_serialize($data);
-			return sp_core::updateVar('sp_catComponents', $this->ID, 'options', $options, '%s');		
+			return sp_core::updateVar('sp_catComponents', $this->ID, 'options', $options, '%s');
 		}
-		
-	}
+
+        /**
+         * Renders the global options for this component, otherwise returns false.
+         * @return bool|string
+         */
+        public static function globalOptions(){
+            return false;
+        }
+
+    }
 }
 ?>

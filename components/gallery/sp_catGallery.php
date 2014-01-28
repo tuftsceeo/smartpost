@@ -10,8 +10,6 @@ if (!class_exists("sp_catGallery")) {
 	 */
 	class sp_catGallery extends sp_catComponent{
 
-		private $useFancyBox = true; //Use fancybox by default
-		
 		function __construct($compID = 0, $catID = 0, $name = '',
                              $description = '', $typeID = 0, $order = 0,
                              $options = null, $default = false, $required = false){
@@ -20,15 +18,10 @@ if (!class_exists("sp_catGallery")) {
                                 "order", "options", "default", "required");
 
             if($compID == 0){
-                //Set default Gallery options
-                $options->useFancyBox = true;
                 $this->options = $options;
             }
 
             $this->initComponent($compInfo);
-
-            //Get updated gallery options after initializing the component
-            $this->useFancyBox = $this->options->useFancyBox;
 		}
 		
         /**
@@ -46,38 +39,21 @@ if (!class_exists("sp_catGallery")) {
 		/**
 		 * Adds CSS / JS to stylize and handle any UI actions
 		 */		
-		static function init(){
-			require_once('ajax/sp_catGalleryAJAX.php');
-			sp_catGalleryAJAX::init();
-            /*
-			wp_register_script( 'sp_catGalleryJS', plugins_url('js/sp_catGallery.js', __FILE__), array('sp_admin_globals') );
-			wp_enqueue_script( 'sp_catGalleryJS' );
-            */
-		}
-
-        /**
-         * @see parent::renderSettings()
-         */
-        function globalOptions(){}
+		static function init(){}
 
 		/**
 		 * @see parent::componentOptions()
 		 */		
 		function componentOptions(){
-			$fancyBox = $this->useFancyBox;
-            $checked = $fancyBox ? 'checked' : '';
-            $html = '';
-            $html .= '<input class="sp_gallery_fbox" id="fancybox-' . $this->ID . '" type="checkbox" ' . $checked . ' />';
-            $html .= '<label for="fancybox-' . $this->ID . '" > Click to use FancyBox with the gallery. </label>';
-			echo $html;
+        ?>
+            <p>No options exist for this component</p>
+        <?php
 		}
 
 		/**
-		 * Gallery options are whether to use fancybox or not to view pictures.
+		 * @see parent::getOptions()
 		 */ 
-		function getOptions(){
-			return $this->options;
-		}
+		function getOptions(){ return $this->options; }
 		
 		/**
 		 * Sets the option for the Gallery component. The $data param should be a bool
@@ -90,7 +66,14 @@ if (!class_exists("sp_catGallery")) {
 			$options = maybe_serialize($data);
 			return sp_core::updateVar('sp_catComponents', $this->ID, 'options', $options, '%s');		
 		}
-		
+
+        /**
+         * Renders the global options for this component, otherwise returns false.
+         * @return bool|string
+         */
+        public static function globalOptions(){
+            return false;
+        }
 	}
 }
 ?>

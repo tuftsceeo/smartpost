@@ -63,19 +63,19 @@ if (!class_exists("sp_catComponent")) {
         abstract public function getOptions();
 
         /**
-         * Sets the component options. For each component, the set operation is unique.
-         * @param null $data
-         * @return mixed
-         */
-        abstract public function setOptions($data = null);
-
-        /**
          * Settings section that is added to the SmartPost settings sub-page in the
          * Admin section/WP Dashboard. Should include any settings that may affect
          * your component globally across all posts.
          * @return bool|string The XHTML (forms, tables, etc.) representing the settings of your component, otherwise false
          */
-        abstract public function globalOptions();
+        abstract static public function globalOptions();
+
+        /**
+         * Sets the component options. For each component, the set operation is unique.
+         * @param null $data
+         * @return mixed
+         */
+        abstract public function setOptions($data = null);
 
         /**
          * Creates a new category component (inserts it into the DB) or loads an existing one if
@@ -167,7 +167,7 @@ if (!class_exists("sp_catComponent")) {
          *Add JS common to all components
          */
         static function enqueueBaseJS(){
-            wp_register_script( 'sp_catComponentJS', plugins_url('/js/sp_catComponent.js', __FILE__), array('sp_admin_globals', 'sp_admin_js'));
+            wp_register_script( 'sp_catComponentJS', plugins_url('/js/sp_catComponent.js', __FILE__), array('sp_globals', 'sp_admin_js'));
             wp_enqueue_script( 'sp_catComponentJS' );
         }
 
@@ -261,11 +261,7 @@ if (!class_exists("sp_catComponent")) {
             //delete the category componet from sp_catComponents table
             $tableName = $wpdb->prefix . 'sp_catComponents';
             return $wpdb->query(
-                $wpdb->prepare(
-                    "DELETE FROM $tableName
-					 WHERE id = %d",
-                    $this->ID
-                )
+                $wpdb->prepare("DELETE FROM $tableName WHERE id = %d", $this->ID)
             );
         }
 
@@ -303,9 +299,9 @@ if (!class_exists("sp_catComponent")) {
             $isRequiredChecked = $this->isRequired ? 'checked="checked"' : '';
 
             $checkBoxes = '<span class="requiredAndDefault">';
-                $checkBoxes .= '<label for="isDefault-' . $this->ID . '">Default </label>';
+                $checkBoxes .= '<label for="isDefault-' . $this->ID . '" class="tooltip" title="A \'default\' component will automatically be added to a new post.">Default </label>';
                 $checkBoxes .= '<input type="checkbox" class="compRestrictions" id="isDefault-' . $this->ID . '" data-compid="' . $this->ID . '" name="isDefault-' . $this->ID  . '" value="1" ' . $disabled . $isDefaultChecked . '/> ';
-                $checkBoxes .= '<label for="isRequired-' . $this->ID . '">Required </label>';
+                $checkBoxes .= '<label for="isRequired-' . $this->ID . '" class="tooltip" title="A \'required\' component will highlight an empty component that was not filled by a user prior to submission.">Required </label>';
                 $checkBoxes .= '<input type="checkbox" class="compRestrictions" id="isRequired-' . $this->ID . '" data-compid="' . $this->ID  . '" name="isRequired-' . $this->ID . '" value="1" ' . $isRequiredChecked  . '/>';
             $checkBoxes .= '</span>';
 
@@ -314,7 +310,7 @@ if (!class_exists("sp_catComponent")) {
             $title .= '<span class="editableCatCompTitle tooltip" title="Click to edit the title of the component" comp-id="' . $this->ID . '">';
             $title .= $this->name;
             $title .= '</span>';
-            $title .= '<span class="delComp xButton" id="del-' . $this->ID . '" comp-id="' . $this->getCompType() . '-' . $this->ID . '" alt="Delete Component" title="Delete Component"></span>';
+            $title .= '<span class="delComp sp_xButton" id="del-' . $this->ID . '" comp-id="' . $this->getCompType() . '-' . $this->ID . '" alt="Delete Component" title="Delete Component"></span>';
             $title .=  $checkBoxes;
 
             add_meta_box(
@@ -326,12 +322,6 @@ if (!class_exists("sp_catComponent")) {
                 'default'
             );
         }
-
-        /**
-         * Allows user to change or delete the icon for the component
-         * @todo HTML form to delete or replace icon
-         */
-        function renderIconForm(){}
 
         /**************************************
          * Statically Bound Getters/Setters	  *
@@ -386,7 +376,7 @@ if (!class_exists("sp_catComponent")) {
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
             $typeID    = $wpdb->get_var( "SELECT typeID FROM $tableName where id = $compID;" );
-            return sp_core::getType($typeID);
+            return sp_core::getTypeName($typeID);
         }
 
         /**
@@ -573,7 +563,7 @@ if (!class_exists("sp_catComponent")) {
         }
 
         function getCompType(){
-            return sp_core::getType($this->typeID);
+            return sp_core::getTypeName($this->typeID);
         }
 
     }

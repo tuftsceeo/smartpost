@@ -2,8 +2,31 @@
  * CSS for the sp_post class
  * Used in front end posts
  */
- 
 .sp_response_header{
 	border-bottom: 1px solid silver;
 }
- 
+.sp-editor-container:hover .sp-editor-identifier{
+    visibility: visible;
+}
+.sp-editor-identifier{
+    float: left;
+    cursor: pointer;
+    position: absolute;
+    top: 0px;
+    left: -20px;
+    visibility: hidden;
+}
+.sp-editor-container{
+    margin: 20px;
+    position: relative;
+}
+.sp-editor-content{
+    text-align: left;
+}
+.sp-editor-content{
+    cursor: pointer !important;
+}
+.sp-upload-dropzone{
+    border: 2px dashed silver;
+    text-align: center;
+}

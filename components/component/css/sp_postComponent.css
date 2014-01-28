@@ -2,111 +2,99 @@
  * CSS for the category components
  * Use for front-end styling
  */
- .componentHandle{
-    height: 12px;
+.componentHandle{
+    height: 18px;
     cursor: move;
-    background-color: #F1F1F1;
     border: 1px solid #EEE;
-    border-radius: 3px;
     margin-bottom: 10px;
     margin-left: auto;
     margin-right: auto;
-    display: none;
+    visibility: hidden;
     width: 50px;
- }
- 
- .requiredComponent{
- 	border: 1px solid red;
- 	border-radius: 3px;
- 	-moz-border-radius: 3px;
- 	-webkit-border-radius: 3px;
-    -moz-box-shadow: 4px 5px 8px -2px red;
-	-webkit-box-shadow: 4px 5px 8px -2px red;
-    box-shadow: 4px 5px 8px -2px red;
- }
- 
- .editableCompTitle, .componentTitle{
-    display: inline;
-    font-weight: bold;
+}
+.componentHandle .theHandle{
+    text-align: center;
+    transform:scale(2,1); /* W3C */
+    -webkit-transform:scale(2,1); /* Safari and Chrome */
+    -moz-transform:scale(2,1); /* Firefox */
+    -ms-transform:scale(2,1); /* IE 9 */
+    -o-transform:scale(2,1); /* Opera */
+}
+.componentHandle:hover{
+    background: #F1F1F1;
+}
+.componentHandle .theHandle:before{
+    content: "\f333";
+    font: 400 15px/1 dashicons;
+}
+.sp_delete{
+    visibility: hidden;
+    float: right;
+    cursor: pointer;
+}
+.sp_component{
+    padding: 5px;
+    background-color: white;
+    margin-bottom: 10px;
+    min-height: 75px;
+    line-height: 1.714285714;
+    border: 1px solid #ededed;
+}
+.sp_component:hover{
+    border: 1px solid silver;
+}
+.sp_component:hover .sp_delete{
+    visibility: visible;
+}
+div.sp_component:hover .componentHandle{
+     visibility: visible;
+}
+#component_errors{
+    border: 1px solid red;
+    background-color: #FFEBE8;
+    padding: 5px;
+    display: none;
+}
+.componentPlaceholder{
+    height: 100px;
+    margin-bottom: 10px;
+    border: 2px dotted silver;
+    border-radius: 3px;
+}
+.sortableSPComponents{
+    min-height: 100px;
+}
+.sp_component_helper{
+    max-height: 50px;
+    border: 2px solid silver;
+    border-radius: 3px;
+    background: white;
     font-size: 14px;
- }
- 
- .sp_compTitleEditable{ display: inline; }
- .sp_compTitleEditable input{
- 	display: inline !important;
+    font-weight: bold;
+    -moz-box-shadow: 4px 5px 8px -2px black;
+    -webkit-box-shadow: 4px 5px 8px -2px black;
+    box-shadow: 4px 5px 8px -2px black;
+    cursor: move;
+}
+.editableCompTitle{
+    float: left;
+    cursor: pointer;
+}
+.sp_compTitleEditable{
+    display: inline;
+}
+.sp_compTitleEditable input{
+    display: inline !important;
     height: inherit;
-    width: 90% !important;
+    padding: inherit;
+    margin: inherit;
     border: none;
     font-size: inherit;
     font-weight: inherit;
     text-decoration: inherit;
     font-family: inherit;
- } 
-  
- .sp_component{
- 	padding: 5px;
- 	background-color: white;
- 	margin-bottom: 10px;
- 	min-height: 75px;
-
- }
-
- div.sp_component:hover .componentHandle{
-     display: block;
- }
-
- div.sp_component:hover{
-     -moz-box-shadow:    4px 5px 8px -2px black;
-     -webkit-box-shadow: 4px 5px 8px -2px black;
- }
- 
- .menuItem{
- 	border: 1px solid #EEE;
- 	border-radius: 3px;
- 	-moz-border-radius: 3px;
- 	-webkit-border-radius: 3px;
- 	z-index: 5;
- }
- 
- .sp_plaintext, .sp_richtext{
- 	margin-top: 5px;
- }
- 
- div.editable:hover{
- 	color: green;
- 	cursor: pointer;
- }
- 
- #component_errors{
- 	border: 1px solid red;
- 	background-color: #FFEBE8;
- 	border-radius: 3px;
- 	-moz-border-radius: 3px;
- 	-webkit-border-radius: 3px;
- 	padding: 5px;
- 	display: none;
- }
- 
- .componentPlaceholder{
- 	height: 100px;
- 	margin-bottom: 10px;
- 	border: 2px dotted silver;
- 	border-radius: 3px;
- }
- 
- .sortableSPComponents{
- 	min-height: 100px;
- }
- 
- .sp_component_helper{
- 	max-height: 50px;
- 	border: 2px solid silver;
- 	border-radius: 3px;
- 	background: white;
- 	font-size: 14px;
- 	font-weight: bold;
-	-moz-box-shadow: 4px 5px 8px -2px black;
-	-webkit-box-shadow: 4px 5px 8px -2px black;
-    box-shadow: 4px 5px 8px -2px black;
-    cursor: move;
- }
+    min-width: 100px;
+    color: inherit;
+    line-height: inherit !important;
+    letter-spacing: inherit !important;
+}

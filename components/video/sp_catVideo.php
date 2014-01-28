@@ -64,7 +64,7 @@ if (!class_exists("sp_catVideo")) {
             if( $ffmpeg_status === '0' ){
                 update_site_option( 'sp_ffmpeg_path', $ffmpeg_output );
             }else{
-                update_site_option( 'sp_ffmpeg_path', false );
+                update_site_option( 'sp_ffmpeg_path', new WP_Error( 'broke', __( 'ffmpeg path not found' ) ) );
             }
 
             if( DEBUG_SP_VIDEO ){
@@ -79,6 +79,9 @@ if (!class_exists("sp_catVideo")) {
          */
         function uninstall(){
             delete_site_option( 'sp_ffmpeg_path' );
+            delete_site_option( 'sp_html5_encoding' );
+            delete_site_option( 'sp_player_width' );
+            delete_site_option( 'sp_player_height' );
         }
 
         /**
@@ -130,11 +133,8 @@ if (!class_exists("sp_catVideo")) {
                 formatting uploaded videos via SmartPost.
             </p>
             <?php
-
             $sp_ffmpeg_path = get_site_option( 'sp_ffmpeg_path' );
-            $html5_encoding = get_site_option( 'sp_html5_encoding' ); // whether to enable html5 video encoding
-
-            if(DEBUG_SP_VIDEO){
+            if( DEBUG_SP_VIDEO && !is_wp_error( $sp_ffmpeg_path ) ){
                 exec('command -v ' . $sp_ffmpeg_path . 'ffmpeg', $cmd_output, $cmd_status);
                 ?>
                 <div class="error">
@@ -145,7 +145,8 @@ if (!class_exists("sp_catVideo")) {
             <?php
             }
 
-            if( $sp_ffmpeg_path ){
+            if( !is_wp_error( $sp_ffmpeg_path ) ){
+                $html5_encoding = get_site_option( 'sp_html5_encoding' );
                 $checked = $html5_encoding ? 'checked' : '';
                 ?>
                 <input type="checkbox" class="enableHTML5Video" id="html5video" <?php echo $checked ?> />
@@ -165,7 +166,7 @@ if (!class_exists("sp_catVideo")) {
             ?>
             <p>
                 Full path to the ffmpeg executable:
-                <input type="text" id="ffmpeg_path" name="ffmpeg_path" value="<?php echo $sp_ffmpeg_path ?>" />
+                <input type="text" id="ffmpeg_path" name="ffmpeg_path" value="<?php echo is_wp_error( $sp_ffmpeg_path ) ? '' : $sp_ffmpeg_path; ?>" />
                 <button class="button" type="button" id="check_ffmpeg_path" name="check_ffmpeg_path">Test</button>
             </p>
             <span id="check_ffmpeg_results" style="color: green;"></span>

@@ -12,12 +12,12 @@
     var sp_postLink = {
         setTypeID: function(){
             if(sp_globals){
-                var types = sp_globals.types;
+                var types = sp_globals.SP_TYPES;
 
                 //!Important - the raw name of the type
                 if(types['Link']){
                     this.typeID = types['Link'];
-                    sp_globals.types[this.typeID] = this;
+                    sp_globals.SP_TYPES[this.typeID] = this;
                 }
             }else{
                 return 0;
@@ -300,7 +300,7 @@
             var thisObj = this;
             if(smartpost.sp_postComponent){
                 var elementID = $(descDiv).attr('id');
-                smartpost.sp_postComponent.addNicEditor(elementID, false, thisObj.saveDescription,'Click to add a description');
+                smartpost.initEditor(elementID, false, thisObj.saveDescription,'Click to add a description');
             }
         },
 

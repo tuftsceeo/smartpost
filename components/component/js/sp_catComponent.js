@@ -4,7 +4,7 @@
  */
 
 (function($){
-    spAdmin.sp_catComponent = {
+    sp_admin.sp_catComponent = {
 
         /**
          * Saves the title of a component given a title and component ID.
@@ -27,7 +27,7 @@
                     cl(response, statusText, jqXHR);
                 },
                 error    : function(jqXHR, statusText, errorThrown){
-                    spAdmin.adminpage.showError(errorThrown);
+                    sp_admin.adminpage.showError(errorThrown);
                 }
             })
         },
@@ -53,7 +53,7 @@
                     cl(response, statusText, jqXHR);
                 },
                 error    : function(jqXHR, statusText, errorThrown){
-                    spAdmin.adminpage.showError(errorThrown);
+                    sp_admin.adminpage.showError(errorThrown);
                 }
             })
         },
@@ -82,7 +82,7 @@
                     cl($(response).html(),  statusText, jqXHR);
                 },
                 error    : function(jqXHR, statusText, errorThrown){
-                    spAdmin.adminpage.showError(errorThrown, null);
+                    sp_admin.adminpage.showError(errorThrown, null);
                 }
             })
         },
@@ -108,7 +108,7 @@
                     cl(response, statusText, jqXHR);
                 },
                 error    : function(jqXHR, statusText, errorThrown){
-                    spAdmin.adminpage.showError(errorThrown, null);
+                    sp_admin.adminpage.showError(errorThrown, null);
                 }
             })
         },
@@ -136,7 +136,7 @@
                     cl($(response).html(), statusText, jqXHR);
                 },
                 error    : function(jqXHR, statusText, errorThrown){
-                    spAdmin.adminpage.showError(errorThrown, null);
+                    sp_admin.adminpage.showError(errorThrown, null);
                 }
             })
         },
@@ -148,8 +148,8 @@
          * @param cl - closure
          */
         initializeComponent: function(componentElem, typeID, cl){
-            if(spAdmin.types)
-                var componentJS = spAdmin.types[typeID];
+            if(sp_admin.types)
+                var componentJS = sp_admin.types[typeID];
 
             //Bind component-specific events
             if(componentJS)
@@ -175,7 +175,7 @@
                 },
                 dataType : 'html',
                 error    : function(jqXHR, statusText, errorThrown){
-                    spAdmin.adminpage.showError(errorThrown);
+                    sp_admin.adminpage.showError(errorThrown);
                 }
             })
         },
@@ -235,6 +235,6 @@
     }
 
     $(document).ready(function(){
-        spAdmin.sp_catComponent.init();
+        sp_admin.sp_catComponent.init();
     })
 })(jQuery);

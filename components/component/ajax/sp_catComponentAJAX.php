@@ -25,7 +25,7 @@ if (!class_exists("sp_catComponentAJAX")) {
          */
         function copyComponentAJAX(){
             $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 header("HTTP/1.0 409 Security Check.");
                 die('Security Check');
             }
@@ -64,7 +64,7 @@ if (!class_exists("sp_catComponentAJAX")) {
 
         function copyTemplateAJAX(){
             $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 header("HTTP/1.0 409 Security Check.");
                 die('Security Check');
             }
@@ -116,7 +116,7 @@ if (!class_exists("sp_catComponentAJAX")) {
          */
         function deleteComponentAJAX(){
             $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 header("HTTP/1.0 409 Security Check.");
                 die('Security Check');
             }
@@ -164,7 +164,7 @@ if (!class_exists("sp_catComponentAJAX")) {
          */
         function updateSettingsAJAX(){
             $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 die('Security Check');
             }
 
@@ -204,7 +204,7 @@ if (!class_exists("sp_catComponentAJAX")) {
          */
         function newComponentAJAX(){
             $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 die('Security Check');
             }
 
@@ -229,14 +229,14 @@ if (!class_exists("sp_catComponentAJAX")) {
 
             //If name not given, go with default component type
             if(empty($name)){
-                $name = sp_core::getType($typeID);
+                $name = sp_core::getTypeName($typeID);
             }
 
             //Upload Component Icon
             if($_FILES['componentIcon']['size'] > 0){
                 if(sp_core::validImageUpload($_FILES, 'componentIcon') && sp_core::validateIcon($_FILES['componentIcon']['tmp_name'])){
                     $iconDescription = $name . ' Component icon';
-                    $iconID = sp_core::upload($_FILES, 'componentIcon', null, $iconDescription);
+                    $iconID = sp_core::upload('componentIcon', null, $iconDescription);
                 }else{
                     $icon_error = 'File uploaded does not meet icon requirements.' .
                         ' Please make sure the file uploaded is ' .
@@ -277,7 +277,7 @@ if (!class_exists("sp_catComponentAJAX")) {
 
         function loadCompOptionsAJAX(){
             $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 die('Security Check');
             }
 
@@ -287,7 +287,7 @@ if (!class_exists("sp_catComponentAJAX")) {
                 $compID = (int) $_POST['compID'];
                 $typeID = (int) $_POST['typeID'];
                 $catID  = (int) $_POST['catID'];
-                $type   = 'sp_cat' . sp_core::getType($typeID);
+                $type   = 'sp_cat' . sp_core::getTypeName($typeID);
                 $component = new $type($compID);
                 $component->componentOptions();
             }
@@ -296,7 +296,7 @@ if (!class_exists("sp_catComponentAJAX")) {
 
         function loadCompSettingsAJAX(){
             $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 die('Security Check');
             }
 
@@ -305,7 +305,7 @@ if (!class_exists("sp_catComponentAJAX")) {
             }else{
                 $compID = (int) $_POST['compID'];
                 $typeID = (int) $_POST['typeID'];
-                $type   = 'sp_cat' . sp_core::getType($typeID);
+                $type   = 'sp_cat' . sp_core::getTypeName($typeID);
                 $component = new $type($compID);
                 sp_admin::loadCompForm($component->getCatID(), $component);
             }
@@ -317,7 +317,7 @@ if (!class_exists("sp_catComponentAJAX")) {
          */
         function saveCatCompTitleAJAX(){
             $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 die('Security Check');
             }
 

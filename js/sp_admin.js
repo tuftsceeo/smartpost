@@ -428,15 +428,10 @@
         /**
          * Creates a new jQuery UI dialog with template form submission.
          * @param templateForm - jQuery object representing the form
-         * @param templateDescTextareaID - Textarea inside the form, will be transformed to a WYSIWYG editor using nicEditor
+         * @param templateDescTextareaID - Textarea inside the form
          * @param openDialogButton - jQuery object representing the open dialog button
          */
         initTemplateForm: function(templateForm, templateDescTextareaID, openDialogButton){
-
-            new nicEditor({
-                iconsPath : sp_globals.SP_IMAGE_PATH + '/nicEditorIcons.gif',
-                buttonList : ['fontSize','bold','italic','underline', 'forecolor','bgcolor','fontFormat']
-            }).panelInstance(templateDescTextareaID);
 
             //Initialize the dialog
             templateForm.dialog({

@@ -363,8 +363,8 @@ if (!class_exists("sp_admin")) {
             ?>
 
             <div class="wrap">
-                <div class="error" <?php echo empty( $error_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_errors"><?php echo $error_msg ?></span><span class="hideMsg xButton" title="Ok, got it"></span><div class="clear"></div></div>
-                <div class="updated" <?php echo empty( $update_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_update"><?php echo $update_msg ?></span><span class="hideMsg xButton" title="Ok, got it"></span><div class="clear"></div></div>
+                <div class="error" <?php echo empty( $error_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_errors"><?php echo $error_msg ?></span><span class="hideMsg sp_xButton" title="Ok, got it"></span><div class="clear"></div></div>
+                <div class="updated" <?php echo empty( $update_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_update"><?php echo $update_msg ?></span><span class="hideMsg sp_xButton" title="Ok, got it"></span><div class="clear"></div></div>
                 <h2><img src="<?php echo SP_IMAGE_PATH ?>/sp-icon.png" style="height: 17px;" /> <span style="color: #89b0ff;">Smart<span style="color: #07e007">Post</span> Templates</span> <button id="newTemplateButton" class="button button-primary button-large" title="Create a new category template">New Template</button></h2>
                 <?php self::renderNewTemplateForm(); ?>
                 <div id="poststuff">
@@ -372,7 +372,7 @@ if (!class_exists("sp_admin")) {
                         <div id="post-body-content" style="margin-bottom: 0;">
                             <div id="category_settings" class="postbox">
                                 <div id="the_settings">
-                                    <span id="delete-<?php echo $catID ?>" class="deleteCat xButton" data-cat-id="<?php echo $catID ?>" title="Delete Template"></span>
+                                    <span id="delete-<?php echo $catID ?>" class="deleteCat sp_xButton" data-cat-id="<?php echo $catID ?>" title="Delete Template"></span>
                                     <?php self::renderCatSettings($catID, $sp_categories); ?>
                                     <div class="clear"></div>
                                 </div><!-- end #the_settings -->
@@ -428,8 +428,8 @@ if (!class_exists("sp_admin")) {
 
             ?>
             <div class="wrap">
-                <div class="error" <?php echo empty( $error_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_errors"><?php echo $error_msg ?></span><span class="hideMsg xButton" title="Ok, got it"></span><div class="clear"></div></div>
-                <div class="updated" <?php echo empty( $update_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_update"><?php echo $update_msg ?></span><span class="hideMsg xButton" title="Ok, got it"></span><div class="clear"></div></div>
+                <div class="error" <?php echo empty( $error_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_errors"><?php echo $error_msg ?></span><span class="hideMsg sp_xButton" title="Ok, got it"></span><div class="clear"></div></div>
+                <div class="updated" <?php echo empty( $update_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_update"><?php echo $update_msg ?></span><span class="hideMsg sp_xButton" title="Ok, got it"></span><div class="clear"></div></div>
             <h2><img src="<?php echo SP_IMAGE_PATH ?>/sp-icon.png" style="height: 17px;" /> <span style="color: #89b0ff;">Smart<span style="color: #07e007">Post</span> Templates</span> - Settings</h2>
             <div id="poststuff">
                 <div id="post-body" class="metabox-holder columns-2">

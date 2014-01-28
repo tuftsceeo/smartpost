@@ -34,7 +34,7 @@
                 },
                 error    : function(jqXHR, statusText, errorThrown){
                     if(sp_postComponent)
-                        console.log(jqXHR);
+                    console.log(jqXHR);
                     console.log(statusText);
                     console.log(errorThrown);
                     sp_postComponent.showError(errorThrown + statusText + jqXHR);
@@ -67,12 +67,70 @@
         },
 
         /**
+         * Initializes a CKEditor instance given a DOM elem.
+         * @param editorElem
+         */
+        initCkEditors: function(editorElem){
+            // Get AJAX data
+            var editor_data = editorElem.data();
+
+            // Create inline editors for each .sp-editor-content element
+            CKEDITOR.inline( editorElem.attr('id'), {
+                enterMode: CKEDITOR.ENTER_BR,
+                extraPlugins: 'sourcedialog,confighelper',
+                toolbar: [
+                    { name: 'document', items: [ 'Bold', 'Italic', 'Underline' ] },
+                    { name: 'links', items: [ 'Link', 'Unlink' ] },
+                    { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi' ], items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight' ] },
+                    { name: 'styles', items: [ 'FontSize' ] },
+                    { name: 'colors', items: [ 'TextColor' ] },
+                    { name: 'Source', items: [ 'Sourcedialog' ] }
+                ],
+                allowedContent:
+                    'h1 h2 h3 p strong em ol li ul br;' +
+                        'a[!href];' +
+                        'img(left,right)[!src,alt,width,height];' +
+                        'div{!text-align};' +
+                        'span{!font-family};' +
+                        'span{!color};' +
+                        'span{!font-size};' +
+                        'span(!marker);' +
+                        'del ins',
+                removePlugins: editor_data.toolbar
+            }).on('blur', function(e){
+                // Add nonce and content before sending it off
+                editor_data.nonce   = SP_NONCE;
+                editor_data.content = this.getData();
+                smartpost.ajaxcall(
+                    editor_data,
+                    function(response){},
+                    function(response){},
+                    null
+                )
+            });
+
+            // Click handler for edit icon
+            $( '.sp-editor-identifier' ).click(function(){
+                $(this).next().focus();
+            })
+        },
+
+        /**
          * Initializes the post with any necessary init methods
          *
          * @uses editablePostTitle()
          */
         init: function(){
-            this.editablePostTitle($('.sp_postTitle'));
+            var self = this;
+
+            // Turn off automatic editor creation first.
+            CKEDITOR.disableAutoInline = true;
+
+            // Initialize all sp-editor instances
+            $( '.sp-editor-content' ).each(function(){
+                self.initCkEditors( $(this) );
+            });
+
         }
     }
 

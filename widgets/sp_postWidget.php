@@ -30,28 +30,25 @@ class sp_postWidget extends WP_Widget {
     function widget($args, $instance) {
         global $post;
         global $current_user;
-        if(is_user_logged_in() && current_user_can('edit_posts')){
-            $owner = ($current_user->ID == $post->post_author);
-            $admin = current_user_can('administrator');
 
-            require_once(ABSPATH . 'wp-admin/includes/post.php');
-            $isLocked = (bool) wp_check_post_lock( $this->postID );
+        if(is_user_logged_in() && current_user_can('edit_posts')){
 
             extract( $args );
+            require_once(ABSPATH . 'wp-admin/includes/post.php');
+            $owner = ($current_user->ID == $post->post_author);
+            $admin = current_user_can('administrator');
+            $isLocked = (bool) wp_check_post_lock( $this->postID );
+            $editMode = (bool) $_GET['edit_mode'];
             $title = apply_filters('widget_title', $instance['title']);
 
+            // Render the widget
+            if( sp_post::isSPPost($post->ID) && ($owner || $admin) && !$isLocked && is_single() && $editMode ){
 
-            //Render the widget
-            echo $before_widget;
-            echo $before_title . $title . $after_title;
-            echo '<div class="clear"></div>';
+                echo $before_title . $title . $after_title;
 
-            //Load post components
-            if( sp_post::isSPPost($post->ID) && ($owner || $admin) && !$isLocked && is_single()){
                 self::setFeaturedImage();
                 self::postStatusOptions();
                 self::renderCompBlocks();
-                echo '<div class="clear"></div>';
             }
             echo $after_widget;
         }

@@ -23,7 +23,7 @@ if (!class_exists("sp_adminAJAX")) {
          */
         function deleteTemplateAJAX(){
             $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 header("HTTP/1.0 409 Security Check.");
                 die('Security Check');
             }
@@ -57,7 +57,7 @@ if (!class_exists("sp_adminAJAX")) {
          */
         function getCategoryJSONTreeAJAX(){
             $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 header("HTTP/1.0 409 Security Check.");
                 die('Security Check');
             }
@@ -84,7 +84,7 @@ if (!class_exists("sp_adminAJAX")) {
          */
         function switchCategoryAJAX(){
             $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 header("HTTP/1.0 409 Security Check.");
                 die('Security Check');
             }
@@ -122,7 +122,7 @@ if (!class_exists("sp_adminAJAX")) {
          */
         function catFormAJAX(){
             $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 die('Security Check');
             }
 
@@ -143,7 +143,7 @@ if (!class_exists("sp_adminAJAX")) {
          */
         function newSPCatAJAX(){
             $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 die('Security Check');
             }
 
@@ -185,7 +185,6 @@ if (!class_exists("sp_adminAJAX")) {
 
                     //Grab the sidebar ID
                     $sidebar_id = $_POST['widget_areas'];
-                    error_log( $sidebar_id );
 
                     //Get active widgets and active SP quickpost widget instances
                     $sidebars_instances  = get_option( 'sidebars_widgets' );
@@ -217,7 +216,7 @@ if (!class_exists("sp_adminAJAX")) {
          */
         function renderSPCatSettingsAJAX(){
             $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 die('Security Check');
             }
 
@@ -240,7 +239,7 @@ if (!class_exists("sp_adminAJAX")) {
          */
         function updateSPCatAJAX(){
             $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 die('Security Check');
             }
             $xhr = $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest';
@@ -275,7 +274,7 @@ if (!class_exists("sp_adminAJAX")) {
                 if($_FILES['category_icon']['size'] > 0){
                     if(sp_core::validImageUpload($_FILES, 'category_icon') && sp_core::validateIcon($_FILES['category_icon']['tmp_name'])){
                         $description = $name . ' icon';
-                        $iconID = sp_core::upload($_FILES, 'category_icon', null, array('post_title' => $description, 'post_content' => $description));
+                        $iconID = sp_core::upload('category_icon', null, array('post_title' => $description, 'post_content' => $description));
                     }else{
                         $icon_error = 'File uploaded does not meet icon requirements.' .
                             ' Please make sure the file uploaded is ' .
@@ -323,7 +322,7 @@ if (!class_exists("sp_adminAJAX")) {
          */
         function responseCatAJAX(){
             $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 die('Security Check');
             }
 
@@ -360,7 +359,7 @@ if (!class_exists("sp_adminAJAX")) {
          */
         function setCompOrderAJAX(){
             $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 die('Security Check');
             }
 

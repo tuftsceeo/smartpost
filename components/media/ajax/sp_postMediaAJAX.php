@@ -148,7 +148,7 @@ if (!class_exists("sp_postMediaAJAX")) {
 				//$description = $mediaComponent->getDescription();
 				if($allowed){
 					$caption = $_FILES['sp_media_files']['name'];
-					$id = sp_core::upload($_FILES, 'sp_media_files', $postID, array('post_title' => $caption));
+					$id = sp_core::upload('sp_media_files', $postID, array('post_title' => $caption));
 				}else{
 					header("HTTP/1.0 409 File type not allowed.");
 					exit;

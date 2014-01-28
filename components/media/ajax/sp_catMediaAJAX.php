@@ -15,7 +15,7 @@ if (!class_exists("sp_catMediaAJAX")) {
 		static function saveMediaSettingsAJAX(){
 			error_log('test');
             $nonce = $_POST['nonce'];
-			if( !wp_verify_nonce($nonce, 'sp_admin_nonce') ){
+			if( !wp_verify_nonce($nonce, 'sp_nonce') ){
 				header("HTTP/1.0 403 Security Check.");
 				exit;
 			}

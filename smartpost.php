@@ -15,9 +15,9 @@ Author URI: http://www.rafilabs.com/smartpost
 
 require_once( ABSPATH . 'wp-includes/pluggable.php' );
 
-define("PLUGIN_NAME", "SmartPost");
-define("IMAGE_PATH", plugins_url('/images', __FILE__));
-define("PLUGIN_PATH", plugins_url('/', __FILE__));
+define("SP_PLUGIN_NAME", "SmartPost");
+define("SP_IMAGE_PATH", plugins_url('/images', __FILE__));
+define("SP_PLUGIN_PATH", plugins_url('/', __FILE__));
 
 if ( !class_exists("smartpost") ){
 
@@ -41,6 +41,7 @@ if ( !class_exists("smartpost") ){
             require_once( 'components/component/sp_postComponent.php' );
             sp_catComponent::initCatComponent();
             sp_postComponent::initPostComponent();
+
             self::findClasses(dirname(__FILE__) . "/components/");
 
             require_once( 'sp_category.php' );
@@ -103,9 +104,9 @@ if ( !class_exists("smartpost") ){
 
                 //Initialize the class if possible
                 $ignoreClasses = array('sp_postComponent', 'sp_catComponent');
-                if(class_exists($class) && (!in_array($class, $ignoreClasses)) ){
-                    if(method_exists($class, 'init')){
-                        call_user_func(array($class, 'init'));
+                if( class_exists( $class ) && ( !in_array( $class, $ignoreClasses ) ) ){
+                    if( method_exists( $class, 'init' ) ){
+                        call_user_func( array($class, 'init') );
                     }
                 }
             }
@@ -120,6 +121,7 @@ if ( !class_exists("smartpost") ){
             wp_register_style( 'tooltipster-css', plugins_url('js/tooltipster/css/tooltipster.css', __FILE__) );
             wp_register_style( 'smartpost-css', plugins_url('css/smartpost.css', __FILE__) );
 
+            wp_enqueue_style( 'dashicons' );
             wp_enqueue_style( 'jquery-dynatree-css' );
             wp_enqueue_style( 'jquery-ui-theme' );
             wp_enqueue_style( 'tooltipster-css' );
@@ -128,16 +130,14 @@ if ( !class_exists("smartpost") ){
 
         /**
          * Places globally used JS on the page.
+         * @todo Use wp_sript_is() to avoid conflicts
          */
         static function enqueueJS(){
             //Register scripts
             wp_register_script( 'sp_globals'     , plugins_url('js/sp_globals.js', __FILE__), array( 'jquery' ) );
             wp_register_script( 'strip_tags'     , plugins_url('js/strip_tags.js', __FILE__), array( 'jquery' ) );
             wp_register_script( 'jquery-editable', plugins_url('js/jquery.jeditable.mini.js', __FILE__), array( 'jquery' ) );
-
-            //To-do: get rid of jquery filedrop dependencies..
-            wp_register_script( 'jquery-filedrop', plugins_url('js/jquery.filedrop.js', __FILE__), array( 'jquery' ) );
-            wp_register_script( 'nicEditor'      , plugins_url('js/nicEdit/nicEdit.js', __FILE__), array( 'jquery' ) );
+            wp_register_script( 'ckeditor'       , plugins_url('js/ckeditor/ckeditor.js', __FILE__), array( 'jquery' ) );
             wp_register_script( 'tooltipster'    , plugins_url('js/tooltipster/jquery.tooltipster.min.js', __FILE__), array( 'jquery' ) );
             wp_register_script( 'jquery-webcam'  , plugins_url('js/jquery.webcam/jquery.webcam.js', __FILE__), array( 'jquery' ) );
             wp_register_script( 'jquery-dynatree', plugins_url('js/dynatree/jquery.dynatree.min.js', __FILE__), array( 'jquery-ui-core', 'jquery-ui-widget' ) );
@@ -160,7 +160,7 @@ if ( !class_exists("smartpost") ){
 
             //Enqueue SmartPost scripts
             wp_enqueue_script( 'sp_globals' );
-            wp_enqueue_script( 'nicEditor' );
+            wp_enqueue_script( 'ckeditor' );
             wp_enqueue_script( 'strip_tags' );
             wp_enqueue_script( 'jquery-dynatree-cookie' );
             wp_enqueue_script( 'jquery-dynatree' );
@@ -168,15 +168,20 @@ if ( !class_exists("smartpost") ){
 
             $typesAndIDs = sp_core::getTypesAndIDs();
             wp_localize_script( 'sp_globals', 'sp_globals', array(
-                    'types'	     => $typesAndIDs,
-                    'SP_AJAX_URL'=> admin_url( 'admin-ajax.php' ),
-                    'SP_NONCE'	 => wp_create_nonce( 'sp_nonce'),
-                    'PLUGIN_PATH'=> PLUGIN_PATH,
-                    'IMAGE_PATH' => IMAGE_PATH )
+                    'SP_TYPES'               => $typesAndIDs,
+                    'SP_ADMIN_URL'           => admin_url( 'admin.php' ),
+                    'SP_AJAX_URL'            => admin_url( 'admin-ajax.php' ),
+                    'SP_NONCE'	             => wp_create_nonce( 'sp_nonce'),
+                    'SP_PLUGIN_PATH'         => SP_PLUGIN_PATH,
+                    'SP_IMAGE_PATH'          => SP_IMAGE_PATH,
+                    'MAX_UPLOAD_SIZE'        => WP_MEMORY_LIMIT,
+                    'UPLOAD_SWF_URL'         => includes_url( 'js/plupload/plupload.flash.swf' ),
+                    'UPLOAD_SILVERLIGHT_URL' => includes_url( 'js/plupload/plupload.silverlight.xap' )
+                )
             );
         }
 
-    }//end class smartpost
+    } // End class smartpost
 }
 
 if(class_exists('smartpost')){

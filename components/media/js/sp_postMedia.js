@@ -2,7 +2,7 @@
  * JS sp_postMedia Component class
  * Used alongside sp_postMedia for AJAX calls
  * Used in front-end posts
-	*
+ *
  * @version 1.0
  * @author Rafi Yagudin <rafi.yagudin@tufts.edu>
  * @project SmartPost 
@@ -11,17 +11,17 @@
     smartpost.sp_postMedia = {
         /**
          * Required for all post component JS objects.
-         * Used in sp_globals.types to determine which
+         * Used in sp_globals.SP_TYPES to determine which
          * methods to call for different post component types
          */
         setTypeID: function(){
             if(sp_globals){
-                var types = sp_globals.types;
+                var types = sp_globals.SP_TYPES;
 
                 //!Important - the raw name of the type
                 if(types['Media']){
                     this.typeID = types['Media'];
-                    sp_globals.types[this.typeID] = this;
+                    sp_globals.SP_TYPES[this.typeID] = this;
                 }
             }else{
                 return 0;
@@ -87,7 +87,7 @@
                                 type: 'data',
                                 compID: compID,
                                 image: canvas.toDataURL("image/png")
-                                },
+                            },
                             dataType  : 'json',
                             beforeSend: function (jqXHR, settings){
                                 thisObj.loadingGif(isGallery, compID);
@@ -182,9 +182,9 @@
          * Cancel camera upload
          */
         cancelCam: function(compID){
-                var webcam = $('#sp_media_webcam-' + compID);
-                webcam.find('#XwebcamXobjectX').remove();
-                webcam.hide();
+            var webcam = $('#sp_media_webcam-' + compID);
+            webcam.find('#XwebcamXobjectX').remove();
+            webcam.hide();
         },
         /**
          * Initializes HTML5 filedrop for the media component
@@ -216,16 +216,16 @@
                 },
                 error: function(err, file) {
                     switch(err) {
-                      case 'BrowserNotSupported':
+                        case 'BrowserNotSupported':
                             $('.sp_browse').show();
-                          break;
-                      case 'TooManyFiles':
+                            break;
+                        case 'TooManyFiles':
                             smartpost.sp_postComponent.showError('Too many files! Please upload less');
                             break;
-                      case 'FileTooLarge':
+                        case 'FileTooLarge':
                             smartpost.sp_postComponent.showError(file.name + ' is too large!');
                             break;
-                      default:
+                        default:
                             smartpost.sp_postComponent.showError(err);
                             break;
                     }
@@ -239,16 +239,16 @@
                 },
                 uploadFinished: function(i, file, response, time) {
                     if(response){
-                            thisObj.insertThumb(response, isGallery, compID, $('#loadingGIF'));
+                        thisObj.insertThumb(response, isGallery, compID, $('#loadingGIF'));
                     }
                 }
             });
-     },
-     /**
-      * Insert Description (used only in single-media mode)
-      * After the thumbnail div
-      */
-     insertDesc: function(attachmentID, compID, thumbDiv, placeHolder){
+        },
+        /**
+         * Insert Description (used only in single-media mode)
+         * After the thumbnail div
+         */
+        insertDesc: function(attachmentID, compID, thumbDiv, placeHolder){
             var thisObj = this;
             var descDiv = '';
 
@@ -262,7 +262,7 @@
 
             var descExists = $('#sp_attachments-' + compID).find('.sp_media_desc');
             descDiv += '<div id="sp_media_desc-' + attachmentID + '" class="sp_media_desc editable" data-compid="' + compID + '" attach-id="' + attachmentID + '">';
-                descDiv += placeHolder;
+            descDiv += placeHolder;
             descDiv += '</div>';
             if( !$(descExists).exists() ){
                 thumbDiv.after( $(descDiv) );
@@ -271,19 +271,19 @@
             }
 
             thisObj.initDescEditor($('#sp_media_desc-' + attachmentID));
-     },
+        },
 
-     /**
-      * Initialize the description editor
-      * @param descElem jQuery <div> object of the description
-      */
-     initDescEditor: function(descElem){
-        var thisObj = this;
+        /**
+         * Initialize the description editor
+         * @param descElem jQuery <div> object of the description
+         */
+        initDescEditor: function(descElem){
+            var thisObj = this;
             if(smartpost.sp_postComponent){
                 var elementID = $(descElem).attr('id');
-                    smartpost.sp_postComponent.addNicEditor(elementID, false, thisObj.saveDescription,'Click to add a description');
-        }
-     },
+                smartpost.initEditor(elementID, false, thisObj.saveDescription,'Click to add a description');
+            }
+        },
 
         /**
          * Saves a media component's description to the database.
@@ -296,28 +296,28 @@
             var compID  = $('#' + contentID).attr('data-compid');
             var attachmentID  = $('#' + contentID).attr('attach-id');
             $.ajax({
-                url				   : SP_AJAX_URL,
-                type      : 'POST',
-                data			   : {action: 'saveMediaDescAJAX',
-                                                                    nonce: SP_NONCE,
-                                                                    compID: compID,
-                                                                    attachmentID: attachmentID,
-                                                                    desc: content},
-                dataType  : 'json',
-                success  : function(response, statusText, jqXHR){
-                        console.log(response);
+                url	: SP_AJAX_URL,
+                type : 'POST',
+                data : {action: 'saveMediaDescAJAX',
+                    nonce : SP_NONCE,
+                    compID : compID,
+                    attachmentID : attachmentID,
+                    desc : content},
+                dataType : 'json',
+                success : function(response, statusText, jqXHR){
+                    console.log(response);
                 },
-                error    : function(jqXHR, statusText, errorThrown){
-                        if(smartpost.sp_postComponent)
-                            smartpost.sp_postComponent.showError(errorThrown);
+                error : function(jqXHR, statusText, errorThrown){
+                    if(smartpost.sp_postComponent)
+                        smartpost.sp_postComponent.showError(errorThrown);
                 }
             })
         },
 
-     /**
-      * Loads a loading GIF prior to upload
-      */
-     loadingGif: function(isGallery, compID){
+        /**
+         * Loads a loading GIF prior to upload
+         */
+        loadingGif: function(isGallery, compID){
             console.log('loadingGIF isGallery: ' + isGallery)
             console.log('loadingGIF compID: ' + compID)
 
@@ -330,7 +330,7 @@
             }else{
                 $('#sp_attachments-' + compID).find('.sp_media_thumb').replaceWith(loadingGIF);
             }
-     },
+        },
         /**
          * Inserts a thumbnail into the DOM based off of info in response
          * reponse.id -> Attachment ID of the attachment
@@ -344,28 +344,28 @@
          * @replaceMe $(elem) jQuery element to replace the thumb with
          */
         insertThumb: function(response, isGallery, compID, replaceMe){
-                var thisObj      = this;
-                var thumbDiv 		  = '';
-                var thumbClass   = isGallery ? 'gallery_thumb' : 'sp_media_thumb';
-                var deleteButton = '<img src="' + SP_IMAGE_PATH + '/no.png" id="deleteThumb-' + response.id + '" name="deleteThumb-' + response.id + '" data-attachid="' + response.id + '" data-compid="' + compID + '" class="sp_mediaDelete" title="Delete Attachment" alt="Delete Attachment" />';
-                var captionEl    = '<p id="media_caption-' + response.id +'" class="sp_mediaCaption">' + response.caption + '</p>';
+            var thisObj      = this;
+            var thumbDiv 		  = '';
+            var thumbClass   = isGallery ? 'gallery_thumb' : 'sp_media_thumb';
+            var deleteButton = '<img src="' + SP_IMAGE_PATH + '/no.png" id="deleteThumb-' + response.id + '" name="deleteThumb-' + response.id + '" data-attachid="' + response.id + '" data-compid="' + compID + '" class="sp_mediaDelete" title="Delete Attachment" alt="Delete Attachment" />';
+            var captionEl    = '<p id="media_caption-' + response.id +'" class="sp_mediaCaption">' + response.caption + '</p>';
 
-                thumbDiv += '<div id="media_thumb-' + response.id + '" data-compid="704" class="' + thumbClass + '">';
-                    thumbDiv += '<a id="thumb-' + response.id +'" href="' + response.fileURL + '" rel="lightbox[' + compID + ']" title="' + response.caption + '">';
-                        thumbDiv += '<img width="' + response.thumbURL[1] + '" height="' + response.thumbURL[2] + '" src="' + response.thumbURL[0] + '" class="attachment-100x100">';
-                    thumbDiv += '</a>';
-                    thumbDiv += captionEl;
-                    thumbDiv += deleteButton;
-                thumbDiv += '</div>';
+            thumbDiv += '<div id="media_thumb-' + response.id + '" data-compid="704" class="' + thumbClass + '">';
+            thumbDiv += '<a id="thumb-' + response.id +'" href="' + response.fileURL + '" rel="lightbox[' + compID + ']" title="' + response.caption + '">';
+            thumbDiv += '<img width="' + response.thumbURL[1] + '" height="' + response.thumbURL[2] + '" src="' + response.thumbURL[0] + '" class="attachment-100x100">';
+            thumbDiv += '</a>';
+            thumbDiv += captionEl;
+            thumbDiv += deleteButton;
+            thumbDiv += '</div>';
 
-                replaceMe.replaceWith($(thumbDiv));
-                thisObj.bindDelete($('#deleteThumb-' + response.id));
-                thisObj.bindDeleteHover($('#media_thumb-' + response.id));
+            replaceMe.replaceWith($(thumbDiv));
+            thisObj.bindDelete($('#deleteThumb-' + response.id));
+            thisObj.bindDeleteHover($('#media_thumb-' + response.id));
 
-                if(!isGallery)
-                    thisObj.insertDesc(response.id, compID);
+            if(!isGallery)
+                thisObj.insertDesc(response.id, compID);
 
-                return $(thumbDiv);
+            return $(thumbDiv);
         },
         /**
          * Shows the delete button when over over deleteElems
@@ -385,8 +385,8 @@
                         $('#media_thumb-' + attachmentID).remove();
                     },
                     error    : function(jqXHR, statusText, errorThrown){
-                            if(smartpost.sp_postComponent)
-                                smartpost.sp_postComponent.showError(errorThrown);
+                        if(smartpost.sp_postComponent)
+                            smartpost.sp_postComponent.showError(errorThrown);
                     }
                 })
             });
@@ -406,8 +406,8 @@
             });
         },
         /**
-        * Dynamically initializes a media component
-        */
+         * Dynamically initializes a media component
+         */
         initComponent: function(component, postID, autoFocus){
             var webcamLink = $(component).find('.sp_webcam_click');
             this.webcamClick($(webcamLink));
@@ -415,8 +415,8 @@
         },
 
         /**
-        * Statically initializes all media components on document.ready
-        */
+         * Statically initializes all media components on document.ready
+         */
         init: function(){
             this.setTypeID();
             var thisObj = this;

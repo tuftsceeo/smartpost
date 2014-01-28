@@ -9,21 +9,21 @@
  */
 
 (function($){
-    var sp_postContent = {
+    smartpost.sp_postContent = {
 
         /**
          * Required for all post component JS objects.
-         * Used in sp_globals.types to determine which
+         * Used in sp_globals.SP_TYPES to determine which
          * methods to call for different post component types
          */
         setTypeID: function(){
             if(sp_globals){
-                var types = sp_globals.types;
+                var types = sp_globals.SP_TYPES;
 
                 //!Important - the raw name of the type
                 if(types['Content']){
                     this.typeID = types['Content'];
-                    sp_globals.types[this.typeID] = this;
+                    sp_globals.SP_TYPES[this.typeID] = this;
                 }
             }else{
                 return 0;
@@ -76,18 +76,8 @@
          * @param autoFocus
          */
         initComponent: function(component, postID, autoFocus){
-            var thisObj  = this;
-            if(smartpost.sp_postComponent){
-                var content  = $(component).find('.sp_richtext, .sp_plaintext');
-                var panelID  = $(component).find('.editorPanel').attr('id');
-                var richText = Boolean($(content).attr('data-richtext'));
-                smartpost.sp_postComponent.addNicEditor(content.attr('id'), panelID, this.saveContent, "Click to add content");
-            }else{
-                console.log('Error: could not find the smartpost.sp_postComponent object!');
-            }
-            if(autoFocus){
-                content.click().focus();
-            }
+            var editor = $(component).find( '.sp-editor-content' );
+            smartpost.sp_post.initCkEditors(editor);
         },
 
         /**
@@ -95,19 +85,11 @@
          */
         init: function(){
             this.setTypeID();
-            var thisObj = this;
-            if(smartpost.sp_postComponent){
-                $('.sp_richtext, .sp_plaintext').each(function(){
-                    var elementID  = $(this).attr('id');
-                    var compID     = $(this).attr('data-compid');
-                    var panelID    = $('#editorPanel-' + compID).exists() ? 'editorPanel-' + compID : undefined;
-                    smartpost.sp_postComponent.addNicEditor( elementID, panelID, thisObj.saveContent, "Click to add content" );
-                });
-            }
+
         }
     }
 
     $(document).ready(function(){
-        sp_postContent.init();
+        smartpost.sp_postContent.init();
     });
 })(jQuery);

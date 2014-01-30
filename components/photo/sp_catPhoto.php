@@ -1,14 +1,14 @@
 <?php
-if (!class_exists("sp_catGallery")) {
+if (!class_exists("sp_catPhoto")) {
 	
 	/**
 	 * Extends sp_catComponent
-	 * The photo gallery component allows users to upload pictures into
-     * a gallery. Gallery uses fancybox plugin to browse through the pictures.
+	 * The photo photo component allows users to upload pictures into
+     * a photo. Photo uses fancybox plugin to browse through the pictures.
 	 *
 	 * @see sp_catComponent
 	 */
-	class sp_catGallery extends sp_catComponent{
+	class sp_catPhoto extends sp_catComponent{
 
 		function __construct($compID = 0, $catID = 0, $name = '',
                              $description = '', $typeID = 0, $order = 0,
@@ -28,7 +28,7 @@ if (!class_exists("sp_catGallery")) {
          * @see parent::installComponent()
          */
 		function install(){
-			self::installComponent('Gallery', 'A gallery of photos', __FILE__);
+			self::installComponent('Photo', 'Upload a single photo.', __FILE__);
 		}
 
         /**
@@ -46,7 +46,7 @@ if (!class_exists("sp_catGallery")) {
 		 */		
 		function componentOptions(){
         ?>
-            <p>No options exist for this component</p>
+        <p>No options exist for this component</p>
         <?php
 		}
 
@@ -56,13 +56,13 @@ if (!class_exists("sp_catGallery")) {
 		function getOptions(){ return $this->options; }
 		
 		/**
-		 * Sets the option for the Gallery component. The $data param should be a bool
+		 * Sets the option for the Photo component. The $data param should be a bool
 		 * stating whether FancyBox should be used to view photos.
 		 * 
 		 * @param object $data
 		 * @return bool True on success, null or false on failure 
 		 */
-		function setOptions($data = null){}
+		function setOptions($data = null){ return false; }
 
         /**
          * Renders the global options for this component, otherwise returns false.

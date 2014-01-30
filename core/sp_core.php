@@ -251,9 +251,9 @@ if (!class_exists("sp_core")) {
          * @param $containerAttrs
          * @return string
          */
-        public static function sp_editor($content, $editor_id = null, $remove_toolbar = true, $placeholder = 'Click to edit', $contentAttrs = array(), $containerAttrs = array()){
+        public static function sp_editor($content, $editor_id = null, $remove_toolbar = true,
+                                         $placeholder = 'Click to edit', $contentAttrs = array(), $containerAttrs = array()){
             $html = '';
-
             $editor_id = empty( $editor_id ) ? rand(0, 99) : $editor_id; // Pick a unique id between 0 and 9
 
             // id and class attributes can be overwritten if params are non-empty

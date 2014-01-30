@@ -21,8 +21,8 @@
                     console.log(response);
                 },
                 error    : function(jqXHR, statusText, errorThrown){
-                    sp_postComponent.showError(errorThrown);
-                },
+                    smartpost.sp_postComponent.showError(errorThrown);
+                }
             });
         },
         /**

@@ -7,41 +7,28 @@ if (!class_exists("sp_postMedia")) {
 	 */	
 	class sp_postMedia extends sp_postComponent{
 			
-			private $allowedExts;
-			private $customExts;
-			private $imagesAllowed = false; //whether images are enabled
+			private $allowedExts = "";
 			private $attachmentIDs = array(); //An array of attachment IDs
-			private $galleryDesc   = ""; //Gallery description if the component is a gallery
-			private $isGallery;
-			
+			private $description = ""; //Gallery description if the component is a gallery
+
 			function __construct($compID = 0, $catCompID = 0, $compOrder = 0, 
-																								$name = '', $value = '', $postID = 0){
+ 								$name = '', $value = '', $postID = 0){
 					
-					$compInfo = compact("compID", "catCompID", "compOrder", "name", "value", "postID");
-					
-					if($compID == 0){
-						//Set default options from category component
-						$this->options = sp_catComponent::getOptionsFromID($catCompID);
-					}
-					
-					$this->initComponent($compInfo);
-					
-					//Get extensions & gallery bool
-					$this->allowedExts = $this->options->allowedExts;
-					$this->customExts  = $this->options->customExts;
-					$this->isGallery   = $this->options->isGallery;
-					
-					//Load instance vars
-					if( !empty($this->value) ){
-						$this->attachmentIDs = $this->value;
-					}
-					
-					//Check to see if images are allowed to see if
-					//We should enable webcam uploads	
-					if( !empty($this->allowedExts) ){
-						$imgExts = array("jpg" => 1, "jpeg" => 1, "png" => 1);
-						$this->imagesAllowed = (bool) array_intersect_key($imgExts, $this->allowedExts);
-					}
+                $compInfo = compact("compID", "catCompID", "compOrder", "name", "value", "postID");
+
+                if($compID == 0){
+                    //Set default options from category component
+                    $this->options = sp_catComponent::getOptionsFromID($catCompID);
+                }
+
+                $this->initComponent($compInfo);
+
+                // Load instance vars
+                if( !empty($this->value) ){
+                    $this->attachmentIDs = $this->value->attachmentIDs;
+                    $this->allowedExts = $this->value->allowedExts;
+                    $this->description = $this->value->description;
+                }
 			}
 			
 			/**
@@ -60,13 +47,8 @@ if (!class_exists("sp_postMedia")) {
 			}
 			
 			static function enqueueJS(){
-				wp_register_script( 'jquery-filedrop', plugins_url('js/jquery.filedrop.js', __FILE__) );
-				wp_register_script( 'jquery-webcam', plugins_url('js/jquery.webcam/jquery.webcam.js', __FILE__) );				
 				wp_register_script( 'sp_postMediaJS', plugins_url('js/sp_postMedia.js', __FILE__) );
-				
-				wp_enqueue_script( 'jquery-filedrop', null, array( 'jquery' ) );
-				wp_enqueue_script( 'jquery-webcam',   null, array( 'jquery' ) );				
-				wp_enqueue_script( 'sp_postMediaJS',  null, array( 'jquery', 'sp_globals', 'sp_postComponentJS', 'tiny_mce' ) );
+				wp_enqueue_script( 'sp_postMediaJS',  null, array( 'jquery', 'sp_globals', 'sp_postComponentJS' ) );
 			}
 
 			/**
@@ -74,21 +56,13 @@ if (!class_exists("sp_postMedia")) {
 			 */			
 			function renderEditMode(){
 				
-				$html .= '<div id="sp_media-' . $this->ID .'" class="sp_media" data-compid="' . $this->ID .'" data-isgallery="' . (string) $this->isGallery . '">';
+				$html = '<div id="sp_media-' . $this->ID .'" class="sp_media" data-compid="' . $this->ID .'" data-isgallery="' . (string) $this->isGallery . '">';
 					$html .= '<div id="sp_uploads-' . $this->ID . '" class="sp_uploads">';
 
 						$html .= '<p>';
 							$html .= 'Drag and drop files here! ';
 							$html .= $this->imagesAllowed ? 'Uploading photo(s)? Use your <a href="#" data-compid="' . $this->ID . '" class="sp_webcam_click"> webcam </a>!' : '';
 						$html .= '</p>';
-						
-						if($this->imagesAllowed){
-								$html .= '<p></p>';
-								$html .= '<div id="sp_media_webcam-' . $this->ID .'" data-compid="' . $this->ID . '" class="sp_media_webcam">';
-									$html .= '<div class="clear"></div>';								
-									$html .= '<a href="javascript:webcam.capture();">Take photo!</a> | <a href="javascript:sp_postMedia.cancelCam(' . $this-> ID . ');"> Cancel </a>';
-								$html .= '</div>';
-						}
 						
 						//Fallback upload browser
 						$html .= '<div id="sp_browse-' . $this->ID . '" class="sp_browse">';
@@ -107,10 +81,6 @@ if (!class_exists("sp_postMedia")) {
 									$html .= self::renderSingleThumb($id, $this->ID, $this->isGallery);
 								}
 						}					
-						
-						if( !$this->isGallery && !empty($this->attachmentIDs) ){
-							$html .= self::renderSingleDesc($this->attachmentIDs[0], $this->ID);
-						}
 					$html .= '</div>';
 					
 					$html .= '<div class="clear"></div>';
@@ -191,7 +161,7 @@ if (!class_exists("sp_postMedia")) {
 					$attachment    = get_post($attachmentIDs[0]);
 					$html = $attachment->post_content;
 				}else{
-					$html = $this->galleryDesc;
+					$html = $this->description;
 				}
 				
 				return $html;

@@ -183,8 +183,9 @@ if (!class_exists("sp_postVideoAJAX")) {
                 $videoComponent->update();
 
                 $html5_encoding = (bool) get_site_option('sp_html5_encoding');
+                $sp_ffmpeg_path = get_site_option( 'sp_ffmpeg_path' );
 
-                if( $html5_encoding ){
+                if( $html5_encoding && !is_wp_error( $sp_ffmpeg_path ) ){
 
                     $videoComponent->beingConverted = true;
                     $videoComponent->update();

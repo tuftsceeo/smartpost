@@ -51,25 +51,49 @@ if (!class_exists("sp_catVideo")) {
 
             self::installComponent('Video', 'Basic HTML5 video player', __FILE__);
 
-            // Use /usr/local/bin/ by default
-            update_site_option( 'sp_ffmpeg_path', SP_DEFAULT_VIDEO_PATH );
-            update_site_option( 'sp_html5_encoding', SP_DEFAULT_VIDEO_ENCODING );
-            update_site_option( 'sp_player_width', SP_DEFAULT_PLAYER_WIDTH );
-            update_site_option( 'sp_player_height', SP_DEFAULT_PLAYER_HEIGHT );
+            $sp_ffmpeg_path = get_site_option( 'sp_ffmpeg_path' );
 
-            // See if ffmpeg exists...
-            exec( 'command -v ' . $sp_ffmpeg_path . 'ffmpeg', $ffmpeg_output, $ffmpeg_status );
+            if( empty($sp_ffmpeg_path) && is_wp_error( $sp_ffmpeg_path ) ){
 
-            // If command exited successfully, then update the sp_ffmpeg_path site option with the path, otherwise update it to false.
-            if( $ffmpeg_status === '0' ){
-                update_site_option( 'sp_ffmpeg_path', $ffmpeg_output );
-            }else{
-                update_site_option( 'sp_ffmpeg_path', new WP_Error( 'broke', __( 'ffmpeg path not found' ) ) );
+                // Use /usr/local/bin/ by default
+                update_site_option( 'sp_ffmpeg_path', SP_DEFAULT_VIDEO_PATH );
+
+                // See if ffmpeg exists...
+                exec( 'command -v ' . $sp_ffmpeg_path . 'ffmpeg', $ffmpeg_output, $ffmpeg_status );
+
+                // If command exited successfully, then update the sp_ffmpeg_path site option with the path, otherwise update it to false.
+                if( $ffmpeg_status === '0' ){
+                    update_site_option( 'sp_ffmpeg_path', $sp_ffmpeg_path );
+                }else{
+                    update_site_option( 'sp_ffmpeg_path', new WP_Error( 'broke', __( 'ffmpeg path not found' ) ) );
+                }
+
+                if( DEBUG_SP_VIDEO ){
+                    $sp_ffmpeg_path = get_site_option( 'sp_ffmpeg_path' );
+                    if( is_wp_error($sp_ffmpeg_path) ){
+                        error_log( 'ffmpeg path:' . print_r($sp_ffmpeg_path, true) );
+                    }else{
+                        error_log( 'ffmpeg path:' . $sp_ffmpeg_path );
+                    }
+                    error_log( 'ffmpeg_status: ' . $ffmpeg_status );
+                    error_log( 'ffmpeg output: ' . print_r($ffmpeg_output, true) );
+                }
             }
 
-            if( DEBUG_SP_VIDEO ){
-                error_log( 'ffmpeg_status: ' . $ffmpeg_status );
-                error_log( 'ffmpeg output: ' . print_r($ffmpeg_output, true) );
+            // Set video player options to default of they're not already set
+            $sp_html5_encoding = get_site_option( 'sp_html5_encoding' );
+            if( empty( $sp_html5_encoding ) ){
+                update_site_option( 'sp_html5_encoding', SP_DEFAULT_VIDEO_ENCODING );
+            }
+
+            $sp_player_width = get_site_option( 'sp_player_width' );
+            if( empty( $sp_player_width ) ){
+                update_site_option( 'sp_player_width', SP_DEFAULT_PLAYER_WIDTH );
+            }
+
+            $sp_player_height = get_site_option( 'sp_player_height' );
+            if( empty( $sp_player_height ) ){
+                update_site_option( 'sp_player_height', SP_DEFAULT_PLAYER_HEIGHT );
             }
         }
 
@@ -134,15 +158,19 @@ if (!class_exists("sp_catVideo")) {
             </p>
             <?php
             $sp_ffmpeg_path = get_site_option( 'sp_ffmpeg_path' );
-            if( DEBUG_SP_VIDEO && !is_wp_error( $sp_ffmpeg_path ) ){
-                exec('command -v ' . $sp_ffmpeg_path . 'ffmpeg', $cmd_output, $cmd_status);
-                ?>
-                <div class="error">
-                    <p>Command: <?php echo 'command -v ' . $sp_ffmpeg_path . 'ffmpeg' ?></p>
-                    <p>Status code: <?php echo $cmd_status ?></p>
-                    <p>Command ouput: <?php echo print_r( $cmd_output, true) ?></p>
-                </div>
-            <?php
+            if( DEBUG_SP_VIDEO  ){
+                if( is_wp_error( $sp_ffmpeg_path ) ){
+                    echo '<p>' . $sp_ffmpeg_path->get_error_message() . '</p>';
+                }else{
+                    exec('command -v ' . $sp_ffmpeg_path . 'ffmpeg', $cmd_output, $cmd_status);
+                    ?>
+                    <div class="error">
+                        <p>Command: <?php echo 'command -v ' . $sp_ffmpeg_path . 'ffmpeg' ?></p>
+                        <p>Status code: <?php echo $cmd_status ?></p>
+                        <p>Command ouput: <?php echo print_r( $cmd_output, true) ?></p>
+                    </div>
+                <?php
+                }
             }
 
             if( !is_wp_error( $sp_ffmpeg_path ) ){

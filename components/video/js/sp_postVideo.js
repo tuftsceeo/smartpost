@@ -112,9 +112,8 @@
 
                     FileUploaded: function(up, files, response) {
                         if(response){
-                            $('#videoProgressMsg-' + compID).html('');
                             $('#videoProgBarContainer-' + compID).hide();
-                            $('#sp_video-' + compID).prepend( response.response );
+                            $('#videoProgressMsg-' + compID).html( response.response );
                             self.checkVideoStatus(compID);
                         }
                         window.onbeforeunload = prev_onbeforeunload;

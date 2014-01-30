@@ -38,8 +38,10 @@ if (!class_exists("sp_post")) {
 
                         if( !empty($catComponents) ){
                             foreach($catComponents as $catComp){
-                                $catCompID = $catComp->getID();
-                                $this->addComponent($catCompID);
+                                if($catComp->getRequired() || $catComp->getDefault()){
+                                    $catCompID = $catComp->getID();
+                                    $this->addComponent($catCompID);
+                                }
                             }
                         }
                     }
@@ -695,12 +697,12 @@ if (!class_exists("sp_post")) {
             global $wpdb;
             $postComponents = array();
             $tableName = $wpdb->prefix . 'sp_postComponents';
-            $componentResults = $wpdb->get_results( "SELECT *	FROM $tableName WHERE postID = $postID order by compOrder ASC;" );
+            $componentResults = $wpdb->get_results( "SELECT * FROM $tableName WHERE postID = $postID order by compOrder ASC;" );
 
-            if(!empty($componentResults)){
+            if( !empty($componentResults) ){
                 $postComponents = array();
                 $i = 0;
-                foreach($componentResults as $index => $rawComponent){
+                foreach( $componentResults as $rawComponent ){
                     $postCompType         = 'sp_post' . sp_core::getTypeName($rawComponent->typeID);
                     $sp_postComponent     = new $postCompType($rawComponent->id);
                     $postComponents[$i++] = $sp_postComponent;

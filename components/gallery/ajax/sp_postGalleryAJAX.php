@@ -101,6 +101,9 @@ if (!class_exists("sp_postGalleryAJAX")) {
                 $attachments = get_posts($args);
                 if($attachments){
                     set_post_thumbnail($galleryComponent->getPostID(), $attachments[0]->ID);
+                }else{
+                    // Otherwise remove the thumbnail
+                    delete_post_thumbnail( $galleryComponent->getPostID() );
                 }
             }
 

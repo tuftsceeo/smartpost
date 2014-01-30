@@ -30,9 +30,8 @@
                         articlePost.remove();
                     }
                 },
-                error    : function(jqXHR, statusText, errorThrown){
-                        if(sp_postComponent)
-                            sp_postComponent.showError(errorThrown);
+                error : function(jqXHR, statusText, errorThrown){
+                    smartpost.sp_postComponent.showError(errorThrown);
                 }
             })
         },

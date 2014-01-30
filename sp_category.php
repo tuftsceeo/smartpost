@@ -481,7 +481,7 @@ if (!class_exists("sp_category")) {
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
             $sql = "SELECT MAX(compOrder) FROM $tableName where catID = " . $this->ID;
-            $nextOrder = (int) $wpdb->get_var($wpdb->prepare($sql)) + 1;
+            $nextOrder = (int) $wpdb->get_var( $sql ) + 1;
             return $nextOrder;
         }
 
@@ -489,7 +489,7 @@ if (!class_exists("sp_category")) {
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
             $sql = "SELECT COUNT(*) FROM $tableName where catID = $this->ID";
-            return $wpdb->get_var($wpdb->prepare($sql));
+            return $wpdb->get_var( $sql );
         }
 
         /**

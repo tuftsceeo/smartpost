@@ -68,9 +68,8 @@
                             thumbSaved.delay(3000).fadeOut().queue(function(){ $(this).remove(); });
                         }
                 },
-                error    : function(jqXHR, statusText, errorThrown){
-                        if(sp_postComponent)
-                            sp_postComponent.showError(errorThrown);
+                error : function(jqXHR, statusText, errorThrown){
+                        smartpost.sp_postComponent.showError(errorThrown);
                 }
             })
         },
@@ -103,13 +102,13 @@
                     $('.sp_browse').show();
                   break;
               case 'TooManyFiles':
-                                                sp_postComponent.showError('Too many files! Please upload less');
+                  smartpost.sp_postComponent.showError('Too many files! Please upload less');
                   break;
               case 'FileTooLarge':
-                                                sp_postComponent.showError(file.name + ' is too large!');
+                  smartpost.sp_postComponent.showError(file.name + ' is too large!');
                   break;
               default:
-                            sp_postComponent.showError(err);
+                  smartpost.sp_postComponent.showError(err);
                   break;
             }
                         $('#loadingGIF').remove();

@@ -4,7 +4,7 @@
  */
 .sp-gallery-thumb{
     float: left;
-    margin: 23px;
+    margin: 20px;
     position: relative;
 }
 .sp-gallery-caption{
@@ -41,5 +41,7 @@
 }
 .sp-gallery-pics{
     clear: both;
-
+}
+.sp-gallery-desc{
+    margin: 20px;
 }

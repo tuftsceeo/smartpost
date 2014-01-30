@@ -3,6 +3,8 @@
  * AJAX-Related functions for all
  * sp_postLink components. Functions are used
  * in front end posts.
+ * @version 2.0
+ * @author Rafi Yagudin <rafi.yagudin@tufts.edu>
  */
 
 if (!class_exists("sp_postLinkAJAX")) {
@@ -15,100 +17,102 @@ if (!class_exists("sp_postLinkAJAX")) {
 			add_action('wp_ajax_removeLinkThumbAJAX', array('sp_postLinkAJAX', 'removeLinkThumbAJAX'));
 			add_action('wp_ajax_saveCustomLinkThumbAJAX', array('sp_postLinkAJAX', 'saveCustomLinkThumbAJAX'));
 		}
-		
-		function removeLinkThumbAJAX(){
-				$nonce = $_POST['nonce'];
-				if( !wp_verify_nonce($nonce, 'sp_nonce') ){
-					header("HTTP/1.0 403 Security Check.");
-					die('Security Check');
-				}
-				
-				if(!class_exists('sp_postLink')){
-						header("HTTP/1.0 409 Could not instantiate sp_postLink class.");
-						echo json_encode(array('error' => 'Could not save link.'));						
-				}				
-				
-				if( empty($_POST['compID']) ){
-					header("HTTP/1.0 409 Could find component ID to udpate.");
-					exit;					
-				}
-				
-				$compID  = (int) $_POST['compID'];
-				
-				$linkComponent = new sp_postLink($compID);
-				$linkComponent->removeThumb();
-				
-				echo json_encode( array('success' => true) );
-				exit;
+
+        function removeLinkThumbAJAX(){
+            $nonce = $_POST['nonce'];
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
+                header("HTTP/1.0 403 Security Check.");
+                die('Security Check');
+            }
+
+            if(!class_exists('sp_postLink')){
+                    header("HTTP/1.0 409 Could not instantiate sp_postLink class.");
+                    echo json_encode(array('error' => 'Could not save link.'));
+            }
+
+            if( empty($_POST['compID']) ){
+                header("HTTP/1.0 409 Could find component ID to udpate.");
+                exit;
+            }
+
+            $compID  = (int) $_POST['compID'];
+
+            $linkComponent = new sp_postLink($compID);
+            $linkComponent->removeThumb();
+
+            echo json_encode( array('success' => true) );
+            exit;
 		}
 		
 		function saveLinkAJAX(){
-		
-				$nonce = $_POST['nonce'];
-				if( !wp_verify_nonce($nonce, 'sp_nonce') ){
-					header("HTTP/1.0 403 Security Check.");
-					die('Security Check');
-				}
-				
-				if(!class_exists('sp_postLink')){
-						header("HTTP/1.0 409 Could not instantiate sp_postLink class.");
-						echo json_encode(array('error' => 'Could not save link.'));						
-				}				
-				
-				if( empty($_POST['compID']) ){
-					header("HTTP/1.0 409 Could find component ID to udpate.");
-					exit;					
-				}
+            $nonce = $_POST['nonce'];
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
+                header("HTTP/1.0 403 Security Check.");
+                die('Security Check');
+            }
 
-				$compID = (int) $_POST['compID'];
-				$link 	= (string) stripslashes_deep($_POST['link']);
-				$linkComponent = new sp_postLink($compID);
-				$success = $linkComponent->setLink($link);
+            if( !class_exists('sp_postLink') ){
+                    header("HTTP/1.0 409 Could not instantiate sp_postLink class.");
+                    echo json_encode(array('error' => 'Could not save link.'));
+            }
 
-				if( !empty($link) ){
-					echo $linkComponent->renderThumbs() . $linkComponent->renderDesc();
-				}else{
-					echo "";
-				}
+            if( empty($_POST['compID']) ){
+                header("HTTP/1.0 409 Could find component ID to udpate.");
+                exit;
+            }
 
-				exit;
+            $compID = (int) $_POST['compID'];
+            $link 	= (string) stripslashes_deep($_POST['link']);
+            $linkComponent = new sp_postLink($compID);
+            $success = $linkComponent->setLink($link);
+
+            if( is_wp_error( $linkComponent->errors ) ){
+                header( "HTTP/1.0 409 " . $success->get_error_message() );
+                exit;
+            }
+
+            echo $linkComponent->renderEditMode();
+            exit;
 		}
-	
-	
-		function saveLinkDescAJAX(){
-		
-				$nonce = $_POST['nonce'];
-				if( !wp_verify_nonce($nonce, 'sp_nonce') ){
-					header("HTTP/1.0 403 Security Check.");
-					die('Security Check');
-				}
 
-				if(!class_exists('sp_postLink')){
-						header("HTTP/1.0 409 Could not instantiate sp_postLink class.");
-						echo json_encode(array('error' => 'Could not save link.'));						
-				}
-				
-				if( empty($_POST['compID']) ){
-					header("HTTP/1.0 409 Could find component ID to udpate.");
-					exit;					
-				}
-	
-				$compID		= (int) $_POST['compID'];
-				$desc				= (string) stripslashes_deep($_POST['desc']);				
-				$linkComponent = new sp_postLink($compID);
-	
-				if( is_wp_error($linkComponent->errors) ){
-					header("HTTP/1.0 409 " . $success->get_error_message());
-				}else{
-					$linkComponent->setUrlDesc($desc);
-					$success = $linkComponent->update(0);
-					if($success === false){
-						header("HTTP/1.0 409 Could not save link description.");
-					}else{
-						echo json_encode(array('success' => true));
-					}
-				}
-				exit;
+        /**
+         * Save link description
+         */
+        function saveLinkDescAJAX(){
+            $nonce = $_POST['nonce'];
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
+                header("HTTP/1.0 403 Security Check.");
+                die('Security Check');
+            }
+
+            if(!class_exists('sp_postLink')){
+                header("HTTP/1.0 409 Could not instantiate sp_postLink class.");
+                echo json_encode(array('error' => 'Could not save link.'));
+            }
+
+            if( empty($_POST['compid']) ){
+                header("HTTP/1.0 409 Could find component ID to udpate.");
+                exit;
+            }
+
+            $compID	= (int) $_POST['compid'];
+            $desc	= (string) stripslashes_deep( $_POST['content'] );
+            $linkComponent = new sp_postLink($compID);
+
+            if( is_wp_error( $linkComponent->errors ) ){
+                header( "HTTP/1.0 409 " . $linkComponent->errors->get_error_message() );
+            }else{
+
+                $linkComponent->setUrlDesc($desc);
+                $success = $linkComponent->update();
+
+                if($success === false){
+                    header("HTTP/1.0 409 Could not save link description.");
+                }else{
+                    echo json_encode(array('success' => true));
+                }
+            }
+            exit;
 		}
 		
 		function saveCustomLinkThumbAJAX(){

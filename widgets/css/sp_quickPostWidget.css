@@ -2,9 +2,14 @@
  * CSS for the sp_quickPostWidget class
  * Used on the front end for new posts
  */
-
+#sp_qp_stack{
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
 .sp_qp_component{
     cursor: pointer;
+    margin-right: 15px;
+    font-size: 16px;
 }
 .sp_qp_component:hover{
     text-decoration: underline;

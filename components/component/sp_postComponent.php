@@ -247,6 +247,7 @@ if (!class_exists("sp_postComponent")) {
 
                 if( !$this->isEmpty() ){
                     $html .= '<div id="comp-' .  $this->ID . '" class="sp_component">';
+                    $html .= $this->renderCompTitle();
                     $html .= $this->renderViewMode();
                     $html .= '<div class="clear"></div>';
                     $html .= '</div><!-- end #comp-' . $this->ID .' -->';

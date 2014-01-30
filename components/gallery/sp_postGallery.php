@@ -99,6 +99,7 @@ if (!class_exists("sp_postGallery")) {
         function renderViewMode(){
 
             $html = '<div id="sp-gallery-pics-' . $this->ID . '" class="sp-gallery-pics">';
+            $html .= '<div id="sp-gallery-desc-' . $this->ID . '" class="sp-gallery-desc">' . $this->description . '</div>';
             if( !empty($this->attachmentIDs) ){
                 foreach($this->attachmentIDs as $id){
                     $html .= self::renderThumb($id, $this->ID, false);

@@ -1,15 +1,14 @@
 /**
- * JS sp_postMedia Component class
- * Used alongside sp_postMedia for AJAX calls
+ * JS sp_postPhoto Component class
+ * Used alongside sp_postPhoto for AJAX calls
  * Used in front-end posts
  *
  * @version 2.0
  * @author Rafi Yagudin <rafi.yagudin@tufts.edu>
  * @project SmartPost
- * @todo figure out captions!
  */
 (function($){
-    smartpost.sp_postGallery = {
+    smartpost.sp_postPhoto = {
         /**
          * Required for all post component JS objects.
          * Used in sp_globals.SP_TYPES to determine which
@@ -20,8 +19,8 @@
                 var types = sp_globals.SP_TYPES;
 
                 //!Important - the raw name of the type
-                if(types['Gallery']){
-                    this.typeID = types['Gallery'];
+                if(types['Photo']){
+                    this.typeID = types['Photo'];
                     sp_globals.SP_TYPES[this.typeID] = this;
                 }
             }else{
@@ -36,12 +35,12 @@
          * @return bool True if it's empty, otherwise false
          */
         isEmpty: function(component){
-            return Boolean( $(component).find('.sp-gallery-thumb').length );
+            return Boolean( $(component).find('.sp-photo-thumb').length );
         },
 
         /**
          * Initializes HTML5 filedrop for the media component
-         * @param object component The gallery component
+         * @param object component The photo component
          */
         initFileDrop: function(component, postID){
             var self = this;
@@ -65,11 +64,11 @@
                 silverlight_xap_url : sp_globals.UPLOAD_SILVERLIGHT_URL,
                 dragdrop        : true,
                 drop_element    : component.attr('id'),
-                file_data_name  : 'sp-gallery-upload',
+                file_data_name  : 'sp-photo-upload',
                 multipart       : true,
                 urlstream_upload: true,
                 multipart_params: {
-                    action  : 'galleryUploadAJAX',
+                    action  : 'photoUploadAJAX',
                     nonce   : SP_NONCE,
                     compID  : compID,
                     postID  : postID
@@ -83,22 +82,29 @@
                 init: {
 
                     FilesAdded: function(up, files) {
-                        up.start();
-                        $('#sp-gallery-progress-' + compID).show();
-
-                        //Add a dialogue in case window is closed
-                        window.onbeforeunload = function (e) {
-                            e = e || window.event;
-                            if (e) {
-                                e.returnValue = 'Warning: A file is being uploaded. If you interrupt file upload you will have to restart the upload.';
+                        if(files.length > 1){
+                            alert('Please upload one file at a time.')
+                            while (up.files.length > 0) {
+                                up.removeFile(up.files[0]);
                             }
-                            return 'Warning: A file is being uploaded. If you interrupt file upload you will have to restart the upload.';
-                        };
+                        }else{
+                            up.start();
+                            $('#sp-photo-progress-' + compID).show();
+
+                            //Add a dialogue in case window is closed
+                            window.onbeforeunload = function (e) {
+                                e = e || window.event;
+                                if (e) {
+                                    e.returnValue = 'Warning: A file is being uploaded. If you interrupt file upload you will have to restart the upload.';
+                                }
+                                return 'Warning: A file is being uploaded. If you interrupt file upload you will have to restart the upload.';
+                            };
+                        }
                     },
 
                     UploadProgress: function(up, file) {
-                        $('#sp-gallery-progress-' + compID).css('width', file.percent + '%');
-                        $('#sp-gallery-progress-msg-' + compID).html('<p><img src="' + SP_IMAGE_PATH + '/loading.gif" /> Uploading "' + file.name + '"… ' + file.percent + '%, ' + parseInt(up.total.bytesPerSec/1024) +'Kb/s</p>');
+                        $('#sp-photo-progress-' + compID).css('width', file.percent + '%');
+                        $('#sp-photo-progress-msg-' + compID).html('<p><img src="' + SP_IMAGE_PATH + '/loading.gif" /> Uploading "' + file.name + '"… ' + file.percent + '%, ' + parseInt(up.total.bytesPerSec/1024) +'Kb/s</p>');
                     },
 
                     Error: function(up, err) {
@@ -106,14 +112,15 @@
                         for (var i in err) {
                             out += i + ": " + err[i] + "\n";
                         }
+                        window.onbeforeunload = prev_onbeforeunload; // Cancel the beforeunload event since something went wrong
                         alert( out );
                     },
 
                     FileUploaded: function(up, files, response) {
                         if(response){
-                            $('#sp-gallery-progress-msg-' + compID).html('');
-                            $('#sp-gallery-progress-' + compID).css('width', '0%');
-                            self.renderPhoto( $('#sp-gallery-pics-' + compID), response.response );
+                            $('#sp-photo-progress-msg-' + compID).html('');
+                            $('#sp-photo-progress-' + compID).css('width', '0%');
+                            self.renderPhoto( $('#sp-photo-container-' + compID), response.response );
                         }
                         window.onbeforeunload = prev_onbeforeunload;
                     }
@@ -123,42 +130,22 @@
         },
 
         /**
-         * Appends an uploaded photo to the gallery as well as bind
+         * Appends an uploaded photo to the photo as well as bind
          * delete and edit events to the new photo.
-         * @param galleryElem - The gallery container with all the pics
+         * @param photoElem - The photo container with all the pics
          * @param thumbElem - The single thumbnail
          */
-        renderPhoto: function(galleryElem, thumbElem){
+        renderPhoto: function(photoElem, thumbElem){
             var self = this;
 
-            galleryElem.append( thumbElem );
+            photoElem.html( thumbElem );
 
             // Get a handle on the DOM element
             var thumbInfo = $( thumbElem ).data();
-            thumbElem = galleryElem.find('#sp-gallery-thumb-' + thumbInfo.thumbid);
+            thumbElem = photoElem.find('#sp-photo-thumb-' + thumbInfo.thumbid);
 
-            var delElem = $(thumbElem).find('.sp-gallery-delete-thumb');
-            var editElem = $(thumbElem).find('.sp-gallery-edit-caption');
-
+            var delElem = $(thumbElem).find('.sp-photo-delete-thumb');
             self.bindDelete( $(delElem) );
-        },
-
-        /**
-         * Triggers editing a caption of a thumbnail.
-         * @param editElem
-         */
-        bindEditCaption: function(editElem){
-
-            var captionInfo = editElem.data();
-            var captionElem = $('#sp-gallery-caption-' + captionInfo.thumbid);
-            captionElem.bind('blur', function(){
-                console.log('blur');
-                $(this).hide();
-            })
-
-            editElem.click(function(){
-                captionElem.show();
-            });
         },
 
         /**
@@ -175,14 +162,14 @@
                     url: ajaxurl,
                     type: 'POST',
                     data: {
-                        action: 'galleryDeletePicAJAX',
+                        action: 'photoDeletePicAJAX',
                         nonce: SP_NONCE,
                         attachmentID: thumbID,
                         compID: compID
                     },
                     dataType  : 'json',
                     success  : function(response, statusText, jqXHR){
-                        $('#sp-gallery-thumb-' + thumbID).remove();
+                        $('#sp-photo-thumb-' + thumbID).remove();
                     },
                     error    : function(jqXHR, statusText, errorThrown){
                         smartpost.sp_postComponent.showError( errorThrown );
@@ -207,11 +194,11 @@
             var self = this;
             self.setTypeID();
 
-            $('.sp-gallery').each(function(){
+            $('.sp-photo').each(function(){
                 self.initFileDrop( $(this) );
             });
 
-            $('.sp-gallery-delete-thumb').each(function(){
+            $('.sp-photo-delete-thumb').each(function(){
                 self.bindDelete( $(this) );
             });
 
@@ -224,7 +211,7 @@
     }
 
     $(document).ready(function(){
-        smartpost.sp_postGallery.init();
+        smartpost.sp_postPhoto.init();
     });
 
 })(jQuery);

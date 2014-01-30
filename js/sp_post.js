@@ -11,17 +11,13 @@
         savePostTitle: function(title, postID){
 
             if( title.length < 5 ){
-                if(sp_postComponent){
-                    sp_postComponent.showError('Title field must be at least 5 characters long!');
-                    return;
-                }
+                smartpost.sp_postComponent.showError('Title field must be at least 5 characters long!');
+                return;
             }
 
             if( postID == undefined ){
-                if(sp_postComponent){
-                    sp_postComponent.showError('Could not find the postID needed to update the title!');
-                    return;
-                }
+                smartpost.sp_postComponent.showError('Could not find the postID needed to update the title!');
+                return;
             }
 
             $.ajax({
@@ -37,7 +33,7 @@
                     console.log(jqXHR);
                     console.log(statusText);
                     console.log(errorThrown);
-                    sp_postComponent.showError(errorThrown + statusText + jqXHR);
+                    smartpost.sp_postComponent.showError(errorThrown + statusText + jqXHR);
                 }
             })
         },
@@ -88,14 +84,13 @@
                 ],
                 allowedContent:
                     'h1 h2 h3 p strong em ol li ul br;' +
-                        'a[!href];' +
-                        'img(left,right)[!src,alt,width,height];' +
-                        'div{!text-align};' +
-                        'span{!font-family};' +
-                        'span{!color};' +
-                        'span{!font-size};' +
-                        'span(!marker);' +
-                        'del ins',
+                    'a[!href];' +
+                    'img(left,right)[!src,alt,width,height];' +
+                    'p{font-family, color, font-size, text-align};' +
+                    'div{font-family, color, font-size, text-align};' +
+                    'span{font-family, color, font-size, text-align};' +
+                    'span(!marker);' +
+                    'del ins',
                 removePlugins: editor_data.toolbar
             }).on('blur', function(e){
                 // Add nonce and content before sending it off

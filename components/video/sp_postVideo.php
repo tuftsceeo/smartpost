@@ -58,16 +58,16 @@ if (!class_exists("sp_postVideo")) {
         function renderEditMode($value = ""){
             $html = '<div id="sp_video-' . $this->ID . '" class="sp_video" data-compid="' . $this->ID . '" style="text-align: center;">';
 
-            if( !$this->beingConverted ) {
+            // Create an editor area for a video description
+            $html .= sp_core::sp_editor(
+                $this->description,
+                $this->ID,
+                true,
+                'Click here to add a video description ...',
+                array('data-action' => 'saveVideoDescAJAX', 'data-compid' => $this->ID, 'data-postid' => $this->postID )
+            );
 
-                    // Create an editor area for a video description
-                    $html .= sp_core::sp_editor(
-                        $this->description,
-                        $this->ID,
-                        true,
-                        'Click here to add a video description ...',
-                        array('data-action' => 'saveVideoDescAJAX', 'data-compid' => $this->ID, 'data-postid' => $this->postID )
-                    );
+            if( !$this->beingConverted ) {
 
                     $html .= $this->renderPlayer();
 
@@ -101,7 +101,7 @@ if (!class_exists("sp_postVideo")) {
             $html = '';
 
             if( $this->beingConverted ){
-                $html .= '<p><img src="' . SP_IMAGE_PATH . '/loading.gif" /> Your video is being processed, thank you for your patience!</p>';
+                $html .= '<p><img src="' . SP_IMAGE_PATH . '/loading.gif" /> Your video is being processed - feel free to come back at a later time to see if the video is ready for viewing!</p>';
                 return $html;
             }
 
@@ -120,15 +120,14 @@ if (!class_exists("sp_postVideo")) {
             // If the video is done converting and we have the .mp4 file, render the <video> elem
             if( !$this->beingConverted && isset( $this->videoAttachmentIDs['mp4'] ) ){
                 $mp4_vid  = wp_get_attachment_url( $this->videoAttachmentIDs['mp4'] );
-
                 $html .= '<div id="playerContainer-' . $this->ID . '" style="width: ' . $width . 'px; height: ' . $height . 'px; margin-right: auto; margin-left: auto;">';
-                    $html .= '<video class="wp-video-shortcode" width="' . $width . '" height="' . $height . '" preload="metadata">';
+                    $html .= '<video class="wp-video-shortcode sp-video-player" width="' . $width . '" height="' . $height . '" preload="metadata" controls>';
                         $html .= '<source type="video/mp4" src="' . $mp4_vid . '">';
                     $html .= '</video>';
                 $html .= '</div>';
             }else if( $this->videoAttachmentIDs['mov'] ){ // Otherwise just render the original
                 $html .= '<div id="playerContainer-' . $this->ID . '" style="width: ' . $width . 'px; height: ' . $height . 'px; margin-right: auto; margin-left: auto;">';
-                    $html .= '<video class="wp-video-shortcode" width="' . $width . '" height="' . $height . '" preload="metadata" controls>';
+                    $html .= '<video class="wp-video-shortcode sp-video-player" width="' . $width . '" height="' . $height . '" preload="metadata" controls>';
                         $html .= '<source src="' . wp_get_attachment_url( $this->videoAttachmentIDs['mov'] ) . '" type="video/mp4">';
                     $html .= '</video>';
                 $html .= '</div>';
@@ -141,7 +140,7 @@ if (!class_exists("sp_postVideo")) {
          */
         function renderViewMode(){
             $html .= '<div id="sp_video-' . $this->ID . '" class="sp_video" data-compid="' . $this->ID . '">';
-                $html .= $this->description;
+                $html .= '<div id="sp-video-desc-' . $this->ID . '" class="sp-video-desc">' . $this->description . '</div>';
                 $html .= $this->renderPlayer();
             $html .= '</div>';
             return $html;

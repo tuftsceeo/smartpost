@@ -250,8 +250,8 @@
          * @param string errorText The error text to display
          */
         showError: function(errorText){
-            $('#component_errors').show().html('Error: ' +	errorText);
-            $('html, body').animate({ scrollTop: 0 }, 0);
+            $( '#component_errors' ).show().html('Error: ' + errorText);
+            $( 'html, body' ).animate({ scrollTop: 0 }, 0);
         },
 
         /**

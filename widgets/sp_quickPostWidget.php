@@ -103,11 +103,11 @@ class sp_quickPostWidget extends WP_Widget {
                 $html .= '</div>';
 
                 //New component dialog
-                $html .= '<p>';
+                $html .= '<div>';
                 $html .= '<button type="button" id="sp_publish_post" class="sp_qp_button">Publish ' . (!$responseQP ? 'Post' : 'Response') . '</button> or ';
                 $html .= '<button type="button" id="sp_cancel_draft" class="sp_qp_button">Cancel ' . (!$responseQP ? 'Post' : 'Response') . '</button> ';
                 $html .= !$responseQP ? 'Responding to a post? <span id="sp_qp_response">Publish as a response</span>.' : '';
-                $html .= '</p>';
+                $html .= '</div>';
 
                 //Response Post dialog
                 $html .= '<div id="sp_qp_responseDialog">';

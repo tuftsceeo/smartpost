@@ -10,17 +10,12 @@
         /**
          * Toggles the sp_qp_categories div
          */
-        toggleCatMode: function(){
-            $('.sp_catMode').click(function(){
-                var widget_number = $(this).attr('data-widget-num');
-                $('#sp_qp_categories-' + widget_number).toggle();
-            });
+        toggleCatMode: function(checkbox){
+            var widget_num = $(checkbox).data('widget-num');
+            $('#sp_qp_categories-' + widget_num).toggle();
         },
-        init: function(){
-            var self = this;
-            self.toggleCatMode();
-        }
-    }
+        init: function(){}
+    };
 
     $(document).ready(function(){
         sp_widgets.sp_qpWidgetAdmin.init();

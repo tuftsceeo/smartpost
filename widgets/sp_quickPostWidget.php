@@ -142,7 +142,7 @@ class sp_quickPostWidget extends WP_Widget {
             <input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>" />
         </p>
         <p>
-            <input type="checkbox" class="sp_catMode" data-widget-num="<?php echo $this->number ?>" id="<?php echo $this->get_field_id( 'categoryMode') ?>" name="<?php echo $this->get_field_name( 'categoryMode') ?>" <?php echo $catMode ? 'checked="checked"' : ''; ?> />
+            <input type="checkbox" class="sp_catMode" data-widget-num="<?php echo $this->number ?>" id="<?php echo $this->get_field_id( 'categoryMode') ?>" name="<?php echo $this->get_field_name( 'categoryMode') ?>" <?php echo $catMode ? 'checked="checked"' : ''; ?> onchange="sp_widgets.sp_qpWidgetAdmin.toggleCatMode(this)" />
             <label for="<?php echo $this->get_field_id( 'categoryMode') ?>" class="tooltip" title="">Category Mode</label>
         </p>
         <?php

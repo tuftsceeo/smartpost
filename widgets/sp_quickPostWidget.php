@@ -37,9 +37,10 @@ class sp_quickPostWidget extends WP_Widget {
     function widget($args, $instance, $returnHTML = false, $responseQP = false) {
         extract( $args );
         $catMode = $instance['categoryMode'];
+        $thisCat = get_category( get_query_var('cat'), false);
 
         //Load post components
-        if( current_user_can('edit_posts') ){
+        if( current_user_can('edit_posts') && sp_category::isSPCat($thisCat->term_id) ){
 
             if( !$catMode && empty($instance['displayCats']) ){
                 if( current_user_can( 'edit_dashboard' ) ){
@@ -56,7 +57,6 @@ class sp_quickPostWidget extends WP_Widget {
             $html = '';
 
             if( $catMode ){
-                $thisCat = get_category( get_query_var('cat'), false);
                 $instance['displayCats'][0] = $thisCat->term_id; //used below in the if statement to render a single button
             }
 

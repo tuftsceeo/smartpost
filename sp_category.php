@@ -112,48 +112,6 @@ if (!class_exists("sp_category")) {
         }
 
         /**
-         * Renders HTML <ul> tree of all the posts under the category
-         *
-         * @param string $post_status What types of posts to include in the tree: publish|draft|trash
-         * @param int $post_parent The post_parent to search for in the query, default is 0 (i.e. no parent)
-         * @param array $post_filters Filter params to pass down to the posts of the category (@see sp_post::renderTree)
-         * @return string The ul tree of all the posts and their children
-         */
-        function renderPostTree($post_status = 'publish', $post_parent = 0, $post_filters = null ){
-            $html  = '';
-            $args  = array('numberposts' => -1,
-                           'category'    => $this->ID,
-                           'post_status' => $post_status,
-                           'post_parent' => $post_parent
-                           );
-            $posts = get_posts( $args );
-            $catIcon = wp_get_attachment_url($this->iconID, null, null,
-                                             array('style' => 'vertical-align: text-bottom;'));
-
-            if( !empty($catIcon) )
-                $catIcon = 'icon: \'' . $catIcon . '\', ';
-
-            $responses = $post_parent > 0 ? ' responses' : '';
-            $html .= '<li class="folder" data="' . $catIcon . 'cat: true, catID: ' . $this->ID . '">' . $this->title . $responses;
-
-            if(is_null($posts) || empty($posts))
-                return $html;
-
-            $html .= '<ul>';
-
-            if( !empty($post_filters) )
-                extract($post_filters); //will overwrite local vars of $post_status, $post_parent, etc
-
-            foreach($posts as $post){
-                $sp_post = new sp_post($post->ID, true);
-                $html .= $sp_post->renderTree($post_status, NULL, NULL);
-            }
-            $html .= '</ul>';
-
-            return $html;
-        }
-
-        /**
          * Renders the response categories and automatically
          * checks off the categories that are response categories
          *
@@ -513,6 +471,16 @@ if (!class_exists("sp_category")) {
                 }
             }
             return true;
+        }
+
+        /**
+         * Checks whether the category is a smartpost category.
+         * @param $catID
+         * @return bool - Whether $catID is an SP-enabled category
+         */
+        public static function isSPCat( $catID ){
+            $sp_cats = get_option( 'sp_categories' );
+            return in_array( $catID, $sp_cats);
         }
     }
 }

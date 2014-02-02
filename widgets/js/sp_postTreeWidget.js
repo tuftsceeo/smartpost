@@ -91,40 +91,73 @@
             });
         },
         /**
-         * Initializes a simple dynaTree instance using listContainer as its
-         * HTML Element. listContainer should be a <div> or some HTML
-         * container that contains a <ul> or <ol> list.
-         *
-         * @param DOMElem listContainer - A <ul> or <ol> container where the list exists
-         * @param bool linkToPosts  - Tree will link to posts if True, does nothing otherwise
-         * @param bool expandToPost - Expands tree to the current post being displayed
+         * Initializes a simple dynaTree instance.
+         * @param spCatTree - Container for the tree
          */
-        initDynaTree: function(listContainer, linkToPosts, expandToPost){
-            var thisObj = this;
-            listContainer.dynatree({
-                imagePath: "",
-                onActivate: function(node) {
-                    // Use <a> href and target attributes to load the content:
-                    if( node.data.href && linkToPosts){
-                        window.open(node.data.href, node.data.target);
+        initDynaTree: function( sp_catTree ){
+            var widgetId = sp_catTree.data('widgetid').split('-')[1];
+            var activePost = $('#sp_postTreePostID').val();
+            var activeCat = $('#sp_postTreeCatID').val();
+
+            // AJAX handler to load in all the nodes dynamically
+            sp_catTree.dynatree({
+                initAjax: {
+                    url: SP_AJAX_URL,
+                    type: 'POST',
+                    data: {
+                        nonce  : SP_NONCE,
+                        action : 'getCatTreeAJAX',
+                        widgetId: widgetId
                     }
-                }
+                },
+                generateIds: true,
+                persist: true,
+                clickFolderMode: 1,
+                onActivate: function (node) {
+                    window.open(node.data.href, node.data.target);
+                },
+                onPostInit: function(){
+                    if(activePost){
+                        var node = this.getNodeByKey( "post-" + activePost )
+                    }else{
+                        var node = this.getNodeByKey( "cat-" + activeCat )
+                    }
+
+                    if(node){
+                        node.activateSilently();
+                        node.expand(true);
+                    }
+                },
+                debugLevel: 0
             });
+            sp_catTree.dynatree("getTree").renderInvisibleNodes();
+        },
+
+        /**
+         * Expands/collapses all the nodes of a given dynatree.
+         */
+        dynaTreeExpandAll: function(){
+            /* Click handler for expand/collapse all
+             $( '#expandAll' ).click(function(){
+             sp_catTree.dynatree("getRoot").visit(function(node){
+             if( !sp_catTree.expanded ){
+             node.expand(true);
+             }else{
+             node.expand(false);
+             }
+             });
+             sp_catTree.expanded = !sp_catTree.expanded;
+             });
+             */
         },
 
         init: function(){
-            var tree       = $('#sp_postTree');
-            var activePost = $('#postID').val();
-            this.initDynaTree(tree, true);
-            if(activePost && tree.exists()){
-                var node = tree.dynatree("getTree").getNodeByKey("treePost-" + activePost);
-                if(node){
-                    node.activateSilently();
-                    node.expand(true);
-                }
-            }
+            var self = this;
+            $( '.sp_catTree').each(function(){
+                self.initDynaTree( $(this) );
+            });
         }
-    }
+    };
 
     $(document).ready(function(){
         sp_widgets.sp_postTreeWidget.init();

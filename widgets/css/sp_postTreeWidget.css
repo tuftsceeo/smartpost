@@ -7,3 +7,6 @@
 ul.dynatree-container{
 	border: none !important;
 }
+.sp_postTreeHidden{
+    display: none;
+}

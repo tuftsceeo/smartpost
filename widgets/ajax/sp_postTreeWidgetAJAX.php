@@ -3,72 +3,131 @@ if (!class_exists("sp_postTreeWidgetAJAX")) {
 	class sp_postTreeWidgetAJAX{
 		
 		static function init(){
-				add_action('wp_ajax_relocatePostAJAX', array('sp_postTreeWidgetAJAX', 'relocatePostAJAX'));
+            add_action( 'wp_ajax_setTreeDisplayAJAX', array('sp_postTreeWidgetAJAX', 'setTreeDisplayAJAX') );
+            add_action( 'wp_ajax_getCatAdminTreeAJAX', array('sp_postTreeWidgetAJAX', 'getCatAdminTreeAJAX') );
+            add_action( 'wp_ajax_getCatTreeAJAX', array('sp_postTreeWidgetAJAX', 'getCatTreeAJAX') );
+            add_action( 'wp_ajax_nopriv_getCatTreeAJAX', array('sp_postTreeWidgetAJAX', 'getCatTreeAJAX') );
 		}
-		
-		function relocatePostAJAX(){
-				$nonce = $_POST['nonce'];
-				if( !wp_verify_nonce($nonce, 'sp_nonce') ){
-					header("HTTP/1.0 409 Security Check.");
-					die('Security Check');
-				}
-				
-				if( empty($_POST['postID']) ){
-					header("HTTP/1.0 409 Could not locate post ID.");
-					exit;
-				}
-				
-				if( !isset( $_POST['parentID'] ) ){
-					header("HTTP/1.0 409 Could not locate parent ID.");
-					exit;
-				}
-				
-				$postID      = (int) $_POST['postID'];
-				$newParentID = (int) $_POST['parentID'];
-				$post = get_post($postID);
 
-				if( !isset($post) ){
-						header("HTTP/1.0 409 Missing post parent and/or post.");
-						exit;
-				}
-				
-				//New array that holds update data
-				$updatePost = array();
-				$updatePost['ID'] = $post->ID;
-				$updatePost['post_parent'] = $newParentID;
-				
-				//If we are provided a new catID, then assume we are converting the post
-				if( !empty( $_POST['catID'] ) ){
-							$catID = (int) $_POST['catID'];
-							$catIDs = array();
-							
-							$curr_sp_category = sp_post::getSPCategory($postID);
-			
-							//Get the current categories
-							$catObjs = get_the_category($postID);								
-							if( !empty($catObjs) ){
-								foreach($catObjs as $cat){
-									array_push($catIDs, $cat->term_id);
-								}
-							}
-							
-							//Find the current SP category's key and replace it with the new one
-							$currKey = array_search($curr_sp_category->getID(), $catIDs);
-							$catIDs[$currKey] = $catID;	
-							$updatePost['post_category'] = $catIDs;						
-				}
+        /**
+         * Admin Tree for the widget area
+         */
+        function getCatAdminTreeAJAX(){
+            $nonce = $_POST['nonce'];
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
+                header("HTTP/1.0 403 Security Check.");
+                die('Security Check');
+            }
 
-				$success = wp_update_post( $updatePost );
-				
-				if($success === 0){
-						header("HTTP/1.0 409 Could not relocate post.");
-						exit;					
-				}
-				
-				echo json_encode( array('success' => true, 'postUpdated' => $success) );
-				exit;	
-		}
-		
+            if( empty($_POST['widgetId']) ){
+                header("HTTP/1.0 409 Could find widget ID to update.");
+                exit;
+            }
+
+            $widgetId = (int) $_POST['widgetId'];
+            $args = array( 'orderby' => 'name','order' => 'ASC', 'hide_empty' => 0 );
+            $catTree = sp_postTreeWidget::buildCatDynaTree( $args, false );
+
+            // Get Tree Settings
+            $sp_treeWidgets = get_option( 'widget_sp_posttreewidget' );
+            $displayItems = $sp_treeWidgets[$widgetId]['displayItems'];
+
+            if( !empty($displayItems) ){
+                self::setCheckBoxes($catTree, $displayItems);
+            }
+
+            echo json_encode( $catTree );
+            exit;
+        }
+
+        /**
+         * Helper function to select which categories are selected and which aren't
+         * @param $catTree
+         * @param $displayItems
+         */
+        private static function setCheckBoxes(&$catTree, $displayItems){
+            if( !empty($catTree) ){
+                foreach($catTree as $node){
+                    if( in_array($node->key, $displayItems) ){
+                        $node->select = true;
+                    }
+                    if( !empty($node->children) ){
+                        self::setCheckBoxes($node->children, $displayItems);
+                    }
+                }
+            }
+        }
+
+        /**
+         * Helper function to select which categories are selected and which aren't
+         * @param $catTree
+         * @param $displayItems
+         */
+        private static function hideNodes(&$catTree, $displayItems){
+            foreach($catTree as $key => $node){
+                if( in_array($node->key, $displayItems) ){
+                    unset($catTree[$key]);
+                }else{
+                    if( !empty($node->children) ){
+                        self::hideNodes($node->children, $displayItems);
+                    }
+                }
+            }
+        }
+        /**
+         * Tree for the front-end
+         */
+        function getCatTreeAJAX(){
+            if( empty($_POST['widgetId']) ){
+                header("HTTP/1.0 409 Could find widget ID to update.");
+                exit;
+            }
+
+            $widgetId = (int) $_POST['widgetId'];
+
+            $args = array( 'orderby' => 'name','order' => 'ASC', 'hide_empty' => 0 );
+            $catTree = sp_postTreeWidget::buildCatDynaTree( $args );
+
+            // Get Tree Settings
+            $sp_treeWidgets = get_option( 'widget_sp_posttreewidget' );
+            $displayItems = $sp_treeWidgets[$widgetId]['displayItems'];
+
+            self::hideNodes($catTree, $displayItems);
+            echo json_encode( array_values($catTree) ); // Important to have array_values() here after filtering hidden nodes
+            exit;
+        }
+
+        /**
+         * Sets which items on the tree to hide/display
+         */
+        function setTreeDisplayAJAX(){
+            $nonce = $_POST['nonce'];
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
+                header("HTTP/1.0 403 Security Check.");
+                die('Security Check');
+            }
+
+            if( empty($_POST['widgetid']) ){
+                header("HTTP/1.0 409 Could find widget ID to update.");
+                exit;
+            }
+
+            $widgetId = (int) $_POST['widgetid'];
+            $displayItems = $_POST['displayItems'];
+
+            $sp_treeWidgets = get_option( 'widget_sp_posttreewidget' );
+            $sp_treeWidgets[$widgetId]['displayItems'] = $displayItems;
+
+            $success = update_option( 'widget_sp_posttreewidget', $sp_treeWidgets );
+
+            if( $success ){
+                echo json_encode( array( 'success' => $success ) );
+            }else{
+                header("HTTP/1.0 409 Could update the SP Post Tree widget successfully.");
+                exit;
+            }
+
+            exit;
+        }
 	}
 }
-?>

@@ -24,17 +24,11 @@ class sp_postTreeWidget extends WP_Widget {
     static function enqueueJS(){
         wp_register_script( 'sp_postTreeWidgetJS', plugins_url('js/sp_postTreeWidget.js', __FILE__) );
         wp_enqueue_script( 'sp_postTreeWidgetJS',    null, array( 'jquery-dynatree', 'sp_globals', 'sp_postComponentJS' ) );
-
-        if( is_admin() && current_user_can( 'edit_dashboard' ) ){
-            wp_register_script( 'sp_postTreeWidgetAdminJS', plugins_url('js/adminjs/sp_postTreeWidgetAdmin.js', __FILE__) );
-            wp_enqueue_script( 'sp_postTreeWidgetAdminJS',    null, array( 'jquery-dynatree', 'sp_globals', 'sp_postComponentJS' ) );
-        }
     }
 
     /** @see WP_Widget::widget */
     function widget($args, $instance) {
-
-        $html = '<div id="sp_catTree-"' . $this->id . ' data-widgetid="' . $this->id . '" class="sp_catTree"></div>';
+        $html = '<div id="sp_catTree-' . $this->id . '" data-widgetid="' . $this->id . '" class="sp_catTree"></div>';
 
         if ( is_category() ) {
             $html .= '<input type="hidden" id="sp_postTreeCatID" value="' . get_query_var('cat') . '" />';
@@ -48,6 +42,10 @@ class sp_postTreeWidget extends WP_Widget {
         echo $html;
     }
 
+    /**
+     * @param $postArgs
+     * @return array
+     */
     static function buildPostTree( $postArgs ){
 
         $posts = get_posts( $postArgs );
@@ -119,20 +117,29 @@ class sp_postTreeWidget extends WP_Widget {
     }
 
     /**
+     * Helper function to render the hierarchy category tree
      * @param $args
      * @param int $parent
+     * @param array $displayCats
      * @return string
      */
-    function renderWidgetTree( $args, $parent = 0 ){
+    private function renderWidgetTree( $args,  $displayCats, $parent = 0 ){
         $args['parent'] = $parent;
         $categories = get_categories( $args );
 
-        if( !empty($categories) ){
+        $id      = $this->get_field_id( 'displayCats' );
+        $name    = $this->get_field_name( 'displayCats' );
+
+        $html = '';
+        if( !empty($categories) && is_array( $displayCats ) ){
+
             $html = '<ul>';
             foreach( $categories as $category ) {
+                $checked = in_array($category->term_id, $displayCats) ? 'checked="checked"' : '';
                 $html .= '<li>';
-                    $html .= '<input type="checkbox" id="' . $category->name . '" name="' . $category->name . '" />' . $category->name;
-                    $html .= self::renderWidgetTree( $args, $category->term_id );
+                    $html .= '<input type="checkbox" id="' . $id . '[]" name="' . $name .'[]" value="' . $category->term_id . '" ' . $checked . ' />';
+                    $html .= $category->name;
+                    $html .= self::renderWidgetTree( $args, $displayCats, $category->term_id );
                 $html .= '</li>';
             }
             $html .= '</ul>';
@@ -144,6 +151,7 @@ class sp_postTreeWidget extends WP_Widget {
     function update($new_instance, $old_instance) {
         $instance = array();
         $instance['title'] = strip_tags( $new_instance['title'] );
+        $instance['displayCats'] = $new_instance['displayCats'];
         return $instance;
     }
 
@@ -155,14 +163,24 @@ class sp_postTreeWidget extends WP_Widget {
         else {
             $title = __( 'New title', 'text_domain' );
         }
+
+        if( !isset( $instance['displayCats'] ) ){
+            $instance['displayCats'] = array();
+        }
+
+        $args = array( 'orderby' => 'name','order' => 'ASC', 'hide_empty' => 0 );
         ?>
         <p>
             <label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label>
             <input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>" />
         </p>
-        <p>Check off the categories you'd like to display on the front-end:</p>
-        <div id="sp-cat-tree-<?php echo $this->id ?>" data-widgetid="<?php echo $this->id ?>" class="sp-widget-cat-tree"></div>
-        <p class="test">Select/Unselect all</p>
+        <p>
+            Check off the categories you'd like to <span style="font-size:16px; font-weight: bold; text-decoration: underline;">HIDE</span> on the front-end.
+        </p>
+        <p><b><u>Note:</u></b> checking off a parent category will hide all of its children.</p>
+        <div id="sp-cat-tree-container-<?php echo $this->id ?>" data-widgetid="<?php echo $this->id ?>" class="sp-widget-cat-tree-container">
+            <?php echo $this->renderWidgetTree( $args, $instance['displayCats'] ); ?>
+        </div>
     <?php
     }
 

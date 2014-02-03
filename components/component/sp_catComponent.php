@@ -212,7 +212,7 @@ if (!class_exists("sp_catComponent")) {
 
             $typeID = sp_core::getTypeIDByName($name);
 
-            //The component already exists, so update it if necessary
+            // The component already exists, so update it if necessary
             if($typeID > 0){
                 $tableName = $wpdb->prefix . 'sp_compTypes';
                 $wpdb->update(
@@ -230,8 +230,8 @@ if (!class_exists("sp_catComponent")) {
                 );
             }
 
-            //Otherwise, add component to sp_compTypes
-            if(is_null($typeID)){
+            // Otherwise, add component to sp_compTypes
+            if( is_null($typeID) ){
                 $tableName = $wpdb->prefix . 'sp_compTypes';
                 $wpdb->insert(
                     $tableName,

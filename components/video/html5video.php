@@ -76,9 +76,9 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && !is_wp_error( $sp_ffmpeg_path ) ){
      * -q:v - Use video quality 2 (where 0 is equivalent to input video, and 31 is worst quality).
      * -vf  - Scaling and padding for videos that are not in 16:9 ratios
      */
-    $filter = '"scale=iw*sar*min(' . $ARGS['WIDTH'] . '/(iw*sar)\,' . $ARGS['HEIGHT'] . '/ih):ih*min(' . $ARGS['WIDTH'] . '/(iw*sar)\,' . $ARGS['HEIGHT'] . '/ih),pad=' . $ARGS['WIDTH'] . ':' . $ARGS['HEIGHT'] . ':(ow-iw)/2:(oh-ih)/2"';
 
-    system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -q:v 2 -vf ' . $filter . ' ' . $filename . '.mp4' ); // .mp4 conversion
+    $filter = '"scale=iw*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih):ih*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih), pad=' . $ARGS['WIDTH'] . ':' . $ARGS['HEIGHT'] . ':(' . $ARGS['WIDTH'] . '-iw*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih))/2:(' . $ARGS['HEIGHT'] . '-ih*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih))/2"';
+    system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -qscale 2 -filter:v ' . $filter . ' ' . $filename . '.mp4' ); // .mp4 conversion
     system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -f image2 -vframes 1 ' . $filename  .'.png'); // Video thumb creation
 
     $uploads = wp_upload_dir();
@@ -88,6 +88,7 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && !is_wp_error( $sp_ffmpeg_path ) ){
         $videoComponent->videoAttachmentIDs['mp4'] = sp_core::create_attachment( $mp4_filename, $ARGS['POST_ID'], $mp4_filename, $ARGS['AUTH_ID'] );
     }else{
         $videoComponent->errors['mp4'] = 'Could not generate ' . $mp4_filename . '!' . PHP_EOL;
+        echo $videoComponent->errors['mp4'];
     }
 
     // Add a featured image if one doesn't already exist
@@ -98,6 +99,7 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && !is_wp_error( $sp_ffmpeg_path ) ){
         }
     }else{
         $videoComponent->errors['img'] = 'Could not generate ' . $png_filename . '!' . PHP_EOL;
+        echo $videoComponent->errors['img'];
     }
 
     $videoComponent->videoAttachmentIDs['mov'] = $ARGS['MOV_ID'];

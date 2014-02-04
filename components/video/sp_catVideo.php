@@ -53,17 +53,14 @@ if (!class_exists("sp_catVideo")) {
 
             $sp_ffmpeg_path = get_site_option( 'sp_ffmpeg_path' );
 
-            if( empty($sp_ffmpeg_path) && is_wp_error( $sp_ffmpeg_path ) ){
-
-                // Use /usr/local/bin/ by default
-                update_site_option( 'sp_ffmpeg_path', SP_DEFAULT_VIDEO_PATH );
+            if( empty($sp_ffmpeg_path) || is_wp_error( $sp_ffmpeg_path ) ){
 
                 // See if ffmpeg exists...
-                exec( 'command -v ' . $sp_ffmpeg_path . 'ffmpeg', $ffmpeg_output, $ffmpeg_status );
+                exec( 'command -v ffmpeg', $ffmpeg_output, $ffmpeg_status );
 
                 // If command exited successfully, then update the sp_ffmpeg_path site option with the path, otherwise update it to false.
                 if( $ffmpeg_status === '0' ){
-                    update_site_option( 'sp_ffmpeg_path', $sp_ffmpeg_path );
+                    update_site_option( 'sp_ffmpeg_path', basename($ffmpeg_output) );
                 }else{
                     update_site_option( 'sp_ffmpeg_path', new WP_Error( 'broke', __( 'ffmpeg path not found' ) ) );
                 }

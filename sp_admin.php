@@ -109,7 +109,7 @@ if (!class_exists("sp_admin")) {
 
                     //handle meta box toggling
                     $compElemID = $component->getCompType() . '-' . $component->getID();
-                    $key        = array_search($compElemID, $closed_meta_boxes);
+                    $key = array_search($compElemID, $closed_meta_boxes);
                     if($key !== false){
                         unset($closed_meta_boxes[$key]);
                     }

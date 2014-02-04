@@ -41,19 +41,18 @@
 
         /**
          * Initializes HTML5 filedrop for the attachments component
-         * @param object component The attachments compoennt
+         * @todo WP uses v 1.5.7 of plupload, v2.0+ will have access to xhr headers for error handling
+         * @param component The attachments compoennt
+         * @param postID
          */
         initFileDrop: function(component, postID){
             var self = this;
-
-            console.log('got here');
-
             var compID = component.data('compid');
+
+            // Get a handle on the browse button
             var browse_id = 'sp-attachments-upload-' + compID;
 
-            console.log(compID);
-            console.log(browse_id);
-
+            // Get a handle onto the previous unload event as our message will change throughout upload
             var prev_onbeforeunload = window.onbeforeunload;
 
             if(postID == undefined){
@@ -81,13 +80,6 @@
                     compID  : compID,
                     postID  : postID
                 },
-                filters : [
-                    /*
-                    {title : "png files", extensions : "png, PNG"},
-                    {title : "jpg files", extensions : "jpg, jpeg, JPG, JPEG"},
-                    {title : "gif files", extensions : "gif, GIF"}
-                    */
-                ],
                 max_file_size : '1gb',
                 init: {
                     FilesAdded: function(up, files) {
@@ -110,21 +102,28 @@
                     },
 
                     Error: function(up, err) {
+                        console.log(err);
                         var out = '';
                         for (var i in err) {
                             out += i + ": " + err[i] + "\n";
                         }
+                        if(err.status == '409'){
+                            out = "File type not allowed for file " + err.file.name;
+                        }
                         smartpost.sp_postComponent.showError( out );
+
+                        $('#sp-attachments-progress-msg-' + compID).html('');
+                        $('#sp-attachments-progress-' + compID).css('width', '0%');
                         window.onbeforeunload = prev_onbeforeunload;
                     },
 
                     FileUploaded: function(up, files, response) {
-                        console.log(response);
                         if(response){
-                            $('#sp-attachments-progress-msg-' + compID).html('');
-                            $('#sp-attachments-progress-' + compID).css('width', '0%');
                             self.renderAttachment( $('#sp-attachments-table-' + compID), response.response );
                         }
+
+                        $('#sp-attachments-progress-msg-' + compID).html('');
+                        $('#sp-attachments-progress-' + compID).css('width', '0%');
                         window.onbeforeunload = prev_onbeforeunload;
                     }
                 }
@@ -211,7 +210,7 @@
          * Dynamically initializes a attachments component
          */
         initComponent: function(component, postID, autoFocus){
-            this.initFileDrop( $(component) );
+            this.initFileDrop( $(component).find( '.sp-attachments-uploads-row' ) );
             var browseButton = $(component).find( '.sp-attachments-browse-img' );
             browseButton.click(function(){
                 var compId = $(this).data( 'compid' );

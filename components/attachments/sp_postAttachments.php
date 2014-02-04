@@ -22,8 +22,8 @@ if (!class_exists("sp_postAttachments")) {
 
             $this->initComponent($compInfo);
 
-            //Get extensions
-            $this->allowedExts = $this->options->allowedExts;
+            //Get the "default" allowed extensions
+            $this->allowedExts = $this->options;
 
             // Load instance vars
             if( !empty($this->value) ){
@@ -58,6 +58,7 @@ if (!class_exists("sp_postAttachments")) {
         function renderEditMode(){
             $html = '<div id="sp-attachments-' . $this->ID .'" class="sp-attachments" data-compid="' . $this->ID .'">';
                 $html .= self::renderAttachmentsTable(true);
+                $html .= "Allowed file types: " . implode(', ', $this->allowedExts);
                 $html .= '<div class="clear"></div>';
             $html .= '</div>';
             return $html;
@@ -85,17 +86,17 @@ if (!class_exists("sp_postAttachments")) {
             if( !empty($this->attachmentIDs) ){
                 $row = 0;
                 foreach($this->attachmentIDs as $attach_id){
-                    $html .= $this->renderAttachmentRow( $attach_id );
+                    $html .= $this->renderAttachmentRow( $attach_id, $edit_mode );
                     $row++;
                 }
             }
 
             if( $edit_mode ){
                 $addIcon = '<img src="' . plugins_url( '/images/add.png', __FILE__ ) . '" style="vertical-align: text-top;" />';
-                $html .= '<tr id="sp-attachments-uploads-row-' . $this->ID . '" class="sp-attachments-uploads-row" data-compid="' . $this->ID . '">';
+                $html .= '<tr id="sp-attachments-uploads-row-' . $this->ID . '" class="sp-attachments-uploads-row" data-compid="' . $this->ID . '" data-allowedexts="' . implode(', ', $this->allowedExts) .'">';
                     $html .= '<td><span class="sp-attachments-browse-img" data-compid="' . $this->ID . '">' . $addIcon . ' Attach more files</span> </td>';
                     $html .= '<td><input type="file" id="sp-attachments-upload-' . $this->ID . '" /></td></td>';
-                    $html .= '<td>&nbsp;</td>';
+                    $html .= '<td>&nbsp;</td><td>&nbsp;</td>'; // Fill out size and delete cols
                 $html .= '</tr>';
             }
             $html .= '</table><!-- end .sp-attachments-list -->';
@@ -110,9 +111,10 @@ if (!class_exists("sp_postAttachments")) {
         /**
          * Renders a single row for attachment
          * @param $attach_id
+         * @param $edit_mode
          * @return string
          */
-        public function renderAttachmentRow($attach_id){
+        public function renderAttachmentRow($attach_id, $edit_mode){
             $attachment = get_post( $attach_id );
             $mime_type = get_post_mime_type( $attach_id );
             $attach_size = filesize( get_attached_file( $attach_id) );
@@ -122,6 +124,11 @@ if (!class_exists("sp_postAttachments")) {
             $html .= '<td><a href="' . $url . '" target="_new">' . $attachment->post_content . '</a></td>';
             $html .= '<td>' . $mime_type . '</td>';
             $html .= '<td>' . $this->formatSizeUnits( $attach_size ) . '</td>';
+            if( $edit_mode ){
+                $html .= '<td id="sp-attachments-delete-' . $attach_id . '" class="sp-attachments-delete">';
+                    $html .= '<span id="sp-attachments-delete-button-' . $attach_id .'" class="sp-attachments-delete-button sp_xButton" data-attachid="' . $attach_id .'">Delete</span>';
+                $html .= '</td>';
+            }
             $html .= '</tr>';
             return $html;
         }

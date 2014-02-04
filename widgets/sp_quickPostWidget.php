@@ -85,7 +85,7 @@ class sp_quickPostWidget extends WP_Widget {
             }
 
             //Add an errors div in case we get any errors ..
-            $html .= '<div id="component_errors" style="display: none;"></div>';
+            $html .= '<div id="component_errors" style="display: none;"><span id="clearErrors" class="sp_xButton"></span></div>';
 
             //Handle response categories
             if(!$responseQP){

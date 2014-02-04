@@ -250,8 +250,19 @@
          * @param string errorText The error text to display
          */
         showError: function(errorText){
-            $( '#component_errors' ).show().html('Error: ' + errorText);
+            $( '#component_errors' ).show().append('<p>Error: ' + errorText + '</p>');
             $( 'html, body' ).animate({ scrollTop: 0 }, 0);
+        },
+
+        /**
+         * Clears the error messages in the error div
+         */
+        clearErrors: function(clearButton){
+            clearButton.click(function(){
+                var errorDiv = $('#component_errors');
+                errorDiv.find('p').remove();
+                errorDiv.hide();
+            });
         },
 
         /**
@@ -352,6 +363,7 @@
             this.makeWidgetDraggable('.sortableSPComponents');
             this.deleteComponent();
             this.editableCompTitle();
+            this.clearErrors( $('#clearErrors') );
         }
     }
 

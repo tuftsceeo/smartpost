@@ -5,3 +5,13 @@
 .sp-attachments-browse-img{
     cursor: pointer;
 }
+.sp-attachments-delete-button{
+    visibility: hidden;
+    cursor: pointer;
+}
+.sp-attachments-delete-button:before{
+    float: left;
+}
+.sp-attachments-delete:hover .sp-attachments-delete-button{
+    visibility: visible;
+}

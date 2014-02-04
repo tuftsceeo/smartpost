@@ -436,8 +436,7 @@ if (!class_exists("sp_catComponent")) {
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
             $options   = $wpdb->get_var( "SELECT options FROM $tableName where id = $compID;" );
-            $options   = maybe_unserialize($options);
-            return $options;
+            return maybe_unserialize($options);
         }
 
         /**************************************

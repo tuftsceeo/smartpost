@@ -130,6 +130,7 @@ if (!class_exists("sp_core")) {
          * @return bool|mixed - The filepath of the uploaded file, otherwise false on failure.
          */
         static function chunked_plupload($file_data_id){
+
             // Get a file name
             if ( isset( $_REQUEST["name"] ) ) {
                 $fileName = $_REQUEST["name"];

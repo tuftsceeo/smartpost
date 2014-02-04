@@ -123,6 +123,8 @@ if (!class_exists("sp_postAttachmentsAJAX")) {
             $compID = (int) $_POST['compID'];
             $attachmentsComponent = new sp_postAttachments($compID);
 
+            error_Log( print_r( $attachmentsComponent, true) );
+
             if( is_wp_error( $attachmentsComponent->errors ) ){
                 header( "HTTP/1.0 409 Error: " . $attachmentsComponent->errors->get_error_message() );
                 exit;
@@ -134,14 +136,23 @@ if (!class_exists("sp_postAttachmentsAJAX")) {
 
                 $allowedExts = $attachmentsComponent->allowedExts;
                 if( !empty($allowedExts) ){
-                    $allowed = sp_core::validateExtension($_FILES['sp-attachments-upload']['name'], $allowedExts);
+                    $allowed = sp_core::validateExtension($file, $allowedExts);
                 }else{
                     $allowed = true;
                 }
 
                 if($allowed){
-                    $desc = $_FILES['sp-attachments-upload']['name'];
-                    $attach_id = sp_core::create_attachment($file, $attachmentsComponent->getPostID(), $desc );
+
+                    // Get a file name
+                    if ( isset( $_REQUEST["name"] ) ) {
+                        $name = $_REQUEST["name"];
+                    } elseif ( !empty( $_FILES ) ) {
+                        $name = $_FILES['sp-attachments-upload']["name"];
+                    } else {
+                        $name = uniqid("file_");
+                    }
+
+                    $attach_id = sp_core::create_attachment($file, $attachmentsComponent->getPostID(), $name );
 
                     array_push( $attachmentsComponent->attachmentIDs, $attach_id );
                     $success = $attachmentsComponent->update();
@@ -150,9 +161,12 @@ if (!class_exists("sp_postAttachmentsAJAX")) {
                         header("HTTP/1.0 409 Could not successfully set attachment ID.");
                         exit;
                     }
-                    echo $attachmentsComponent->renderAttachmentRow( $attach_id );
+                    echo $attachmentsComponent->renderAttachmentRow( $attach_id, true );
                 }else{
-                    header("HTTP/1.0 409 File type not allowed.");
+                    // Delete the file
+                    unlink($file);
+                    header("HTTP/1.0 409 File type now allowed.");
+                    echo 'File type now allowed.';
                     exit;
                 }
             }else if( $file !== false && !file_exists( $file ) ){

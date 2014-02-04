@@ -343,7 +343,7 @@ if (!class_exists("sp_post")) {
                     }
 
                     //Add an errors div and display errors if necessary
-                    $content = '<div id="component_errors"' . (!empty($errors) ? ' style="display: block;"' : '') . '>' . $errors . '</div>' . $content;
+                    $content = '<div id="component_errors"' . (!empty($errors) ? ' style="display: block;"' : '') . '>' . $errors . '<span id="clearErrors" class="sp_xButton"></span></div>' . $content;
 
                     //load the components
                     $postComponents = $sp_post->getComponents();

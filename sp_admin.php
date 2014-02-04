@@ -61,6 +61,11 @@ if (!class_exists("sp_admin")) {
             wp_enqueue_script( 'post' );
             wp_enqueue_script( 'postbox' );
             wp_enqueue_script( 'sp_admin_js' );
+
+            $typesAndIDs = sp_core::getTypesAndIDs();
+            wp_localize_script( 'sp_admin_js', 'sp_admin', array(
+                'SP_TYPES' => $typesAndIDs,
+            ));
         }
 
         /**

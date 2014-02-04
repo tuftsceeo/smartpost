@@ -101,7 +101,7 @@ if (!class_exists("sp_postLink")) {
 
             }elseif( empty($img) && !empty( $this->url) && $editMode ){
                 $html .= '<div id="sp_link_thumb-' . $this->ID . '" data-compid="' . $this->ID . '" class="sp_link_' . $this->urlType . ' emptyLinkThumb">';
-                    $html .= '<p>Drag and drop your own thumbnail!</p>';
+                    $html .= '<p>No thumbnail available :(</p>';
                 $html .= '<input type="file" id="sp_link_browse-' . $this->ID . '" name="sp_link_browse-' . $this->ID . '" style="display: none" />';
                 $html .= '</div>';
             }
@@ -340,7 +340,6 @@ if (!class_exists("sp_postLink")) {
          */
         function downloadUrlThumb($thumbURL){
             if( empty($thumbURL) ){
-                error_log('empty thumb');
                 return false;
             }
 

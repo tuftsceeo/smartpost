@@ -5,6 +5,24 @@
 (function($){
     sp_admin.sp_catAttachments = {
         /**
+         * Required for all post component JS objects.
+         * Used in sp_globals.SP_TYPES to determine which
+         * methods to call for different post component types
+         */
+        setTypeID: function(){
+            if(sp_admin){
+                var types = sp_admin.SP_TYPES;
+
+                //!Important - the raw name of the type
+                if(types['Attachments']){
+                    this.typeID = types['Attachments']; // Get the type ID of our object
+                    sp_admin.SP_TYPES['Attachments'] = this; // Overwrite it with this object
+                }
+            }else{
+                return 0;
+            }
+        },
+        /**
          * Save media component settings
          * @param compID
          * @param indicatorElem
@@ -45,16 +63,23 @@
         bindForm: function(){
             var self = this;
             $( '.update-sp-cat-attachments' ).click(function(){
-                var compID       = $(this).data('compid');
+                var compID = $(this).data('compid');
                 var attachmentsOptions = self.setAttachmentsOptions(compID, $(this));
                 $('#sp-attachments-' + compID + '-form').ajaxSubmit( attachmentsOptions );
             });
         },
 
         /**
+         * Initialize component if it was created dynamically
+         */
+        initComponent: function(componentElem){
+            this.bindForm();
+        },
+        /**
          * Init method for the attachments components
          */
         init: function(){
+            this.setTypeID();
             this.bindForm();
         }
     }

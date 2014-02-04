@@ -277,21 +277,26 @@
         /**
          * Given a SmartPost category component container (@see sp_CatComponent.php),
          * binds the appropriate JS events/listeners to the container
-         * @param component - jQuery object representing the component
+         * @param componentElem - jQuery object representing the component
          * @param catID - The ID of the category the component belongs to
          */
-        initializeComponent: function(component, catID){
+        initializeComponent: function(componentElem, catID){
             var self = this;
 
             //Enable delete event
-            self.handleDeleteComp(component.find('.delComp'));
+            self.handleDeleteComp(componentElem.find('.delComp'));
 
             //Enable required and default checkboxes
             if(sp_admin.sp_catComponent)
-                sp_admin.sp_catComponent.disableDefault(component.find('.requiredAndDefault input'));
+                sp_admin.sp_catComponent.disableDefault(componentElem.find('.requiredAndDefault input'));
 
             //Enable component rename
             self.editableCatCompTitle();
+
+            // Initialize the component with its own init method
+            var compType = componentElem.attr('id').split('-')[0]; // Get the component type
+            var compObj = sp_admin.SP_TYPES[compType]; // Get component object
+            compObj.initComponent(componentElem);
 
             //TODO: Enable postbox open/close
         },

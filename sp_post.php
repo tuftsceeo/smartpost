@@ -363,7 +363,7 @@ if (!class_exists("sp_post")) {
                 }
 
                 if( !is_singular() || is_home() || is_search() ){
-                    //load the components
+                    // load the components
                     $postComponents = $sp_post->getComponents();
                     $content .= '<div class="clear"></div>';
                     $content .= '<div id="spComponents" class="sortableSPComponents">';

@@ -27,9 +27,6 @@ if (!class_exists("sp_catVideoAJAX")) {
 
             exec('command -v ' . $sp_ffmpeg_path . 'ffmpeg', $cmd_output, $cmd_status);
 
-            error_log( $cmd_output[0] );
-            error_log( $cmd_status );
-
             if( $cmd_status === 0 ){
                 update_site_option( 'sp_ffmpeg_path', $sp_ffmpeg_path );
                 echo json_encode( array( 'success' => true, 'status_code' => $cmd_status, 'output' => $cmd_output[0] ) );

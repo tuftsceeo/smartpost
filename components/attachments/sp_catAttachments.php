@@ -58,7 +58,11 @@ if (!class_exists("sp_catAttachments")) {
 		 * @see parent::componentOptions()
 		 */		
 		function componentOptions(){
-            $allowedExts = implode(', ', $this->allowedExts);
+            if( !empty($allowedExts) ){
+                $allowedExts = implode(', ', $this->allowedExts);
+            }else{
+                $allowedExts = '';
+            }
             $html = '<form id="sp-attachments-' . $this->ID . '-form">';
 			$html .= '<p> Allowed extensions: </p>';
 			$html .= '<p>';

@@ -37,7 +37,7 @@ if (!class_exists("sp_postContent")) {
          * @see parent::renderViewMode()
          */
         function renderViewMode(){
-            $html = '<div id="sp_content">';
+            $html = '<div id="sp_content" style="margin: 20px">';
                 $html .= $this->value;
             $html .= '</div>';
             return $html;

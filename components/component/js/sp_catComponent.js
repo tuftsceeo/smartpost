@@ -153,7 +153,7 @@
 
             //Bind component-specific events
             if(componentJS)
-                componentJS.initComponent(componentDiv);
+                componentJS.initComponent(componentElem);
         },
 
         /**

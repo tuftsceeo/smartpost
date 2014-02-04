@@ -35,15 +35,19 @@ if (!class_exists("sp_catAttachmentsAJAX")) {
 				header( 'HTTP/1.0 403 ' . $attachmentComp->errors->get_error_message() );
 				exit;
 			}
-			
-			$allowedExts = explode(",", $_POST['allowedExts']);
-			
-			//Cleanup extensions
-			foreach($allowedExts as $index => $ext){
-				$ext = trim($ext);
-    			$allowedExts[$index] = $ext;
-    		}
 
+            $allowedExts = trim( stripslashes_deep( $_POST['allowedExts'] ) );
+
+            if( !empty($allowedExts) ){
+                $allowedExts = explode(",", $_POST['allowedExts']);
+                //Cleanup extensions
+                foreach($allowedExts as $index => $ext){
+                    $ext = trim($ext);
+                    $allowedExts[$index] = $ext;
+                }
+            }else{
+                $allowedExts = array();
+            }
 			$success = $attachmentComp->setOptions($allowedExts);
 			if($success === false){
 				header( 'HTTP/1.0 403 Could not update attachment component succesfully' );

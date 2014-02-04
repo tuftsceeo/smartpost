@@ -58,7 +58,7 @@ if (!class_exists("sp_postAttachments")) {
         function renderEditMode(){
             $html = '<div id="sp-attachments-' . $this->ID .'" class="sp-attachments" data-compid="' . $this->ID .'">';
                 $html .= self::renderAttachmentsTable(true);
-                $html .= "Allowed file types: " . implode(', ', $this->allowedExts);
+                $html .= !empty($this->allowedExts) ? "Allowed file types: " . implode(', ', $this->allowedExts) : '';
                 $html .= '<div class="clear"></div>';
             $html .= '</div>';
             return $html;

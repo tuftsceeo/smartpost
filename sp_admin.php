@@ -68,11 +68,11 @@ if (!class_exists("sp_admin")) {
          * Adds a top-level menu item to the Dashboard called SmartPost
          */
         function sp_admin_add_template_page() {
-            add_menu_page( SP_PLUGIN_NAME, 'SmartPost', 'edit_users', 'smartpost', array('sp_admin', 'sp_template_page'), null, null );
+            add_menu_page( SP_PLUGIN_NAME, 'SmartPost', 'edit_dashboard', 'smartpost', array('sp_admin', 'sp_template_page'), null, null );
         }
 
         function sp_admin_add_category_page(){
-            add_submenu_page( 'smartpost', 'Settings', 'Settings', 'edit_users', 'sp-cat-page', array('sp_admin', 'sp_settings_page') );
+            add_submenu_page( 'smartpost', 'Settings', 'Settings', 'edit_dashboard', 'sp-cat-page', array('sp_admin', 'sp_settings_page') );
         }
 
         /**
@@ -89,13 +89,6 @@ if (!class_exists("sp_admin")) {
                 <?php } ?>
             </div>
         <?php
-        }
-
-        /**
-         * Admin notifying the user that the SmartPost QuickPost widget has not yet been added to any sidebar
-         */
-        function check_for_spqp_widget(){
-
         }
 
         /**
@@ -250,8 +243,7 @@ if (!class_exists("sp_admin")) {
         }
 
         /**
-         * Build an object that represents the category hierarchy
-         * with added smartpost components.
+         * Build an object that represents the category hierarchy with added smartpost components.
          * @param $args - $args used in get_category query
          * @param int $parent - The "root" parent node of where to start the query
          * @param bool $include_parent - Whether to include the parent in the resulting array
@@ -349,7 +341,7 @@ if (!class_exists("sp_admin")) {
          * @todo Use add_meta_box() instead of hard-coding meta boxes - specifically for the template-tree and component-palette widgets.
          */
         function sp_template_page(){
-            if (!current_user_can('manage_options'))  {
+            if ( !current_user_can('edit_dashboard') )  {
                 wp_die( __('You do not have sufficient permissions to access this page.') );
             }
             $categories    = get_categories( array( 'orderby' => 'name','order' => 'ASC', 'hide_empty' => 0 ) );

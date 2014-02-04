@@ -127,7 +127,7 @@ if (!class_exists("sp_core")) {
         /**
          * Handles chunked AJAX uploads (using plupload plugin).
          * @param $file_data_id
-         * @return bool|mixed
+         * @return bool|mixed - The filepath of the uploaded file, otherwise false on failure.
          */
         static function chunked_plupload($file_data_id){
             // Get a file name
@@ -181,7 +181,8 @@ if (!class_exists("sp_core")) {
             if (!$chunks || $chunk == $chunks - 1) {
                 // Format the file name
                 $newFilePath = preg_replace( '/\s+/', '', $filePath ); // Remove all whitespace
-                $newFilePath = str_replace( '.', '_' . uniqid() . '.', $newFilePath ); // Add a unique ID to keep file names unique
+                $path_parts  = pathinfo($newFilePath);
+                $newFilePath = $path_parts['dirname'] . '/' . $path_parts['filename'] . '_' . uniqid() . '.' . $path_parts['extension']; // Add a unique ID to keep file names unique
                 rename( "{$filePath}.part", $newFilePath ); // Strip the temp .part suffix off
                 return $newFilePath;
             }else{
@@ -196,8 +197,8 @@ if (!class_exists("sp_core")) {
          * @param $allowedExtension - array of extension strings
          */
         static function validateExtension($filename, $allowedExtensions){
-            $ext = strtolower(substr(strrchr($filename, "."), 1));
-            return in_array($ext, $allowedExtensions);
+            $path_parts  = pathinfo($filename);
+            return in_array($path_parts['extension'], $allowedExtensions);
         }
 
         /* Returns true if uploaded file is a jpg, png, or jpeg,
@@ -323,7 +324,7 @@ if (!class_exists("sp_core")) {
             // you must first include the image.php file
             // for the function wp_generate_attachment_metadata() to work
             require_once( ABSPATH . 'wp-admin/includes/image.php' );
-            require_once(ABSPATH . 'wp-admin/includes/media.php');
+            require_once( ABSPATH . 'wp-admin/includes/media.php' );
             $attach_data = wp_generate_attachment_metadata( $attach_id, $filename );
             wp_update_attachment_metadata( $attach_id, $attach_data );
             return $attach_id;

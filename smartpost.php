@@ -48,12 +48,12 @@ if ( !class_exists("smartpost") ){
             require_once( 'sp_admin.php' );
             require_once( 'sp_post.php' );
 
+            self::initClasses(dirname(__FILE__) . "/widgets");
+
             sp_post::init();
             if( is_admin() ){
                 sp_admin::init();
             }
-
-            self::initClasses(dirname(__FILE__) . "/widgets");
         }
 
         /**
@@ -76,8 +76,7 @@ if ( !class_exists("smartpost") ){
             if ( is_dir($dir) ) {
                 if ( $dh = opendir($dir) ) {
                     while ( ($file = readdir($dh)) !== false ) {
-                        //filters ".", "..", and ".svn" files
-                        if( is_dir($dir . $file) && ($file != "." && $file != ".." && $file != ".svn") ){
+                        if( is_dir($dir . $file) && ($file != "." && $file != "..") ){
                             self::initClasses( $dir . $file );
                         }
                     }
@@ -168,15 +167,15 @@ if ( !class_exists("smartpost") ){
 
             $typesAndIDs = sp_core::getTypesAndIDs();
             wp_localize_script( 'sp_globals', 'sp_globals', array(
-                    'SP_TYPES'               => $typesAndIDs,
-                    'SP_ADMIN_URL'           => admin_url( 'admin.php' ),
-                    'SP_AJAX_URL'            => admin_url( 'admin-ajax.php' ),
-                    'SP_NONCE'	             => wp_create_nonce( 'sp_nonce'),
-                    'SP_PLUGIN_PATH'         => SP_PLUGIN_PATH,
-                    'SP_IMAGE_PATH'          => SP_IMAGE_PATH,
-                    'MAX_UPLOAD_SIZE'        => WP_MEMORY_LIMIT,
-                    'UPLOAD_SWF_URL'         => includes_url( 'js/plupload/plupload.flash.swf' ),
-                    'UPLOAD_SILVERLIGHT_URL' => includes_url( 'js/plupload/plupload.silverlight.xap' )
+                'SP_TYPES'               => $typesAndIDs,
+                'SP_ADMIN_URL'           => admin_url( 'admin.php' ),
+                'SP_AJAX_URL'            => admin_url( 'admin-ajax.php' ),
+                'SP_NONCE'	             => wp_create_nonce( 'sp_nonce' ),
+                'SP_PLUGIN_PATH'         => SP_PLUGIN_PATH,
+                'SP_IMAGE_PATH'          => SP_IMAGE_PATH,
+                'MAX_UPLOAD_SIZE'        => WP_MEMORY_LIMIT,
+                'UPLOAD_SWF_URL'         => includes_url( 'js/plupload/plupload.flash.swf' ),
+                'UPLOAD_SILVERLIGHT_URL' => includes_url( 'js/plupload/plupload.silverlight.xap' )
                 )
             );
         }

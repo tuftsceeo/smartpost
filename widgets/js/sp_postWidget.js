@@ -129,7 +129,7 @@
          * Initializes the postWidget
          */
         init: function(){
-            this.initFtImgFileDrop($('#customFeaturedImage'));
+            //this.initFtImgFileDrop($('#customFeaturedImage'));
             this.rotateImgs();
         }
     }

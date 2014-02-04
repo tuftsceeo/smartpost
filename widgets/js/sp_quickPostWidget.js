@@ -132,7 +132,7 @@
                             //Refresh the page
                             window.location.reload(true);
                         },
-                        error: function(jqXHR, statusText, errroThrown){
+                        error: function(jqXHR, statusText, errorThrown){
                             if(smartpost.sp_postComponent)
                                     smartpost.sp_postComponent.showError('Status: ' + statusText + ', Error Thrown:' + errorThrown);
                         }

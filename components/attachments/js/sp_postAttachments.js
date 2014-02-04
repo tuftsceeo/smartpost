@@ -212,6 +212,11 @@
          */
         initComponent: function(component, postID, autoFocus){
             this.initFileDrop( $(component) );
+            var browseButton = $(component).find( '.sp-attachments-browse-img' );
+            browseButton.click(function(){
+                var compId = $(this).data( 'compid' );
+                $('#sp-attachments-upload-' + compId).click();
+            });
         },
 
         /**

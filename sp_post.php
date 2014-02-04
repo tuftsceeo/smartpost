@@ -263,52 +263,6 @@ if (!class_exists("sp_post")) {
         }
 
         /**
-         * Renders HTML ul list of response posts
-         *
-         * @param string $post_status Can take on values of 'publish|draft|trash|etc..'. Default value is 'publish'.
-         * @param array  $categories Array of category IDs to filter by
-         * @param bool   $showResponses whether or not to include the response categories in the tree
-         * @return string HTML <ul> list of the post and its post children (post responses)
-         * @todo Compact all parameters into one $args variable
-         */
-        function renderTree($post_status = 'publish', $categories = null, $permalink = false){
-            global $current_user;
-
-            $admin = current_user_can('administrator');
-            $owner = ( ($current_user->ID == $this->wpPost->post_author) || $admin );
-            $ownerInf = $owner ? ', owner: ' . $owner : '';
-            $postTitle = $permalink ? '<a href="' . get_permalink($this->wpPost->ID) .'" target="_self">' . $this->wpPost->post_title . '</a>' : $this->wpPost->post_title;
-
-            $html .= '<li id="treePost-' . $this->wpPost->ID . '" data="post: true, postID: ' . $this->wpPost->ID . $ownerInf . '" ' . $isPost .'>' .  $postTitle;
-            $html .= '<ul>';
-
-            //Get any response categories
-            /*$responseCats = $this->sp_category->getResponseCats();
-            if( !empty($responseCats) ){
-                foreach($responseCats as $catID => $included){
-                    if( $included )
-                        $sp_category = new sp_category(null, null, $catID);
-                        $html .= $sp_category->renderPostTree($post_status, $this->wpPost->ID, array('permalink' => $permalink));
-                }
-            }*/
-
-            //Fetch all children of this post
-            $excludeCats = empty($responseCats) ? array() : array_keys($responseCats);
-            $args      = array( 'numberposts' => -1, 'category__not_in' => $excludeCats, 'post_parent' => $this->wpPost->ID, 'post_status' => $post_status );
-            $miscPosts = get_posts( $args );
-
-            if( !empty($miscPosts) ){
-                foreach($miscPosts as $post){
-                    $sp_post = new sp_post($post->ID);
-                    $html .= $sp_post->renderTree($post_status, $categories, $permalink);
-                }
-            }
-
-            $html .= '</ul>';
-            return $html;
-        }
-
-        /**
          * Breadcrumb function that traverses the post tree. Starting at
          * the post with id $post_id all the way to the root, and outputs
          * a linkable breadcrumbs to ancestor posts. It omits a breadcrumb
@@ -595,7 +549,7 @@ if (!class_exists("sp_post")) {
          * @param $postID
          * @return null|sp_category sp_category object if it's a SP-post, otherwise null
          */
-        function getSPCategory($postID){
+        public static function getSPCategory($postID){
             $sp_categories = get_option('sp_categories');
             if( !empty($sp_categories) ){
                 $categories = get_the_category($postID);

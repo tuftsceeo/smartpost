@@ -205,8 +205,8 @@
                     url: SP_AJAX_URL,
                     type: 'POST',
                     data: {
-                        action    : 'getCategoryJSONTreeAJAX',
-                        nonce     : SP_NONCE
+                        action: 'getCategoryJSONTreeAJAX',
+                        nonce: SP_NONCE
                     }
                 },
                 imagePath: "",

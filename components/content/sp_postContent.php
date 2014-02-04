@@ -22,13 +22,12 @@ if (!class_exists("sp_postContent")) {
          * @see parent::renderEditMode()
          */
         function renderEditMode($value = ""){
-            $contentOptions =  $this->options;
 
             // Create an editor area for a video description
             return sp_core::sp_editor(
                 $this->value,
                 $this->ID,
-                !$contentOptions->richtext,
+                false,
                 'Type something here ...',
                 array('data-action' => 'saveContentAJAX', 'data-compid' => $this->ID, 'data-postid' => $this->postID )
             );

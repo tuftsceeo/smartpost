@@ -159,7 +159,7 @@
                 var thumbID = attachment_info.thumbid;
                 var compID = attachment_info.compid;
                 $.ajax({
-                    url: ajaxurl,
+                    url: SP_AJAX_URL,
                     type: 'POST',
                     data: {
                         action: 'photoDeletePicAJAX',

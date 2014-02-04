@@ -21,7 +21,7 @@
             }
 
             $.ajax({
-                url		 : ajaxurl,
+                url		 : SP_AJAX_URL,
                 type     : 'POST',
                 data	 : {action: 'savePostTitleAJAX', nonce: SP_NONCE, postID: postID, post_title: title},
                 dataType : 'json',

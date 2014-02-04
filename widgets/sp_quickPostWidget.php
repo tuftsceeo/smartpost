@@ -25,7 +25,7 @@ class sp_quickPostWidget extends WP_Widget {
 
     static function enqueueJS(){
         if( is_admin() ){
-            wp_register_script('sp_qpWidgetAdminJS', plugins_url('js/sp_qpWidgetAdmin.js', __FILE__));
+            wp_register_script('sp_qpWidgetAdminJS', plugins_url('js/adminjs/sp_qpWidgetAdmin.js', __FILE__));
             wp_enqueue_script( 'sp_qpWidgetAdminJS', array( 'jquery', 'sp_postComponentJS' ) );
         }else{
             wp_register_script('sp_quickPostWidgetJS', plugins_url('js/sp_quickPostWidget.js', __FILE__));

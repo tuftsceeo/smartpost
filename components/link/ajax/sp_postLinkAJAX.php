@@ -26,8 +26,8 @@ if (!class_exists("sp_postLinkAJAX")) {
             }
 
             if(!class_exists('sp_postLink')){
-                    header("HTTP/1.0 409 Could not instantiate sp_postLink class.");
-                    echo json_encode(array('error' => 'Could not save link.'));
+                header("HTTP/1.0 409 Could not instantiate sp_postLink class.");
+                echo json_encode(array('error' => 'Could not save link.'));
             }
 
             if( empty($_POST['compID']) ){

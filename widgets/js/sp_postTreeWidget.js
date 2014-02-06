@@ -11,8 +11,7 @@
          */
         initDynaTree: function( sp_catTree ){
             var widgetId = sp_catTree.data('widgetid').split('-')[1];
-            var activePost = $('#sp_postTreePostID').val();
-            var activeCat = $('#sp_postTreeCatID').val();
+            var activeNode = sp_catTree.data( 'activenode' );
 
             // AJAX handler to load in all the nodes dynamically
             sp_catTree.dynatree({
@@ -26,21 +25,18 @@
                     }
                 },
                 generateIds: true,
-                persist: true,
+                persist: false,
                 clickFolderMode: 1,
                 onActivate: function (node) {
                     window.open(node.data.href, node.data.target);
                 },
                 onPostInit: function(){
-                    if(activePost){
-                        var node = this.getNodeByKey( "post-" + activePost )
-                    }else{
-                        var node = this.getNodeByKey( "cat-" + activeCat )
-                    }
-
-                    if(node){
-                        node.activateSilently();
-                        node.expand(true);
+                    if(activeNode){
+                        var node = this.getNodeByKey( activeNode );
+                        if(node){
+                            node.activateSilently();
+                            node.expand(true);
+                        }
                     }
                 },
                 debugLevel: 0
@@ -50,7 +46,7 @@
 
         init: function(){
             var self = this;
-            $( '.sp_catTree' ).each(function(){
+            $( '.sp-widget-post-tree' ).each(function(){
                 self.initDynaTree( $(this) );
             });
         }

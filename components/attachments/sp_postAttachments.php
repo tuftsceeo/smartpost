@@ -23,7 +23,7 @@ if (!class_exists("sp_postAttachments")) {
             $this->initComponent($compInfo);
 
             //Get the "default" allowed extensions
-            $this->allowedExts = $this->options;
+            $this->allowedExts = empty( $this->options ) ? array() : $this->options;
 
             // Load instance vars
             if( !empty($this->value) ){
@@ -93,7 +93,7 @@ if (!class_exists("sp_postAttachments")) {
 
             if( $edit_mode ){
                 $addIcon = '<img src="' . plugins_url( '/images/add.png', __FILE__ ) . '" style="vertical-align: text-top;" />';
-                $html .= '<tr id="sp-attachments-uploads-row-' . $this->ID . '" class="sp-attachments-uploads-row" data-compid="' . $this->ID . '" data-allowedexts="' . implode(', ', $this->allowedExts) .'">';
+                $html .= '<tr id="sp-attachments-uploads-row-' . $this->ID . '" class="sp-attachments-uploads-row" data-compid="' . $this->ID . '">';
                     $html .= '<td><span class="sp-attachments-browse-img" data-compid="' . $this->ID . '">' . $addIcon . ' Attach more files</span> </td>';
                     $html .= '<td><input type="file" id="sp-attachments-upload-' . $this->ID . '" /></td></td>';
                     $html .= '<td>&nbsp;</td><td>&nbsp;</td>'; // Fill out size and delete cols

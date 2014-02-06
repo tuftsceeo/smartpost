@@ -60,7 +60,7 @@ if (!class_exists("sp_postGallery")) {
                 $html .= sp_core::sp_editor(
                     $this->description,
                     $this->ID,
-                    true,
+                    false,
                     'Click here to add a gallery description ...',
                     array('data-action' => 'saveGalleryDescAJAX', 'data-compid' => $this->ID, 'data-postid' => $this->postID )
                 );
@@ -117,7 +117,7 @@ if (!class_exists("sp_postGallery")) {
             $html = "";
             if( !is_null($attachment) ){
                 $html .= '<div id="sp-gallery-thumb-' . $id . '" data-thumbid="' . $id . '" data-compid="' . $compID . '" class="sp-gallery-thumb">';
-                    $html .= '<a href="' . wp_get_attachment_url($id) . '" class="fancybox" rel="gallery-' . $compID .'" title="' .$attachment->post_title . '">';
+                    $html .= '<a href="' . wp_get_attachment_url($id) . '" class="fancybox" rel="gallery-' . $compID .'" title="' . $attachment->post_content . '">';
                         $html .= wp_get_attachment_image($id, array(125, 125), true);
                     $html .= '</a>';
 

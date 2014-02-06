@@ -30,3 +30,9 @@
     border: 2px dashed silver;
     text-align: center;
 }
+.sortableSPComponents{
+    min-height: 100px;
+}
+.sp-component-stack{
+    border: 2px dashed #ededed;
+}

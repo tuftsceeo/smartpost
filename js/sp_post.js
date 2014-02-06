@@ -121,6 +121,13 @@
             // Turn off automatic editor creation first.
             CKEDITOR.disableAutoInline = true;
 
+            // Remove silly title attribute
+            CKEDITOR.on('instanceCreated', function(event) {
+                var editor = event.editor;
+                editor.on('instanceReady', function(e) {
+                    $(e.editor.element.$).removeAttr("title");
+                });
+            });
             // Initialize all sp-editor instances
             $( '.sp-editor-content' ).each(function(){
                 self.initCkEditors( $(this) );

@@ -123,8 +123,6 @@ if (!class_exists("sp_postAttachmentsAJAX")) {
             $compID = (int) $_POST['compID'];
             $attachmentsComponent = new sp_postAttachments($compID);
 
-            error_Log( print_r( $attachmentsComponent, true) );
-
             if( is_wp_error( $attachmentsComponent->errors ) ){
                 header( "HTTP/1.0 409 Error: " . $attachmentsComponent->errors->get_error_message() );
                 exit;
@@ -135,7 +133,8 @@ if (!class_exists("sp_postAttachmentsAJAX")) {
             if( file_exists($file) ){
 
                 $allowedExts = $attachmentsComponent->allowedExts;
-                if( !empty($allowedExts) ){
+
+                if( !empty( $allowedExts ) ){
                     $allowed = sp_core::validateExtension($file, $allowedExts);
                 }else{
                     $allowed = true;

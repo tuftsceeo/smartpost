@@ -44,20 +44,6 @@
         },
 
         /**
-         * Makes the SP Widget draggable
-         */
-        makeWidgetDraggable: function(sortableElem){
-            if($('#catCompList').exists()){
-                $('.catComponentWidget').draggable({
-                        addClasses: false,
-                        helper: 'clone',
-                        revert: 'invalid',
-                        connectToSortable: sortableElem
-                });
-            }
-        },
-
-        /**
          * Save the title of a component
          */
         saveCompTitle: function(title, compID){
@@ -108,15 +94,15 @@
          * Adds a new post component instance to the post. Note: it is not recommended
          * to provide both the componentStack and replaceWith parameters together.
          *
-         * @param int catCompID The category component ID
-         * @param int typeID The category component typeID - used for
-         *                   binding init methods for newly added components
-         *                   (i.e. added to the DOM after)
-         * @param int postID The ID of the current post
-         * @param closure compHandler A function that recieves the component as a parameter
+         * @param catCompID - The category component ID
+         * @param typeID int - The category component typeID - used for
+         *                     binding init methods for newly added components (i.e. added to the DOM after)
+         * @param componentStack - The stack of component DOM elements
+         * @param postID int - The ID of the current post
+         * @param compHandler func - A function that recieves the component as a parameter
          */
         addNewComponent: function(catCompID, typeID, postID, componentStack, compHandler){
-            var thisObj      = this;
+            var self = this;
             var newComponent = null;
 
             if(componentStack == undefined && componentStack != false ){
@@ -127,24 +113,18 @@
                 postID = $('#postID').val();
             }
 
-            //Used to bind new component to its necessary events
-            //Finds the right component type via sp_globals.SP_TYPES[] and typeID
-            if(sp_globals.SP_TYPES){
-                var componentJS   = sp_globals.SP_TYPES[typeID];
-            }
-
             $.ajax({
-                url	 : SP_AJAX_URL,
+                url : SP_AJAX_URL,
                 type : 'POST',
                 data :
                 {
-                    action      : 'newPostComponentAJAX',
-                    nonce       : SP_NONCE,
-                    catCompID   : catCompID,
-                    postID      : postID
+                    action : 'newPostComponentAJAX',
+                    nonce : SP_NONCE,
+                    catCompID : catCompID,
+                    postID : postID
                 },
                 dataType : 'html',
-                success  : function(response, statusText, jqXHR){
+                success : function(response){
                     newComponent = $(response);
 
                     //Add the new component to the DOM window if necessary
@@ -157,11 +137,11 @@
                         compHandler(newComponent);
                     }
 
-                    thisObj.initializeComponent(newComponent, typeID);
+                    self.initializeComponent(newComponent, typeID);
 
                 },
-                error    : function(jqXHR, statusText, errorThrown){
-                        thisObj.showError(errorThrown);
+                error: function(jqXHR, statusText, errorThrown){
+                    self.showError(errorThrown);
                 }
             });
         },
@@ -360,7 +340,6 @@
          */
         init: function(){
             this.makeSortable()
-            this.makeWidgetDraggable('.sortableSPComponents');
             this.deleteComponent();
             this.editableCompTitle();
             this.clearErrors( $('#clearErrors') );

@@ -5,7 +5,7 @@
 class sp_postWidget extends WP_Widget {
     /** constructor */
     function __construct() {
-        parent::__construct(false, $name = 'SP Post Options');
+        parent::__construct(false, $name = 'SP Post Settings');
         self::init();
     }
 
@@ -31,108 +31,76 @@ class sp_postWidget extends WP_Widget {
         global $post;
         global $current_user;
 
-        if(is_user_logged_in() && current_user_can('edit_posts')){
+        if( is_user_logged_in() && current_user_can('edit_posts') ){
 
+            // initialize vars
+            $before_widget = ''; $before_title = ''; $after_title = ''; $after_widget = '';
             extract( $args );
+
             require_once(ABSPATH . 'wp-admin/includes/post.php');
-            $owner = ($current_user->ID == $post->post_author);
-            $admin = current_user_can('administrator');
-            $isLocked = (bool) wp_check_post_lock( $this->postID );
-            $editMode = (bool) $_GET['edit_mode'];
-            $title = apply_filters('widget_title', $instance['title']);
 
-            // Render the widget
-            if( sp_post::isSPPost($post->ID) && ($owner || $admin) && !$isLocked && is_single() && $editMode ){
-
-                echo $before_title . $title . $after_title;
-
-                self::setFeaturedImage();
-                self::postStatusOptions();
-                self::renderCompBlocks();
-            }
-            echo $after_widget;
-        }
-    }
-
-    /**
-     * Featured Image
-     * !To-do: Allow for image uploads and fix workaround
-     */
-    function setFeaturedImage(){
-        global $post;
-        $featuredImgID = get_post_thumbnail_id($post->ID);
-
-        echo '<p class="sp_widgetSubHeader">Set Featured Image</p>';
-        echo '<div id="sp_featuredImg">';
-        echo '<div id="thumb_results">';
-
-        if($featuredImgID){
             /**
-             * Bug: thumbs from other posts show up in incorrect posts
+             * Go through appropriate checks to see if we can edit the post
+             * @var $owner - Is the current user the owner of the post?
+             * @var $admin - is the current user an administrator?
+             * @var $isLocked - is the post being edited by someone else?
+             * @var $editMode - does the edit_mode global var exist?
              */
-            $featuredImg = get_post($featuredImgID);
-            if( $featuredImg->post_parent != $post->ID ){
-                set_post_thumbnail($post->ID, -1);
+            $owner = ($current_user->ID == $post->post_author);
+            $admin = current_user_can( 'administrator' );
+            $isLocked = (bool) wp_check_post_lock( $this->postID );
+
+            if( sp_post::is_sp_post($post->ID) && ($owner || $admin) && !$isLocked && is_single()  ){
+
+                $editMode = (bool) $_GET['edit_mode'];
+                $title = apply_filters('widget_title', $instance['title']);
+                ?>
+
+                <?php echo $before_widget ?>
+                <div id="sp-widget-post-settings-<? echo $this->number ?>" class="sp-widget-post-settings sp-widget">
+                    <?php echo $before_title . $title . $after_title ?>
+                    <?php if( $editMode ): ?>
+                        <p><a href="<?php echo get_permalink( $post->ID ) ?>">Go back to viewing mode</a></p>
+                        <?php self::postStatusOptions(); ?>
+                        <?php self::renderCompBlocks(); ?>
+                    <?php else: ?>
+                        <p><a href="<?php echo get_permalink( $post->ID ) ?>/?edit_mode=true">Edit this post</a></p>
+                    <?php endif; ?>
+                </div><!-- end .sp-widget-post-settings -->
+                <?php echo $after_widget ?>
+
+                <?php
             }else{
-                echo get_the_post_thumbnail( $post->ID, array(100, 100), array('data-id' => $featuredImgID, 'class' => 'featuredImg') );
+
             }
         }
-
-        $args = array( 'post_type' => 'attachment', 'post_mime_type' => 'image', 'post__not_in' => array($featuredImgID), 'numberposts' => -1, 'post_parent' => $post->ID, 'post_status' => null );
-        $attachments = get_posts($args);
-        if( $attachments ){
-            foreach($attachments as $attachment){
-                $thumbs .= wp_get_attachment_image( $attachment->ID, array(100, 100), true, array('style' => 'display:none;', 'data-id' => $attachment->ID, 'post-parent' => $attachment->post_parent) );
-            }
-            echo $thumbs;
-        }
-        echo '</div><!-- end #thumb_results -->';
-
-        if( !$attachments ){
-            $html .= '<div id="customFeaturedImage">';
-            $html .= '<p id="ftImgFileDropLbl">Drag n\' drop a custom image</p>';
-            $html .= '<input type="file" id="sp_custom_ft_img_browse" name="sp_custom_ft_img_browse" />';
-            $html .= '</div>';
-            echo $html;
-        }
-
-        if( $attachments ){
-            $thumbSelection .= '<div id="thumbSelection-' . $post->ID . '" class="thumbSelection">';
-            $thumbSelection .= '<button type="button" id="prevThumb" class="sp_link_prev"></button>';
-            $thumbSelection .= '<button type="button" id="nextThumb" class="sp_link_next"></button>';
-            $thumbSelection .= '<small>Select a thumbnail</small>';
-            $thumbSelection .= '<button type="button" id="selectImg" class="sp_link_select_thumb">Ok</button>';
-            $thumbSelection .= '</div>';
-            echo $thumbSelection;
-        }
-        echo '</div><!-- end sp_featuredImg -->';
     }
-
 
     /**
      * Publishes or Deletes a draft if we're in a draft post
      */
     function postStatusOptions(){
         global $post;
-        if( $post->post_status == 'draft' ){
-            echo '<p class="sp_widgetSubHeader"> Draft Options </p>';
-            echo '<button type="button" id="sp_publish_post" name="sp_publish_post" class="sp_qp_button">Publish Draft</button>';
-            echo '<button type="button" id="sp_cancel_draft" name="sp_cancel_draft" class="sp_qp_button">Delete Draft</button>';
-            echo '<input type="hidden" id="sp_qpPostID" name="sp_qpPostID" value="' . $post->ID . '" />';
-            echo '<input type="hidden" id="sp_spDeleteRedirect" name="sp_spDeleteRedirect" value="' . get_bloginfo('url') . '" />';
-        }
+        ?>
+        <?php if( $post->post_status == 'draft' ): ?>
+            <p> Draft Options: </p>
+            <button type="button" id="sp_publish_post" name="sp_publish_post" class="sp_qp_button">Publish Draft</button>
+            <button type="button" id="sp_cancel_draft" name="sp_cancel_draft" class="sp_qp_button">Delete Draft</button>
+        <?php endif; ?>
+        <?php
     }
 
     /**
      * Renders Post Component blocks that can be added to the post
      */
     function renderCompBlocks(){
+        global $post;
         $sp_category = sp_post::getSPCategory($post->ID);
         $components  = $sp_category->getComponents();
 
         if( !empty($components) ){
-            echo '<p class="sp_widgetSubHeader"> Drag to your post </p>';
-            echo '<div id="catCompList">';
+            echo '<p>← Drag the below widgets into your post </p>';
+            echo '<div class="sp-widget-post-settings-draggable-comps">';
             if ( !empty($components)){
                 foreach($components as $component){
                     echo '<div id="catComp-' . $component->getID() . '" data-compid="' . $component->getID() . '" data-typeid="' . $component->getTypeID() . '" title="' . $component->getDescription() . '" alt="' . $component->getDescription() . '" class="catComponentWidget">';
@@ -165,7 +133,7 @@ class sp_postWidget extends WP_Widget {
             $title = $instance[ 'title' ];
         }
         else {
-            $title = __( 'New title', 'text_domain' );
+            $title = __( 'Post Settings', 'text_domain' );
         }
         ?>
         <p>

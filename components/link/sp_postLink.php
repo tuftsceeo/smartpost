@@ -14,7 +14,7 @@ if (!class_exists("sp_postLink")) {
         private $urlThumbs = array(); // Array of thumbnails for the url provides
         private $urlThumb; // The "selected" thumbnail (a wp attachment ID)
         private $urlDesc; // Description of the url
-        public $youTube = '';
+        public $youTube = ''; // Whether the link provided is a youtube.com link
 
         function __construct($compID = 0, $catCompID = 0, $compOrder = 0,
                                $name = '', $value = '', $postID = 0){
@@ -31,11 +31,6 @@ if (!class_exists("sp_postLink")) {
             }
         }
 
-        //Override parent title function
-        function renderCompTitle(){
-            return "";
-        }
-
         /**
          * @see parent::renderEditMode()
          */
@@ -44,10 +39,10 @@ if (!class_exists("sp_postLink")) {
             $html .= '<div id="sp-link-content-' . $this->ID . '" class="sp-link-content">';
                 $html .= empty( $this->urlThumbs )? $this->renderThumb() : $this->renderThumbs();
                 $html .= '<div id="sp_link_right_wrapper-' . $this->ID . '" class="sp_link_right_wrapper">';
+                    $html .= $this->renderYouTubePlayer();
                     $html .= '<div id="sp_the_link-' . $this->ID . '" data-compid="' . $this->ID . '" class="sp_the_link editable">';
                         $html .= $this->url;
                     $html .= '</div>';
-                    $html .= $this->renderYouTubePlayer();
                     $html .= $this->renderDesc();
                 $html .= '</div><!-- .sp_link_right_wrapper -->';
                 $html .= '<div class="clear"></div>';
@@ -64,8 +59,8 @@ if (!class_exists("sp_postLink")) {
                 $html .= '<div id="thumbAndDesc-' . $this->ID . '" class="sp_link_content">';
                     $html .= $this->renderThumb(false);
                     $html .= '<div id="sp_link_right_wrapper-' . $this->ID . '" class="sp_link_right_wrapper">';
-                        $html .= '<a href="' . $this->url .'" target="_new" class="sp-link-view">' . $this->url . '</a>';
                         $html .= $this->renderYouTubePlayer();
+                        $html .= '<a href="' . $this->url .'" target="_new" class="sp-link-view">' . $this->url . '</a>';
                         $html .= $this->renderDesc(false);
                     $html .= '</div><!-- .sp_link_desc -->';
                     $html .= '<div class="clear"></div>';
@@ -166,7 +161,7 @@ if (!class_exists("sp_postLink")) {
             }
 
             // This should technically be under renderThumbs();
-            if( count($this->urlThumbs) > 1 ){
+            if( count($this->urlThumbs) > 1 && !$this->youTube ){
                 $html .= '<div id="thumbSelection-' . $this->ID . '" class="thumbSelection">';
                 $html .= '<span type="button" id="prevThumb-' . $this->ID . '" class="sp_link_prev"></span>';
                 $html .= '<span type="button" id="nextThumb-' . $this->ID . '" class="sp_link_next"></span>';

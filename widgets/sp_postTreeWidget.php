@@ -28,18 +28,22 @@ class sp_postTreeWidget extends WP_Widget {
 
     /** @see WP_Widget::widget */
     function widget($args, $instance) {
-        $html = '<div id="sp_catTree-' . $this->id . '" data-widgetid="' . $this->id . '" class="sp_catTree"></div>';
+        global $post;
+        extract($args);
 
+        // Set the active post so the tree automatically selects it
+        $activeNode = '';
         if ( is_category() ) {
-            $html .= '<input type="hidden" id="sp_postTreeCatID" value="' . get_query_var('cat') . '" />';
+            $activeNode = 'data-activenode="cat-' . get_query_var('cat') . '"';
         }else if( is_single() ){
-            global $post;
-            $html .= '<input type="hidden" id="sp_postTreePostID" value="' . $post->ID . '" />';
+            $activeNode = 'data-activenode="post-' . $post->ID . '"';
         }
 
         $title = apply_filters('widget_title', $instance['title']);
-        echo $title;
-        echo $html;
+        echo $before_widget;
+        echo $before_title . $title . $after_title;
+        echo '<div id="sp-widget-post-tree-' . $this->number . '" data-widgetid="' . $this->id . '" class="sp-widget-post-tree" ' . $activeNode . '></div>';;
+        echo $after_widget;
     }
 
     /**
@@ -161,7 +165,7 @@ class sp_postTreeWidget extends WP_Widget {
             $title = $instance[ 'title' ];
         }
         else {
-            $title = __( 'New title', 'text_domain' );
+            $title = __( 'Browse Posts', 'text_domain' );
         }
 
         if( !isset( $instance['displayCats'] ) ){

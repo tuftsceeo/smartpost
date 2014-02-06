@@ -66,9 +66,6 @@ div.sp_component:hover .componentHandle{
     border: 2px dotted silver;
     border-radius: 3px;
 }
-.sortableSPComponents{
-    min-height: 100px;
-}
 .sp_component_helper{
     max-height: 50px;
     border: 2px solid silver;

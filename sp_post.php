@@ -177,7 +177,7 @@ if (!class_exists("sp_post")) {
          */
         static function saveShortcodes($postID){
             $post = get_post($postID);
-            if(self::isSPPost($post->ID)){
+            if(self::is_sp_post($post->ID)){
                 $sp_post = new sp_post($post->ID, true);
                 $postComponents = $sp_post->getComponents();
 
@@ -214,7 +214,7 @@ if (!class_exists("sp_post")) {
          * @param $post
          */
         function newSPPost($post){
-            if(self::isSPPost($post->ID) &&  !wp_is_post_revision( $post->ID )){
+            if(self::is_sp_post($post->ID) &&  !wp_is_post_revision( $post->ID )){
                 $sp_post = new sp_post($post->ID);
             }
         }
@@ -226,7 +226,7 @@ if (!class_exists("sp_post")) {
          * @link http://codex.wordpress.org/Plugin_API/Action_Reference
          */
         function delete($postID){
-            if(self::isSPPost($postID)){
+            if(self::is_sp_post($postID)){
                 $sp_post    = new sp_post($postID, true);
                 $components = $sp_post->getComponents();
                 $wpPost     = $sp_post->wpPost;
@@ -315,12 +315,13 @@ if (!class_exists("sp_post")) {
             global $post;
             global $current_user;
 
-            if(self::isSPPost($post->ID)){
+            if(self::is_sp_post($post->ID)){
                 $owner = ($current_user->ID == $post->post_author);
                 $admin = current_user_can('administrator');
                 $sp_post = new sp_post($post->ID, true);
+                $editMode = $_GET['edit_mode'];
 
-                if( ($owner || $admin) && is_single()){
+                if( ($owner || $admin) && is_single() ){
 
                     //remove shortcodes since we don't want double rendering happening
                     $content = strip_shortcodes($content);
@@ -348,7 +349,8 @@ if (!class_exists("sp_post")) {
                     //load the components
                     $postComponents = $sp_post->getComponents();
                     $content .= '<div class="clear"></div>';
-                    $content .= '<div id="spComponents" class="sortableSPComponents">';
+                    $addCompStackClass = $editMode ? 'sp-component-stack' : '';
+                    $content .= '<div id="spComponents" class="sortableSPComponents ' . $addCompStackClass . '">';
                     foreach($postComponents as $postComponent){
                         $content .= $postComponent->render();
                     }
@@ -576,10 +578,10 @@ if (!class_exists("sp_post")) {
         /**
          * Returns true if the post is a SP-enabled post, false otherwise
          *
-         * @para int $postID the post's ID
+         * @param int $postID the post's ID
          * @return bool true if the post is a SP, false otherwise
          */
-        function isSPPost($postID){
+        public static function is_sp_post($postID){
             $sp_categories = get_option('sp_categories');
             if( !empty($sp_categories) ){
                 $categories = get_the_category($postID);

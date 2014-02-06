@@ -166,10 +166,9 @@ if (!class_exists("sp_adminAJAX")) {
                 exit;
             }else{
 
+                // Add the category to the provided menu
                 $add_to_menu = (bool) $_POST['add_to_menu'];
-
                 if( $add_to_menu ){
-
                     $menu_id = (int) $_POST['wp_menus'];
                     if(!empty($menu_id)){
                         wp_update_nav_menu_item($menu_id, 0, array(
@@ -180,6 +179,7 @@ if (!class_exists("sp_adminAJAX")) {
                     }
                 }
 
+                // Check if we should add the SP-QP widget
                 $add_widget = (bool) $_POST['add_widget'];
                 if( $add_widget ){
 

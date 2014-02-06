@@ -4,6 +4,38 @@
  * the widget instances.
  */
  
-.sp_deletePost{ float: right; vertical-align: top; display: none; cursor: pointer; position: absolute; top:3px; right: 3px;}
-li.sp_myPost:hover{ background: #EEE; border-radius: 3px; }
-.sp_myPost{ padding: 3px !important; position: relative;}
+.sp_deletePost{
+    float: right;
+    vertical-align: top;
+    display: none;
+    cursor: pointer;
+    position: absolute;
+    top:3px;
+    right: 3px;
+}
+li.sp_myPost:hover{
+    background: #EEE;
+    border-radius: 3px;
+}
+.sp_myPost{
+    padding: 3px !important;
+    position: relative;
+}
+.sp_myPosts ul{
+    clear: none;
+    margin-top: 10px;
+    background: inherit;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+}
+.tab_header li{
+    width: auto !important;
+    clear: none !important;
+}
+
+.sp_myPosts li a:hover {
+    color: green;
+}

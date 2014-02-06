@@ -166,7 +166,7 @@ if (!class_exists("sp_postComponent")) {
          */
         function spShortCodeComponent($atts, $content = "", $tag){
             global $post;
-            if(sp_post::isSPPost($post->ID)){
+            if(sp_post::is_sp_post($post->ID)){
                 extract( shortcode_atts( array(
                     'id' => 0,
                 ), $atts ) );
@@ -233,7 +233,7 @@ if (!class_exists("sp_postComponent")) {
             }
 
             // Return edit mode component if we're an admin or an owner
-            if( ( ( $canEdit &&  $owner) ||  $admin ) && !$isLocked ){
+            if( ( ( $canEdit &&  $owner) ||  $admin ) && !$isLocked && $editMode ){
                 $html .= '<div id="comp-' . $this->ID . '" data-compid="' . $this->ID . '" data-required="' . $this->isRequired() . '" data-catcompid="' . $this->catCompID . '" data-typeid="' . $this->typeID . '" class="sp_component' . ( ($this->isRequired() && $this->lastOne() && $this->isEmpty() ) ?  ' requiredComponent' : '') . '">';
                 $html .= $this->renderCompTitle($owner);
                 $html .= '<span id="del" data-compid="' . $this->ID . '" class="sp_delete sp_xButton" title="Delete Component"></span>';

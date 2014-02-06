@@ -149,7 +149,16 @@ if (!class_exists("sp_postGalleryAJAX")) {
                 }
 
                 $postID = $galleryComponent->getPostID();
-                $id = sp_core::create_attachment( $file, $postID );
+
+                $name = '';
+                // Get the file name
+                if ( isset( $_REQUEST["name"] ) ) {
+                    $name = $_REQUEST["name"];
+                } elseif ( !empty( $_FILES ) ) {
+                    $name = $_FILES['sp-gallery-upload']["name"];
+                }
+
+                $id = sp_core::create_attachment( $file, $postID, $name );
 
                 $attachmentIDs = $galleryComponent->getAttachments();
                 array_push($attachmentIDs, $id);

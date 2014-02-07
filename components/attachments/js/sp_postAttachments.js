@@ -31,7 +31,7 @@
         /**
          * Returns true if attachments component is empty, otherwise false
          *
-         * @param object component The component
+         * @param component component The component
          * @return bool True if it's empty, otherwise false
          */
         isEmpty: function(component){
@@ -137,70 +137,37 @@
          * @param attachment
          */
         renderAttachment: function(attachmentTable, attachment){
-            var beforeRow = attachmentTable.find('.sp-attachments-uploads-row')
+            var self = this;
+            var attach_id = $( attachment).data( 'attachid' );
+            var beforeRow = attachmentTable.find( '.sp-attachments-uploads-row' );
             $( attachment ).insertBefore( beforeRow );
+            self.bindDelete( $( '#sp-attachments-delete-button-' + attach_id ) );
         },
 
         /**
-         * Initialize the description editor
-         * @param descElem jQuery <div> object of the description
+         * @param deleteButton DOM element representing the delete button
          */
-        initDescEditor: function(descElem){
-            var thisObj = this;
-            if(smartpost.sp_postComponent){
-                var elementID = $(descElem).attr('id');
-                smartpost.initEditor(elementID, false, thisObj.saveDescription,'Click to add a description');
-            }
-        },
-
-        /**
-         * Saves a attachments component's description to the database.
-         * @param string    content   The content to be saved
-         * @param string    contentID The DOMElem id of the content's container
-         * @param nicEditor instance  The editor instance
-         */
-        saveDescription: function(content, contentID, instance){
-            var compID  = $('#' + contentID).attr('data-compid');
-            var attachmentID  = $('#' + contentID).attr('attach-id');
-            $.ajax({
-                url	: SP_AJAX_URL,
-                type : 'POST',
-                data : {action: 'saveAttachmentsDescAJAX',
-                    nonce : SP_NONCE,
-                    compID : compID,
-                    attachmentID : attachmentID,
-                    desc : content},
-                dataType : 'json',
-                success : function(response, statusText, jqXHR){
-                    console.log(response);
-                },
-                error : function(jqXHR, statusText, errorThrown){
-                    if(smartpost.sp_postComponent)
-                        smartpost.sp_postComponent.showError(errorThrown);
-                }
-            })
-        },
-
-        /**
-         * Shows the delete button when over over deleteElems
-         *
-         * @param HTMLElement Can be a class or some HTMLElement
-         */
-        bindDelete: function(deleteElems){
-            deleteElems.click(function(){
-                var attachmentID = $(this).attr('data-attachid');
-                var compID = $(this).attr('data-compid');
+        bindDelete: function(deleteButton){
+            deleteButton.click(function(){
+                var attachmentID = $(this).data( 'attachid' );
+                var compID = $(this).data( 'compid' );
                 $.ajax({
                     url: SP_AJAX_URL,
                     type: 'POST',
-                    data: {action: 'attachmentsDeleteAttachmentAJAX', nonce: SP_NONCE, attachmentID: attachmentID, compID: compID },
-                    dataType  : 'json',
-                    success  : function(response, statusText, jqXHR){
-                        $('#attachments_thumb-' + attachmentID).remove();
+                    data: {
+                        action: 'attachmentsDeleteAttachmentAJAX',
+                        nonce: SP_NONCE,
+                        attachmentID: attachmentID,
+                        compID: compID
                     },
-                    error    : function(jqXHR, statusText, errorThrown){
-                        if(smartpost.sp_postComponent)
-                            smartpost.sp_postComponent.showError(errorThrown);
+                    dataType  : 'json',
+                    success  : function(response){
+                        if(response){
+                            $('#sp-attachment-' + attachmentID).remove();
+                        }
+                    },
+                    error : function(jqXHR, statusText, errorThrown){
+                        smartpost.sp_postComponent.showError(errorThrown);
                     }
                 })
             });
@@ -210,12 +177,14 @@
          * Dynamically initializes a attachments component
          */
         initComponent: function(component, postID, autoFocus){
-            this.initFileDrop( $(component).find( '.sp-attachments-uploads-row' ) );
+            this.initFileDrop( $(component).find( '.sp-attachments-uploads-row' ), null );
             var browseButton = $(component).find( '.sp-attachments-browse-img' );
             browseButton.click(function(){
                 var compId = $(this).data( 'compid' );
                 $('#sp-attachments-upload-' + compId).click();
             });
+            var editor = $(component).find( '.sp-editor-content' );
+            smartpost.sp_post.initCkEditors(editor);
         },
 
         /**
@@ -225,24 +194,23 @@
             var self = this;
             self.setTypeID();
 
+            // Init plupload file drop for the drop zones
             $( '.sp-attachments-uploads-row' ).each(function(){
-                self.initFileDrop( $(this) );
+                self.initFileDrop( $(this), null );
             });
 
+            // Click the browse button when clicking on the "+" image
             $( '.sp-attachments-browse-img' ).each(function(){
                 var compId = $(this).data( 'compid' );
                 $(this).click(function(){
-                    $('#sp-attachments-upload-' + compId).click();
+                    $( '#sp-attachments-upload-' + compId ).click();
                 });
             });
 
-            /*
-            this.bindDelete($('.sp_attachmentsDelete'));
-
-            $('.sp_attachments_desc').each(function(){
-                self.initDescEditor($(this));
+            // Bind delete event to delete elements
+            $( '.sp-attachments-delete-button').each(function(){
+                self.bindDelete( $(this) );
             });
-            */
         }
     };
 

@@ -57,6 +57,13 @@ if (!class_exists("sp_postAttachments")) {
          */
         function renderEditMode(){
             $html = '<div id="sp-attachments-' . $this->ID .'" class="sp-attachments" data-compid="' . $this->ID .'">';
+                $html .= sp_core::sp_editor(
+                    $this->description,
+                    $this->ID,
+                    false,
+                    'Click here to add a description ...',
+                    array( 'data-action' => 'saveAttachmentsDescAJAX', 'data-compid' => $this->ID )
+                );
                 $html .= self::renderAttachmentsTable(true);
                 $html .= !empty($this->allowedExts) ? "Allowed file types: " . implode(', ', $this->allowedExts) : '';
                 $html .= '<div class="clear"></div>';
@@ -69,6 +76,7 @@ if (!class_exists("sp_postAttachments")) {
          */
         function renderViewMode(){
             $html = '<div id="sp-attachments-' . $this->ID .'" class="sp-attachments">';
+                $html .= '<div id="sp-attachments-desc-' . $this->ID .'" class="sp-attachments-desc">' . $this->description . '</div>';
                 $html .= self::renderAttachmentsTable();
                 $html .= '<div class="clear"></div>';
             $html .= '</div>';
@@ -119,14 +127,15 @@ if (!class_exists("sp_postAttachments")) {
             $mime_type = get_post_mime_type( $attach_id );
             $attach_size = filesize( get_attached_file( $attach_id) );
             $url = wp_get_attachment_url( $attach_id );
+            $icon = wp_get_attachment_image( $attach_id, array(30, 30), true, array( 'class' => 'sp-attachments-icon' ) );
 
-            $html = '<tr>';
-            $html .= '<td><a href="' . $url . '" target="_new">' . $attachment->post_content . '</a></td>';
+            $html = '<tr id="sp-attachment-' . $attach_id . '" data-attachid="' . $attach_id . '" class="sp-attachment-row">';
+            $html .= '<td><a href="' . $url . '" target="_new">' . $icon . $attachment->post_content . '</a></td>';
             $html .= '<td>' . $mime_type . '</td>';
             $html .= '<td>' . $this->formatSizeUnits( $attach_size ) . '</td>';
             if( $edit_mode ){
                 $html .= '<td id="sp-attachments-delete-' . $attach_id . '" class="sp-attachments-delete">';
-                    $html .= '<span id="sp-attachments-delete-button-' . $attach_id .'" class="sp-attachments-delete-button sp_xButton" data-attachid="' . $attach_id .'">Delete</span>';
+                    $html .= '<span id="sp-attachments-delete-button-' . $attach_id .'" class="sp-attachments-delete-button sp_xButton" data-attachid="' . $attach_id .'" data-compid="' . $this->ID . '" alt="Remove Attachment" title="Remove Attachment"></span>';
                 $html .= '</td>';
             }
             $html .= '</tr>';

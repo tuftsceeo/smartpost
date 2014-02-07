@@ -2,6 +2,9 @@
  * CSS for the sp_postMedia class
  * Used in front-end posts
  */
+.sp-attachment-row:hover .sp-attachments-delete-button{
+    visibility: visible;
+}
 .sp-attachments-browse-img{
     cursor: pointer;
 }
@@ -9,9 +12,13 @@
     visibility: hidden;
     cursor: pointer;
 }
-.sp-attachments-delete-button:before{
-    float: left;
+
+.sp-attachments-icon{
+    width: 22px;
+    height: 30px;
+    vertical-align: middle;
+    margin-right: 10px;
 }
-.sp-attachments-delete:hover .sp-attachments-delete-button{
-    visibility: visible;
+.sp-attachments-desc{
+    margin: 20px;
 }

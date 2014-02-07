@@ -4,12 +4,14 @@
  */
 
 .catComponentWidget{
-    border: 1px solid	silver;
+    border: 1px solid silver;
     margin-top: 5px;
     text-align: left;
     cursor: move;
     max-width: 300px;
+    max-height: 100px;
     padding: 10px;
+    background: white;
 }
 
 div.catComponentWidget:hover{

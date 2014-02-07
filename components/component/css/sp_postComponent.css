@@ -69,10 +69,8 @@ div.sp_component:hover .componentHandle{
 .sp_component_helper{
     max-height: 50px;
     border: 2px solid silver;
-    border-radius: 3px;
     background: white;
     font-size: 14px;
-    font-weight: bold;
     -moz-box-shadow: 4px 5px 8px -2px black;
     -webkit-box-shadow: 4px 5px 8px -2px black;
     box-shadow: 4px 5px 8px -2px black;

@@ -81,6 +81,11 @@ if (!class_exists("sp_postComponentAJAX")) {
             $compID = (int) $_POST['compID'];
             $type   = 'sp_post' . (string) sp_postComponent::getCompTypeFromID($compID);
 
+            if( !class_exists( $type ) ){
+                header( 'HTTP/1.0 409 Error: class of type: "' . $type . '" does not exist!' );
+                exit;
+            }
+
             $component = new $type($compID);
 
             if($component->isRequired() && $component->lastOne()){

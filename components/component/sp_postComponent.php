@@ -310,7 +310,7 @@ if (!class_exists("sp_postComponent")) {
         /**
          * Gets the post component's typeID via it's ID.
          */
-        function getCompTypeFromID($compID){
+        public static function getCompTypeFromID($compID){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_postComponents';
             $typeID = $wpdb->get_var("SELECT typeID FROM $tableName where id = $compID;");

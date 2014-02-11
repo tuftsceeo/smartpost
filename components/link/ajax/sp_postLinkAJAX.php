@@ -137,11 +137,11 @@ if (!class_exists("sp_postLinkAJAX")) {
 					exit;					
 				}
 				
-				$postID  = (int) $_POST['postID'];
-				$compID		= (int) $_POST['compID'];
+				$postID = (int) $_POST['postID'];
+				$compID = (int) $_POST['compID'];
 				$linkComponent = new sp_postLink($compID);
 				
-				//remove existing thumb if one exists
+				// remove existing thumb if one exists
 				$linkComponent->removeThumb();
 				
 				$id = sp_core::upload('sp_link_thumb', $postID, array('post_title' => $_FILE['sp_link_thumb']['name']));
@@ -179,7 +179,7 @@ if (!class_exists("sp_postLinkAJAX")) {
 				$linkComponent = new sp_postLink($compID);
 
 				if( is_wp_error($linkComponent->errors) ){
-					header("HTTP/1.0 409 " . $success->get_error_message());
+					header("HTTP/1.0 409 " . $linkComponent->errors->get_error_message());
 				}else{
 					
 					$linkComponent->removeThumb();

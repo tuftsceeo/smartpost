@@ -21,15 +21,6 @@ if (!class_exists("sp_admin")) {
             add_action( 'admin_menu', array('sp_admin', 'sp_admin_add_template_page') );
             add_action( 'admin_menu', array('sp_admin', 'sp_admin_add_category_page') );
             add_action( 'admin_enqueue_scripts', array('sp_admin', 'enqueueScripts') );
-
-            //Load relevant classes for the admin page.
-            $spTypes = sp_core::getTypesAndIDs();
-            foreach($spTypes as $typeName => $typeID){
-                $class = 'sp_cat' . $typeName;
-                if(class_exists($class)){
-                    $class::init();
-                }
-            }
         }
 
         /**
@@ -391,7 +382,7 @@ if (!class_exists("sp_admin")) {
                             <div id="sp_components" class="postbox" style="display: block;">
                                 <h3 class="hndle" style="cursor: default;"><span>SmartPost Components</span></h3>
                                 <div class="inside">
-                                    <p>Drag the below components to the template on the left:</p>
+                                    <p>← Drag components to the template on the left:</p>
                                     <?php self::listCompTypes() ?>
                                 </div>
                             </div><!-- end sp_components -->
@@ -419,7 +410,7 @@ if (!class_exists("sp_admin")) {
          */
         function sp_settings_page(){
             $components = sp_core::getTypes();
-            $currCompID = (int) empty( $_GET['compID'] ) ? $components[0]->id : $_GET[ 'compID' ] ;
+            $currCompID = (int) $_GET['compID'];
             $currCompType = sp_core::getType( $currCompID );
             $currCompClass = 'sp_cat' . $currCompType->name;
 
@@ -436,9 +427,10 @@ if (!class_exists("sp_admin")) {
                             <div class="handlediv" title="Click to toggle"><br></div>
                             <h3 class="hndle" style="cursor: default"><span>SmartPost Components:</span></h3>
                             <div class="inside">
+                                <a href="<?php echo admin_url('admin.php?page=sp-cat-page') ?>" class="sp-settings-item"><img src="<?php echo SP_IMAGE_PATH ?>/sp-icon.png"> General Settings</a>
                                 <?php
                                 foreach($components as $comp){
-                                    echo '<a href="' . admin_url('admin.php?page=sp-cat-page') . '&compID=' . $comp->id . '" style="text-decoration: none;"><img src="' . $comp->icon . '" /> ' . $comp->name . '</a><br />';
+                                    echo '<a href="' . admin_url('admin.php?page=sp-cat-page') . '&compID=' . $comp->id . '" class="sp-settings-item"><img src="' . $comp->icon . '" /> ' . $comp->name . '</a>';
                                 }
                                 ?>
                             </div>
@@ -447,17 +439,21 @@ if (!class_exists("sp_admin")) {
 
                     <div id="post-body-content">
                         <div class="postbox component-settings">
-                            <h2><?php echo $currCompType->name ?> Component Settings</h2>
-                            <p>Description: <?php echo $currCompType->description ?></p>
                             <div id="the_settings">
+                            <?php if( isset( $currCompClass ) && class_exists( $currCompClass ) ): ?>
+                                <h2><?php echo $currCompType->name ?> Component Settings</h2>
+                                <p>Description: <?php echo $currCompType->description ?></p>
                                 <?php
-                                    if( class_exists( $currCompClass ) ){
-                                        $settings = $currCompClass::globalOptions();
-                                        if( $settings !== false ){
-                                            echo $settings;
-                                        }
+                                    $settings = $currCompClass::globalOptions();
+                                    if( $settings !== false ){
+                                        echo $settings;
                                     }
                                 ?>
+                                <?php else: ?>
+                                    <h2>SmartPost Settings</h2>
+                                    <p>SmartPost has a slew of features that make it more customizable.</p>
+                                    <p>On the right hand side bar title "SmartPost Components", you can navigate between the components and customize SmartPost further.</p>
+                                <?php endif; ?>
                             </div>
                             <div class="clear"></div>
                         </div><!-- end #category_settings -->

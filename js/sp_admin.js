@@ -456,7 +456,6 @@
 
             //Enable new template submission
             this.submitNewTemplate( templateForm );
-
         },
 
         /**

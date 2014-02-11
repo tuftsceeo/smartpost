@@ -153,6 +153,9 @@ input.requiredAndDefault{
 #the_settings{
     position: relative;
 }
+#the_settings h3{
+    cursor: inherit;
+}
 .deleteCat{
     cursor: pointer;
     position: absolute;
@@ -165,4 +168,15 @@ input.requiredAndDefault{
 }
 .component-settings{
     padding: 10px;
+}
+.sp-settings-item{
+    text-decoration: none;
+    margin: 10px;
+    clear: both;
+    display: block;
+}
+.sp-settings-item img{
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
 }

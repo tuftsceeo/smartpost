@@ -31,7 +31,7 @@
          */
         isEmpty: function(component){
             var compID = $(component).data( 'compid' );
-            return $(component).find('#sp_the_link-' + compID).text() == "Past a link here";
+            return $(component).find('#sp_the_link-' + compID).text() == "http://... paste a link here";
         },
 
         /**
@@ -164,7 +164,7 @@
                 return value;
             },
             {
-                placeholder: 'Paste a link here ...',
+                placeholder: 'http://... paste a link here',
                 onblur     : 'ignore',
                 submit     : 'Ok',
                 cssclass   : 'sp_the_link_editable',

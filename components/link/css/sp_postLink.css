@@ -3,17 +3,30 @@
  * Used in front-end posts
  */
  
-.sp_link_html, .sp_link_img, .sp_link_pdf, .sp_link_thumbs{
+.sp_link_html, .sp_link_img, .sp_link_pdf{
     float: left;
     max-width: 110px;
     max-height: 100px;
     position: relative;
     overflow: hidden;
-    margin: 10px;
+    padding: 10px;
+}
+.sp_link_thumbs{
+    float: left;
+    max-width: 110px;
+    position: relative;
+    overflow: hidden;
+    margin: 20px;
+}
+.sp-link-thumbs-results{
+    height: 100px;
 }
 .sp_link_thumbs img{
     max-width: 110px;
     max-height: 100px;
+}
+.thumbSelection{
+    text-align: center;
 }
 .emptyLinkThumb{
     float: left;
@@ -31,12 +44,16 @@
 }
 .sp_link_right_wrapper{
     overflow: hidden;
-    background: #F6F6F6;
-    border: 1px solid silver;
     padding: 10px;
 }
 .sp_the_link, .sp-link-view, .sp-link-desc-view{
     margin: 10px;
+}
+.sp_the_link:before{
+    float: left;
+}
+.sp_the_link:hover{
+    cursor: pointer;
 }
 .sp_the_link_editable input{
     display: inline !important;
@@ -45,6 +62,7 @@
     font-size: 15px;
     border-radius: 3px;
     margin-right: 70px !important;
+    max-width: 70%;
 }
 .sp_link_prev{
     height: 20px;
@@ -73,6 +91,9 @@
 }
 .sp_link_select_thumb{
     cursor: pointer;
+    font-size: 10px;
+    padding: 3px;
+    margin: 3px;
 }
 .sp-link-youtube-player{
     text-align: center;

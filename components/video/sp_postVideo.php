@@ -120,13 +120,13 @@ if (!class_exists("sp_postVideo")) {
             // If the video is done converting and we have the .mp4 file, render the <video> elem
             if( !$this->beingConverted && isset( $this->videoAttachmentIDs['mp4'] ) ){
                 $mp4_vid  = wp_get_attachment_url( $this->videoAttachmentIDs['mp4'] );
-                $html .= '<div id="playerContainer-' . $this->ID . '" style="width: ' . $width . 'px; height: ' . $height . 'px; margin-right: auto; margin-left: auto;">';
+                $html .= '<div id="playerContainer-' . $this->ID . '" style="width: ' . $width . 'px; max-width: 100%; margin-right: auto; margin-left: auto;">';
                     $html .= '<video class="wp-video-shortcode sp-video-player" width="' . $width . '" height="' . $height . '" preload="metadata" controls>';
                         $html .= '<source type="video/mp4" src="' . $mp4_vid . '">';
                     $html .= '</video>';
                 $html .= '</div>';
             }else if( $this->videoAttachmentIDs['mov'] ){ // Otherwise just render the original
-                $html .= '<div id="playerContainer-' . $this->ID . '" style="width: ' . $width . 'px; height: ' . $height . 'px; margin-right: auto; margin-left: auto;">';
+                $html .= '<div id="playerContainer-' . $this->ID . '" style="width: ' . $width . 'px; max-width: 100%; margin-right: auto; margin-left: auto;">';
                     $html .= '<video class="wp-video-shortcode sp-video-player" width="' . $width . '" height="' . $height . '" preload="metadata" controls>';
                         $html .= '<source src="' . wp_get_attachment_url( $this->videoAttachmentIDs['mov'] ) . '" type="video/mp4">';
                     $html .= '</video>';

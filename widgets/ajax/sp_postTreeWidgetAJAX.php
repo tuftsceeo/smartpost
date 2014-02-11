@@ -15,12 +15,14 @@ if (!class_exists("sp_postTreeWidgetAJAX")) {
          * @param $displayCats
          */
         private static function hideNodes(&$catTree, $displayCats){
-            foreach($catTree as $key => $node){
-                if( in_array($node->catID, $displayCats) ){
-                    unset($catTree[$key]);
-                }else{
-                    if( !empty($node->children) ){
-                        self::hideNodes($node->children, $displayCats);
+            if( is_array( $catTree ) && is_array( $displayCats ) ){
+                foreach($catTree as $key => $node){
+                    if( in_array($node->catID, $displayCats) ){
+                        unset($catTree[$key]);
+                    }else{
+                        if( !empty($node->children) ){
+                            self::hideNodes($node->children, $displayCats);
+                        }
                     }
                 }
             }

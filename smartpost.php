@@ -116,7 +116,7 @@ if ( !class_exists("smartpost") ){
          */
         static function enqueueCSS(){
             wp_register_style( 'jquery-ui-theme', plugins_url('/css/jquery-ui-theme/jquery-ui-1.10.3.custom.css', __FILE__));
-            wp_register_style( 'jquery-dynatree-css', plugins_url('js/dynatree/skin-vista/ui.dynatree.css', __FILE__) );
+            wp_register_style( 'jquery-dynatree-css', plugins_url('js/dynatree/skin/ui.dynatree.css', __FILE__) );
             wp_register_style( 'tooltipster-css', plugins_url('js/tooltipster/css/tooltipster.css', __FILE__) );
             wp_register_style( 'smartpost-css', plugins_url('css/smartpost.css', __FILE__) );
 
@@ -200,4 +200,5 @@ if(isset($new_smartpost)){
     add_action('widgets_init', create_function('', 'return register_widget("sp_postWidget");'));
     add_action('widgets_init', create_function('', 'return register_widget("sp_quickPostWidget");'));
     add_action('widgets_init', create_function('', 'return register_widget("sp_myPostsWidget");'));
+
 }

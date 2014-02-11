@@ -37,13 +37,17 @@ if (!class_exists("sp_postLink")) {
         function renderEditMode($value = ""){
             $html = '';
             $html .= '<div id="sp-link-content-' . $this->ID . '" class="sp-link-content">';
-                $html .= empty( $this->urlThumbs )? $this->renderThumb() : $this->renderThumbs();
+
+                if( !$this->youTube ){ // Special case for YouTube videos
+                    $html .= empty( $this->urlThumbs ) ? $this->renderThumb() : $this->renderThumbs();
+                }
+
                 $html .= '<div id="sp_link_right_wrapper-' . $this->ID . '" class="sp_link_right_wrapper">';
+                    $html .= $this->renderDesc();
                     $html .= $this->renderYouTubePlayer();
-                    $html .= '<div id="sp_the_link-' . $this->ID . '" data-compid="' . $this->ID . '" class="sp_the_link editable">';
+                    $html .= '<div id="sp_the_link-' . $this->ID . '" data-compid="' . $this->ID . '" class="sp_the_link editable sp_textIcon">';
                         $html .= $this->url;
                     $html .= '</div>';
-                    $html .= $this->renderDesc();
                 $html .= '</div><!-- .sp_link_right_wrapper -->';
                 $html .= '<div class="clear"></div>';
             $html .= '</div>';
@@ -57,11 +61,15 @@ if (!class_exists("sp_postLink")) {
             $html = '';
             $html .= '<div id="sp_link-' . $this->ID . '" class="sp_link">';
                 $html .= '<div id="thumbAndDesc-' . $this->ID . '" class="sp_link_content">';
-                    $html .= $this->renderThumb(false);
+
+                    if( !$this->youTube ){ // Special case for YouTube videos
+                        $html .= $this->renderThumb(false);
+                    }
+
                     $html .= '<div id="sp_link_right_wrapper-' . $this->ID . '" class="sp_link_right_wrapper">';
+                        $html .= $this->renderDesc(false);
                         $html .= $this->renderYouTubePlayer();
                         $html .= '<a href="' . $this->url .'" target="_new" class="sp-link-view">' . $this->url . '</a>';
-                        $html .= $this->renderDesc(false);
                     $html .= '</div><!-- .sp_link_desc -->';
                     $html .= '<div class="clear"></div>';
                 $html .= '</div>';
@@ -85,19 +93,12 @@ if (!class_exists("sp_postLink")) {
         function renderThumb( $editMode = true ){
             $html = "";
             $img = wp_get_attachment_image($this->urlThumb, null, false);
-            if( $img ){
-
+            if( $img && !$this->youTube ){
                 $html .= '<div id="sp_link_thumb-' . $this->ID . '" data-compid="' . $this->ID . '" class="sp_link_' . $this->urlType . '">';
                     $html .= '<a href="' . $this->url . '" class="sp_link_thumb_link fancybox">';
                         $html .= $img;
                     $html .=	'</a>';
                     $html .= '<div class="clear"></div>';
-                $html .= '</div>';
-
-            }elseif( empty($img) && !empty( $this->url) && $editMode ){
-                $html .= '<div id="sp_link_thumb-' . $this->ID . '" data-compid="' . $this->ID . '" class="sp_link_' . $this->urlType . ' emptyLinkThumb">';
-                    $html .= '<p>No thumbnail available :(</p>';
-                $html .= '<input type="file" id="sp_link_browse-' . $this->ID . '" name="sp_link_browse-' . $this->ID . '" style="display: none" />';
                 $html .= '</div>';
             }
 
@@ -113,7 +114,7 @@ if (!class_exists("sp_postLink")) {
             if( !empty($this->urlThumbs) ){
 
                 $html .= '<div id="sp_link_thumbs-' . $this->ID . '" data-compid="' . $this->ID . '" class="sp_link_thumbs">';
-                    $html .= '<div id="thumb_results-' . $this->ID . '" data-compid="' . $this->ID . '" class="sp_link_' . $this->urlType . '">';
+                    $html .= '<div id="thumb_results-' . $this->ID . '" data-compid="' . $this->ID . '" class="sp-link-thumbs-results">';
                     $count = 0;
 
                     foreach($this->urlThumbs as $thumbID => $thumb){
@@ -124,6 +125,16 @@ if (!class_exists("sp_postLink")) {
                         $count++;
                     }
                     $html .= '</div><!-- end #thumb_results-' . $this->ID . ' -->';
+
+                $html .= '<div class="clear"></div>';
+
+                if( count($this->urlThumbs) > 1 ){
+                    $html .= '<div id="thumbSelection-' . $this->ID . '" class="thumbSelection">';
+                        $html .= '<span type="button" id="prevThumb-' . $this->ID . '" class="sp_link_prev"></span>';
+                        $html .= '<button type="button" id="selectThumb-' . $this->ID . '" data-compid="' . $this->ID . '" class="sp_link_select_thumb">Select thumb</button>';
+                        $html .= '<span type="button" id="nextThumb-' . $this->ID . '" class="sp_link_next"></span>';
+                    $html .= '</div>';
+                }
 
                 $html .= '<div class="clear"></div>';
                 $html .= '</div><!-- end #sp_link_thumbs-' . $this->ID . ' -->';
@@ -158,15 +169,6 @@ if (!class_exists("sp_postLink")) {
                 $html .= '<div id="sp_link_desc-' . $this->ID . '" class="sp-link-desc-view">';
                     $html .= $this->urlDesc;
                 $html .= '</div> <!-- end .sp_link_desc -->';
-            }
-
-            // This should technically be under renderThumbs();
-            if( count($this->urlThumbs) > 1 && !$this->youTube ){
-                $html .= '<div id="thumbSelection-' . $this->ID . '" class="thumbSelection">';
-                $html .= '<span type="button" id="prevThumb-' . $this->ID . '" class="sp_link_prev"></span>';
-                $html .= '<span type="button" id="nextThumb-' . $this->ID . '" class="sp_link_next"></span>';
-                $html .= '<button type="button" id="selectThumb-' . $this->ID . '" data-compid="' . $this->ID . '" class="sp_link_select_thumb">Select thumb</button>';
-                $html .= '</div>';
             }
 
             return $html;

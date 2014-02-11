@@ -166,21 +166,24 @@ if (!class_exists("sp_postComponent")) {
          */
         function spShortCodeComponent($atts, $content = "", $tag){
             global $post;
-            if(sp_post::is_sp_post($post->ID)){
+            if( sp_post::is_sp_post( $post->ID ) ){
+
                 extract( shortcode_atts( array(
                     'id' => 0,
                 ), $atts ) );
+
                 if($id > 0){
                     $type = self::getCompTypeFromID($id);
-                    if(!empty($type)){
+                    if( !empty($type) ){
                         $class = 'sp_post' . $type;
-                        $postComponent = new $class($id);
-                        $content =	$postComponent->render();
+                        if( class_exists( $class ) ){
+                            $postComponent = new $class($id);
+                            $content =	$postComponent->render();
+                        }
                     }else{
                         $content = "";
                     }
                 }
-
             }
             return $content;
         }
@@ -219,22 +222,24 @@ if (!class_exists("sp_postComponent")) {
             require_once(ABSPATH . 'wp-admin/includes/post.php');
             $isLocked = (bool) wp_check_post_lock( $this->postID );
 
-            $html = '';
-
             // Return preview mode if we're listing posts
             if( !is_single() ){
                 if( !$this->isEmpty() ){
-                    $html .= '<div id="comp-' .  $this->ID . '" class="sp_component">';
-                    $html .= $this->renderPreview() . ' ';
-                    $html .= '<div class="clear"></div>';
-                    $html .= '</div><!-- end #comp-' . $this->ID .' -->';
+                    $html = $this->renderPreview() . ' ';
+                }
+                return $html;
+            }
+
+            if( is_search() ){
+                if( !$this->isEmpty() ){
+                    $html = $this->renderViewMode() . ' ';
                 }
                 return $html;
             }
 
             // Return edit mode component if we're an admin or an owner
             if( ( ( $canEdit &&  $owner) ||  $admin ) && !$isLocked && $editMode ){
-                $html .= '<div id="comp-' . $this->ID . '" data-compid="' . $this->ID . '" data-required="' . $this->isRequired() . '" data-catcompid="' . $this->catCompID . '" data-typeid="' . $this->typeID . '" class="sp_component' . ( ($this->isRequired() && $this->lastOne() && $this->isEmpty() ) ?  ' requiredComponent' : '') . '">';
+                $html = '<div id="comp-' . $this->ID . '" data-compid="' . $this->ID . '" data-required="' . $this->isRequired() . '" data-catcompid="' . $this->catCompID . '" data-typeid="' . $this->typeID . '" class="sp_component' . ( ($this->isRequired() && $this->lastOne() && $this->isEmpty() ) ?  ' requiredComponent' : '') . '">';
                 $html .= $this->renderCompTitle($owner);
                 $html .= '<span id="del" data-compid="' . $this->ID . '" class="sp_delete sp_xButton" title="Delete Component"></span>';
                 $html .= '<div class="componentHandle tooltip" title="Drag up or down"><div class="theHandle"></div></div>';
@@ -246,7 +251,7 @@ if (!class_exists("sp_postComponent")) {
             }else{ // Otherwise return viewMode
 
                 if( !$this->isEmpty() ){
-                    $html .= '<div id="comp-' .  $this->ID . '" class="sp_component">';
+                    $html = '<div id="comp-' .  $this->ID . '" class="sp_component">';
                     $html .= $this->renderCompTitle();
                     $html .= $this->renderViewMode();
                     $html .= '<div class="clear"></div>';

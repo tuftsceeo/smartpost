@@ -15,6 +15,7 @@ if (!class_exists("sp_postAttachmentsAJAX")) {
 		}
 		
 		function saveAttachmentsDescAJAX(){
+
             $nonce = $_POST['nonce'];
             if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 header("HTTP/1.0 403 Security Check.");
@@ -22,30 +23,29 @@ if (!class_exists("sp_postAttachmentsAJAX")) {
             }
 
             if(!class_exists('sp_postAttachments')){
-                    header("HTTP/1.0 409 Could not instantiate sp_postAttachments class.");
-                    echo json_encode(array('error' => 'Could not save link.'));
+                header("HTTP/1.0 409 Could not instantiate sp_postAttachments class.");
+                echo json_encode(array('error' => 'Could not save link.'));
             }
 
-            if( empty($_POST['compID']) ){
+            if( empty($_POST['compid']) ){
                 header("HTTP/1.0 409 Could find component ID to udpate.");
                 exit;
             }
 
-            $compID = (int) $_POST['compID'];
-            $attachmentID = (int)  $_POST['attachmentID'];
-            $desc = (string) stripslashes_deep($_POST['desc']);
+            $compID = (int) $_POST['compid'];
+            $desc = (string) stripslashes_deep( $_POST['content'] );
             $attachmentsComponent = new sp_postAttachments($compID);
 
             if( is_wp_error($attachmentsComponent->errors) ){
                 header( "HTTP/1.0 409 " . $attachmentsComponent->errors->get_error_message() );
             }else{
-                $success = $attachmentsComponent->setAttachmentDescription($desc, $attachmentID);
+                $attachmentsComponent->description = $desc;
+                $success = $attachmentsComponent->update();
                 if($success === false){
                     header("HTTP/1.0 409 Could not save link description.");
                 }else{
                     echo json_encode(array('success' => true));
                 }
-
             }
             exit;
 		}		
@@ -74,20 +74,28 @@ if (!class_exists("sp_postAttachmentsAJAX")) {
 				
             $id = (int) $_POST['attachmentID'];
             $compID = (int) $_POST['compID'];
-            $attachmentsComponent = new sp_postAttachments($compID);
-            $postThumbID   = get_post_thumbnail_id($attachmentsComponent->getPostID());
-            $attachmentIDs = $attachmentsComponent->getAttachments();
-				
-            //Delete the attachment
+            $attachmentsComponent = new sp_postAttachments( $compID );
+
+            if( is_wp_error( $attachmentsComponent->errors ) ){
+                header( 'HTTP/1.0 409 Error: ' . $attachmentsComponent->errors->get_error_message() );
+                exit;
+            }
+
+            // Delete the attachment
             wp_delete_attachment( $id, true );
-            $idKey = array_search($id, $attachmentIDs);
 
-            if( !empty($idKey) )
-                    unset( $attachmentIDs[$idKey] );
+            if( !empty( $attachmentsComponent->attachmentIDs ) ){
+                $idKey = array_search( $id, $attachmentsComponent->attachmentIDs );
+                if( $idKey !== false )
+                    unset( $attachmentsComponent->attachmentIDs[$idKey] );
 
-            $success = $attachmentsComponent->setAttachmentIDs( $attachmentIDs );
-            if( $success === false ){
-                header("HTTP/1.0 409 Could not successfully set attachment ID.");
+                $success = $attachmentsComponent->update();
+                if( $success === false ){
+                    header("HTTP/1.0 409 Could not successfully set attachment ID.");
+                    exit;
+                }
+            }else{
+                header( 'HTTP/1.0 409 Error: attachment ID "' . $id . '" could not be found!' );
                 exit;
             }
 

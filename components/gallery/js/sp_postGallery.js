@@ -81,7 +81,6 @@
                     {title : "gif files", extensions : "gif, GIF"}
                 ],
                 init: {
-
                     FilesAdded: function(up, files) {
                         up.start();
                         $('#sp-gallery-progress-' + compID).show();
@@ -95,12 +94,10 @@
                             return 'Warning: A file is being uploaded. If you interrupt file upload you will have to restart the upload.';
                         };
                     },
-
                     UploadProgress: function(up, file) {
                         $('#sp-gallery-progress-' + compID).css('width', file.percent + '%');
                         $('#sp-gallery-progress-msg-' + compID).html('<p><img src="' + SP_IMAGE_PATH + '/loading.gif" /> Uploading "' + file.name + '"… ' + file.percent + '%, ' + parseInt(up.total.bytesPerSec/1024) +'Kb/s</p>');
                     },
-
                     Error: function(up, err) {
                         var out = '';
                         for (var i in err) {
@@ -108,7 +105,6 @@
                         }
                         alert( out );
                     },
-
                     FileUploaded: function(up, files, response) {
                         if(response){
                             $('#sp-gallery-progress-msg-' + compID).html('');

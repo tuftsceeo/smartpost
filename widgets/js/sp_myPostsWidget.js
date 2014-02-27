@@ -6,9 +6,13 @@
     sp_widgets.sp_myPostsWidget = {
         deletePost: function(postID, postLbl){
             $.ajax({
-                url				  : SP_AJAX_URL,
-                type     : 'POST',
-                data			  : {action: 'deletePostAJAX', nonce: SP_NONCE, postID: postID},
+                url	 : SP_AJAX_URL,
+                type : 'POST',
+                data  : {
+                    action: 'deletePostAJAX',
+                    nonce: SP_NONCE,
+                    postID: postID
+                },
                 dataType : 'html',
                 success  : function(response, statusText, jqXHR){
                     if(postLbl.attr('data-status') == 'published'){
@@ -36,14 +40,14 @@
             })
         },
         deleteButtonClick: function(deleteButton){
-            var thisObj = this;
+            var self = this;
             deleteButton.click(function(){
                 var deletePost = confirm('Are you sure you want to delete this post and all of it\'s content?');
                 if(deletePost){
                     var postID = $(this).attr('data-postid');
                     var postLbl = $(this).parent();
                     $(this).parent().html('<img src="' + SP_IMAGE_PATH + '/loading.gif" /> Deleting post...');
-                    thisObj.deletePost(postID, postLbl);
+                    self.deletePost(postID, postLbl);
                 }
             })
         },

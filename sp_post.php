@@ -198,6 +198,7 @@ if (!class_exists("sp_post")) {
          */
         function save(){
             $postComponents = $this->components;
+            $shortCodes = '';
             foreach($postComponents as $postComponent){
                 $compID = $postComponent->getID();
                 $shortCodes .= '[sp_component id="' . $compID . '"]';
@@ -312,10 +313,11 @@ if (!class_exists("sp_post")) {
          * @return string        The content after filtering
          */
         function renderPost($content){
+            global $wp_query;
             global $post;
             global $current_user;
 
-            if(self::is_sp_post($post->ID)){
+            if( self::is_sp_post($post->ID) ){
                 $owner = ($current_user->ID == $post->post_author);
                 $admin = current_user_can('administrator');
                 $sp_post = new sp_post($post->ID, true);
@@ -359,12 +361,12 @@ if (!class_exists("sp_post")) {
                     $content .= '<div class="clear"></div>';
                 }
 
-                if( ($post->post_status != 'draft') && is_single()){
+                if( is_single() ){
                     $content .= $sp_post->renderResponsePosts();
                     $content = do_shortcode($content);
                 }
 
-                if( !is_singular() || is_home() || is_search() ){
+                if( !is_singular() || is_home() ){
                     // load the components
                     $postComponents = $sp_post->getComponents();
                     $content .= '<div class="clear"></div>';

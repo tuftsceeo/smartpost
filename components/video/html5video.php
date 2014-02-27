@@ -72,19 +72,49 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && !is_wp_error( $sp_ffmpeg_path ) ){
     }
 
     /**
-     *
+     * Get the correct orientation of the quicktime video if it exists
+     * @todo Check if ffprobe and grep are callable on the operating system
+     */
+    $rotation = exec( $sp_ffmpeg_path . 'ffprobe -v quiet -show_streams ' . $ARGS['VID_FILE'] . ' | grep -o "rotate=[-]\?[0-9]\+" | grep -o "[-]\?[0-9]\+"' );
+    $rotationFilter = '';
+    if( !empty($rotation) ){
+        switch( $rotation ){
+            case '-270':
+                $rotationFilter = ', transpose=2, transpose=2, transpose=2';
+                break;
+            case '270':
+                $rotationFilter = ', transpose=1, transpose=1, transpose=1';
+                break;
+            case '-180':
+                $rotationFilter = ', transpose=2, transpose=2';
+                break;
+            case '180':
+                $rotationFilter = ', transpose=1, transpose=1';
+                break;
+            case '-90':
+                $rotationFilter = ', transpose=2';
+                break;
+            case '90':
+                $rotationFilter = ', transpose=1';
+                break;
+            default:
+                $rotationFilter = '';
+                break;
+        }
+    }
+
+    /**
      * -q:v - Use video quality 2 (where 0 is equivalent to input video, and 31 is worst quality).
      * -vf  - Scaling and padding for videos that are not in 16:9 ratios
      */
-
-    $filter = '"scale=iw*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih):ih*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih), pad=' . $ARGS['WIDTH'] . ':' . $ARGS['HEIGHT'] . ':(' . $ARGS['WIDTH'] . '-iw*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih))/2:(' . $ARGS['HEIGHT'] . '-ih*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih))/2"';
+    $filter = '"scale=iw*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih):ih*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih), pad=' . $ARGS['WIDTH'] . ':' . $ARGS['HEIGHT'] . ':(' . $ARGS['WIDTH'] . '-iw*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih))/2:(' . $ARGS['HEIGHT'] . '-ih*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih))/2' . $rotationFilter .'"';
     system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -qscale 2 -filter:v ' . $filter . ' ' . $filename . '.mp4' ); // .mp4 conversion
-    system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -f image2 -vframes 1 ' . $filename  .'.png'); // Video thumb creation
 
     $uploads = wp_upload_dir();
 
-    // Create a .mp4 attachment
+    // Create a .mp4 attachment and a .png file based off the .mp4 file in case it got rotated
     if( file_exists( $mp4_filename ) ){
+        system( $sp_ffmpeg_path . 'ffmpeg -i ' . $mp4_filename . ' -f image2 -vframes 1 ' . $filename  .'.png'); // Video thumb creation
         $videoComponent->videoAttachmentIDs['mp4'] = sp_core::create_attachment( $mp4_filename, $ARGS['POST_ID'], $mp4_filename, $ARGS['AUTH_ID'] );
     }else{
         $videoComponent->errors['mp4'] = 'Could not generate ' . $mp4_filename . '!' . PHP_EOL;

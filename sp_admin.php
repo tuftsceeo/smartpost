@@ -94,22 +94,26 @@ if (!class_exists("sp_admin")) {
         function listCatComponents($sp_category){
             $closed_meta_boxes = get_user_option( 'closedpostboxes_toplevel_page_smartpost' );
             $catComponents     = $sp_category->getComponents();
-            if(!empty($catComponents)){
+            if( !empty($catComponents) ){
                 foreach($catComponents as $component){
                     $component->render();
 
                     //handle meta box toggling
+                    /*
                     $compElemID = $component->getCompType() . '-' . $component->getID();
                     $key = array_search($compElemID, $closed_meta_boxes);
                     if($key !== false){
                         unset($closed_meta_boxes[$key]);
                     }
+                    */
                 }
                 do_meta_boxes('toplevel_page_smartpost', 'normal', null);
 
+                /*
                 foreach($closed_meta_boxes as $box_id){
                     echo '<input type="text" class="postbox closed hide" id="' . $box_id . '" />';
                 }
+                */
             }else{
                 echo '<div id="normal-sortables" class="meta-box-sortables ui-sortable"></div>';
             }
@@ -401,6 +405,7 @@ if (!class_exists("sp_admin")) {
                         ?>
                     </div><!-- end #post-body -->
                 </div><!-- end #poststuff -->
+            <div id="sp-version">SmartPost <?php echo SP_VERSION ?></div>
         <?php
         }
 
@@ -461,6 +466,7 @@ if (!class_exists("sp_admin")) {
 
                 </div><!-- end #post-body -->
             </div><!-- end #poststuff -->
+            <div id="sp-version">SmartPost <?php echo SP_VERSION ?></div>
         <?php
         }
     }

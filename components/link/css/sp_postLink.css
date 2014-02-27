@@ -51,6 +51,10 @@
 }
 .sp_the_link:before{
     float: left;
+    visibility: hidden;
+}
+.sp_the_link:hover:before{
+    visibility: visible;
 }
 .sp_the_link:hover{
     cursor: pointer;

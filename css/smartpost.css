@@ -56,3 +56,19 @@
 .sp_textIcon:hover:before{
     color: #21759b;
 }
+
+.sp-view-icon:before{
+    content: '\f177';
+    display: block!important;
+    font: 400 16px/1 dashicons;
+    speak: none;
+    height: 20px;
+    margin: 2px 0;
+    text-align: center;
+    width: 20px;
+    -webkit-font-smoothing: antialiased!important;
+    color: #bbb;
+}
+.sp-view-icon:hover:before{
+    color: #21759b;
+}

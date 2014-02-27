@@ -2,11 +2,7 @@
 /*
 Plugin Name: SmartPost
 Plugin URI: http://ceeo.tufts.edu/
-Description: SmartPost as a dynamic templating and authoring tool that brings a lot of the features
-             of the WordPress dashboard to the front end. SmartPost allows you to create category
-             specific post templates that are then used by users on the front end to generates posts
-             and content. Templates are broken down by post components such as pictures galleries,
-             videos, and content blocks.
+Description: SmartPost as a dynamic templating and authoring tool that brings a lot of the features of the WordPress dashboard to the front end. SmartPost allows you to create category specific post templates that are then used by users on the front end to generates posts and content. Templates are broken down by post components such as pictures galleries, videos, and content blocks.
 Version: 2.0
 Author: Tufts CEEO
 Author URI: http://www.rafilabs.com/smartpost
@@ -18,6 +14,7 @@ require_once( ABSPATH . 'wp-includes/pluggable.php' );
 define("SP_PLUGIN_NAME", "SmartPost");
 define("SP_IMAGE_PATH", plugins_url('/images', __FILE__));
 define("SP_PLUGIN_PATH", plugins_url('/', __FILE__));
+define("SP_VERSION", "2.1");
 
 if ( !class_exists("smartpost") ){
 

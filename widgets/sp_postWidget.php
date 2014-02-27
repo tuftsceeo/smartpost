@@ -60,18 +60,16 @@ class sp_postWidget extends WP_Widget {
                 <div id="sp-widget-post-settings-<? echo $this->number ?>" class="sp-widget-post-settings sp-widget">
                     <?php echo $before_title . $title . $after_title ?>
                     <?php if( $editMode ): ?>
-                        <p><a href="<?php echo get_permalink( $post->ID ) ?>">Go back to viewing mode</a></p>
+                        <p><a href="<?php echo get_permalink( $post->ID ) ?>"><button type="button" class="button sp-edit-post sp-view-icon">Go back to view mode</button></a></p>
                         <?php self::postStatusOptions(); ?>
                         <?php self::renderCompBlocks(); ?>
                     <?php else: ?>
-                        <p><a href="<?php echo get_permalink( $post->ID ) ?>/?edit_mode=true">Edit this post</a></p>
+                        <p><a href="<?php echo get_permalink( $post->ID ) ?>/?edit_mode=true"><button type="button" class="button sp-edit-post sp_textIcon">Edit this post</button></a></p>
                     <?php endif; ?>
                 </div><!-- end .sp-widget-post-settings -->
                 <?php echo $after_widget ?>
 
                 <?php
-            }else{
-
             }
         }
     }
@@ -86,6 +84,11 @@ class sp_postWidget extends WP_Widget {
             <p> Draft Options: </p>
             <button type="button" id="sp_publish_post" name="sp_publish_post" class="sp_qp_button">Publish Draft</button>
             <button type="button" id="sp_cancel_draft" name="sp_cancel_draft" class="sp_qp_button">Delete Draft</button>
+        <?php endif; ?>
+
+        <?php if( $post->post_status == 'publish' ): ?>
+            <p class="sp-delete-post sp_trashIcon" data-postid="<?php echo $post->ID ?>">Move to trash</p>
+            <input type="hidden" id="sp-delete-redirect" name="sp-delete-redirect" value="<?php bloginfo( 'url' ) ?>" />
         <?php endif; ?>
         <?php
     }

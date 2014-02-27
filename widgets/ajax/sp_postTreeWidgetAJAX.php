@@ -39,8 +39,9 @@ if (!class_exists("sp_postTreeWidgetAJAX")) {
 
             $widgetId = (int) $_POST['widgetId'];
 
-            $args = array( 'orderby' => 'name','order' => 'ASC', 'hide_empty' => 0 );
-            $catTree = sp_postTreeWidget::buildCatDynaTree( $args );
+            $args = array( 'orderby' => 'name','order' => 'ASC', 'hide_empty' => 0, '' );
+            $postArgs = array( 'posts_per_page' => -1, 'numberposts' => -1 );
+            $catTree = sp_postTreeWidget::buildCatDynaTree( $args, $postArgs );
 
             // Get Tree Settings
             $sp_treeWidgets = get_option( 'widget_sp_posttreewidget' );

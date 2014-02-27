@@ -281,7 +281,7 @@ if (!class_exists("sp_catComponent")) {
             }
             $tableName = $wpdb->prefix . 'sp_postComponents';
             $sql = "SELECT COUNT(*) FROM $tableName where postID = $postID AND catCompID = $compID";
-            return $wpdb->get_var($wpdb->prepare($sql));
+            return $wpdb->get_var( $sql );
         }
 
         /**************************************

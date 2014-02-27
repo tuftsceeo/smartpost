@@ -135,8 +135,21 @@ if (!class_exists("sp_postPhotoAJAX")) {
                     exit;
                 }
 
+
+
+                $name = '';
+                if ( isset( $_REQUEST["name"] ) ) {
+                    $name = $_REQUEST["name"];
+                } elseif ( !empty( $_FILES ) ) {
+                    $name = $_FILES["sp-photo-upload"]["name"];
+                }
+
                 $postID = $photoComponent->getPostID();
-                $id = sp_core::create_attachment( $file, $postID );
+
+                // Issue #38: Before creating the image attachment, account for orientation
+                sp_core::fixImageOrientation( $file );
+
+                $id = sp_core::create_attachment( $file, $postID, $name );
 
                 $oldPhotoID = $photoComponent->photoID;
                 wp_delete_attachment( $oldPhotoID ); // Replace old attachment

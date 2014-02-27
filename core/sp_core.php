@@ -127,7 +127,7 @@ if (!class_exists("sp_core")) {
         /**
          * Handles chunked AJAX uploads (using plupload plugin).
          * @param $file_data_id
-         * @return bool|mixed - The filepath of the uploaded file, otherwise false on failure.
+         * @return bool|mixed - The file path of the whole file (when chunks = 0), otherwise false (when chunks > 0).
          */
         static function chunked_plupload($file_data_id){
 
@@ -191,31 +191,78 @@ if (!class_exists("sp_core")) {
             }
         }
 
-        /* Returns true if the extension of $filename is in
+        /**
+         * Returns true if the extension of $filename is in
          * $allowedExtensions
-         *
-         * @param $filename - string of filename
-         * @param $allowedExtension - array of extension strings
+         * @param $filename
+         * @param $allowedExtensions
+         * @return bool
          */
         static function validateExtension($filename, $allowedExtensions){
             $path_parts  = pathinfo($filename);
             return in_array($path_parts['extension'], $allowedExtensions);
         }
 
-        /* Returns true if uploaded file is a jpg, png, or jpeg,
-         * otherwise false.
-         *
-         * @param &$FILES - the uploaded file
-         * @param $input_id - id of <input> field
+        /**
+         * Returns true if filename is a jpeg, png, or gif, otherwise false.
+         * @param $filename
+         * @return bool
          */
-
-        static function validImageUpload(&$FILES, $input_id){
-            $valid_extensions = array('jpg', 'jpeg', 'png');
-            $filename = $FILES[$input_id]['name'];
+        static function validImageUpload($filename){
+            $valid_extensions = array('jpg', 'jpeg', 'png', 'gif');
             $validExt = self::validateExtension($filename, $valid_extensions);
-            $isImage  = getimagesize($FILES[$input_id]['tmp_name']);
-
+            $isImage  = getimagesize($filename);
             return is_array($isImage) && $validExt;
+        }
+
+        /**
+         * @see http://www.mertyazicioglu.com/image-rotation-fixer/
+         * @param $img_path - Full path to the image
+         * @return array|WP_Error
+         */
+        static function fixImageOrientation( $img_path ) {
+
+            if( !is_callable( 'exif_read_data' ) ){
+                return new WP_Error( 'broke', ( 'exif_read_data() is not callable.' ) );
+            }
+
+            if( !is_callable( 'wp_get_image_editor' ) ){
+                return new WP_Error( 'broke', ( 'wp_get_image_editor() is not callable.' ) );
+            }
+
+            // Get a handle on the image file
+            $img = wp_get_image_editor( $img_path );
+
+            if( is_wp_error( $img ) ){
+                return $img;
+            }
+
+            // Read in EXIF data
+            $exif = @exif_read_data( $img_path );
+            if ( isset( $exif ) && isset( $exif['Orientation'] ) && $exif['Orientation'] > 1 ) {
+
+                // Get the correct orientation
+                switch ( $exif['Orientation'] ) {
+                    case 3:
+                        $orientation = -180;
+                        break;
+                    case 6:
+                        $orientation = -90;
+                        break;
+                    case 8:
+                    case 9:
+                        $orientation = -270;
+                        break;
+                    default:
+                        $orientation = 0;
+                        break;
+                }
+
+                $img->rotate( $orientation );
+                return $img->save( $img_path );
+            }else{
+                return new WP_Error( 'broke', ( 'Could not find any EXIF data.' ) );
+            }
         }
 
         /* Returns true if image size is 16x16 pixels

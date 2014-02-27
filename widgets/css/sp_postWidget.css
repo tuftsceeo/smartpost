@@ -17,3 +17,10 @@
 div.catComponentWidget:hover{
     background-color: #F1F1F1;
 }
+.sp-edit-post{
+    font-size: 15px;
+}
+.sp-edit-post:before{
+    float: left;
+    color: inherit;
+}

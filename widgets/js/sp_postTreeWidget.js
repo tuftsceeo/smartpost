@@ -24,6 +24,7 @@
                         widgetId: widgetId
                     }
                 },
+                autoFocus: false,
                 generateIds: true,
                 persist: false,
                 clickFolderMode: 1,

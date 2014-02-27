@@ -8,7 +8,7 @@ if (!class_exists("sp_catVideo")) {
      *
      * @see sp_catComponent
      */
-    define( 'DEBUG_SP_VIDEO', false); // Set to true to debug the video component
+    define( 'DEBUG_SP_VIDEO', true); // Set to true to debug the video component
     define( 'SP_DEFAULT_VIDEO_PATH', '/usr/local/bin/' ); // Default path to begin our search for ffmpeg
     define( 'SP_DEFAULT_VIDEO_ENCODING', true); // Encode by default
     define( 'SP_DEFAULT_PLAYER_WIDTH', 560) ; // Default player width

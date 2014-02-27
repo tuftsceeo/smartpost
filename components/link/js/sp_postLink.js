@@ -143,7 +143,7 @@
                         self.rotateThumbs(compID);
                     }
                 },
-                error    : function(jqXHR, statusText, errorThrown){
+                error : function(jqXHR, statusText, errorThrown){
                     $(loading).remove();
                     if(smartpost.sp_postComponent)
                         smartpost.sp_postComponent.showError(errorThrown);
@@ -158,17 +158,19 @@
          */
         initLinkTextBox: function(linkElem){
             var self = this;
+
             $(linkElem).editable(function(value, settings){
-                var compID = $(this).data( 'compid' );
-                self.saveLink( value, compID );
+                var compID = $(this).data('compid');
+                var currUrl = $('#sp-link-url-' + compID).val();
+                if( value != currUrl ){
+                    self.saveLink( value, compID );
+                }
                 return value;
             },
             {
                 placeholder: 'http://... paste a link here',
-                onblur     : 'ignore',
-                submit     : 'Ok',
-                cssclass   : 'sp_the_link_editable',
-                cancel     : 'Cancel'
+                onblur     : 'submit',
+                cssclass   : 'sp_the_link_editable'
             });
         },
 

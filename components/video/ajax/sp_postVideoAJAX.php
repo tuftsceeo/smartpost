@@ -79,7 +79,7 @@ if (!class_exists("sp_postVideoAJAX")) {
 
         /**
          * Handles video uploads using chunking.
-         * @todo Abstract out chunk uploading to sp_core.php class
+         * @todo Do the conversion to mp4 and get rid of the original mov (?)
          */
         static function videoUploadAJAX(){
             $nonce = $_POST['nonce'];
@@ -108,67 +108,72 @@ if (!class_exists("sp_postVideoAJAX")) {
                 exit;
             }
 
-            $newFilePath = sp_core::chunked_plupload( "sp_videoUpload" );
+            $videoFilePath = sp_core::chunked_plupload( "sp_videoUpload" );
 
-            // Create a new attachment
-            $compID = (int) $_POST['compID'];
-            $videoComponent = new sp_postVideo($compID);
-            $postID = $videoComponent->getPostID();
+            if( file_exists( $videoFilePath ) ){
 
-            $vid_id = sp_core::create_attachment( $newFilePath, $postID );
+                // Create a new attachment of the .mov
+                $compID = (int) $_POST['compID'];
+                $videoComponent = new sp_postVideo($compID);
+                $postID = $videoComponent->getPostID();
 
-            if( !$vid_id ){
-                header( "http/1.0 409 " . $vid_id->get_error_message() );
-                die();
-            }
+                $vid_id = sp_core::create_attachment( $videoFilePath, $postID );
 
-            // Delete previous attachments if they exist
-            if( !empty($videoComponent->videoAttachmentIDs) ){
-                foreach($videoComponent->videoAttachmentIDs as $attach_id){
-                    if( $attach_id )
-                        wp_delete_attachment( $attach_id, true );
+                if( !$vid_id ){
+                    header( "http/1.0 409 " . $vid_id->get_error_message() );
+                    die();
                 }
-            }
 
-            // Update the component with at least the .mov in case something is up with converting..
-            $videoComponent->videoAttachmentIDs['mov'] = $vid_id;
-            $videoComponent->update();
+                // Delete previous attachments if they exist
+                if( !empty($videoComponent->videoAttachmentIDs) ){
+                    foreach($videoComponent->videoAttachmentIDs as $attach_id){
+                        if( $attach_id )
+                            wp_delete_attachment( $attach_id, true );
+                    }
+                }
 
-            $html5_encoding = (bool) get_site_option('sp_html5_encoding');
-            $sp_ffmpeg_path = get_site_option( 'sp_ffmpeg_path' );
-
-            if( $html5_encoding && !is_wp_error( $sp_ffmpeg_path ) ){
-
-                $videoComponent->beingConverted = true;
+                // Update the component with at least the .mov in case something is up with converting..
+                $videoComponent->videoAttachmentIDs['mov'] = $vid_id;
                 $videoComponent->update();
 
-                $script_path = dirname(dirname(__FILE__)) . '/html5video.php';
+                $html5_encoding = (bool) get_site_option('sp_html5_encoding');
+                $sp_ffmpeg_path = get_site_option( 'sp_ffmpeg_path' );
 
-                $script_args = array(
-                    'BASE_PATH' => ABSPATH,
-                    'POST_ID'   => $postID,
-                    'VID_FILE'  => $newFilePath,
-                    'COMP_ID'   => $compID,
-                    'AUTH_ID'   => get_current_user_id(),
-                    'MOV_ID'    => $vid_id,
-                    'WIDTH'     => get_site_option('sp_player_width'),
-                    'HEIGHT'    => get_site_option('sp_player_height'),
-                    'HTTP_HOST' => $_SERVER['HTTP_HOST'],
-                    'BLOG_ID'   => get_current_blog_id(),
-                    'IS_WPMU'   => is_multisite()
-                );
+                if( $html5_encoding && !is_wp_error( $sp_ffmpeg_path ) ){
 
-                if(DEBUG_SP_VIDEO){
-                    error_log( 'SCRIPT ARGS: ' . print_r($script_args, true) );
-                    exec('php ' . $script_path . ' ' . implode(' ', $script_args) . ' 2>&1', $output, $status);
-                    error_log( print_r($output, true) );
-                    error_log( print_r($status, true) );
-                }else{
-                    shell_exec('php ' . $script_path . ' ' . implode(' ', $script_args) . ' &> /dev/null &');
+                    $videoComponent->beingConverted = true;
+                    $videoComponent->update();
+
+                    $script_path = dirname(dirname(__FILE__)) . '/html5video.php';
+
+                    $script_args = array(
+                        'BASE_PATH' => ABSPATH,
+                        'POST_ID'   => $postID,
+                        'VID_FILE'  => $videoFilePath,
+                        'COMP_ID'   => $compID,
+                        'AUTH_ID'   => get_current_user_id(),
+                        'MOV_ID'    => $vid_id,
+                        'WIDTH'     => get_site_option('sp_player_width'),
+                        'HEIGHT'    => get_site_option('sp_player_height'),
+                        'HTTP_HOST' => $_SERVER['HTTP_HOST'],
+                        'BLOG_ID'   => get_current_blog_id(),
+                        'IS_WPMU'   => is_multisite()
+                    );
+
+                    if(DEBUG_SP_VIDEO){
+                        error_log( 'SCRIPT ARGS: ' . print_r($script_args, true) );
+                        exec('php ' . $script_path . ' ' . implode(' ', $script_args) . ' 2>&1', $output, $status);
+                        error_log( print_r($output, true) );
+                        error_log( print_r($status, true) );
+                    }else{
+                        shell_exec('php ' . $script_path . ' ' . implode(' ', $script_args) . ' &> /dev/null &');
+                    }
                 }
-            }
-            echo $videoComponent->renderPlayer();
+                echo $videoComponent->renderPlayer();
 
+            }else if( $videoFilePath !== false && !file_exists( $videoFilePath )  ){
+                header( "HTTP/1.0 409 There was an error with uploading the video. The video file could not be found." );
+            }
             exit;
         }
 

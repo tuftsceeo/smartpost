@@ -48,6 +48,7 @@ if (!class_exists("sp_postLink")) {
                     $html .= '<div id="sp_the_link-' . $this->ID . '" data-compid="' . $this->ID . '" class="sp_the_link editable sp_textIcon">';
                         $html .= $this->url;
                     $html .= '</div>';
+                    $html .= '<input type="hidden" id="sp-link-url-' . $this->ID . '" name="sp-link-url-' . $this->ID . '" value="' . $this->url . '">';
                 $html .= '</div><!-- .sp_link_right_wrapper -->';
                 $html .= '<div class="clear"></div>';
             $html .= '</div>';
@@ -250,7 +251,7 @@ if (!class_exists("sp_postLink")) {
             if( is_wp_error($success) ){
 
                 // Set the url even if we get an error, should still link to URL even if it fails test
-                $this->url     = $url;
+                $this->url = $url;
                 $this->urlDesc = $url;
                 $this->update();
                 return $success;
@@ -612,6 +613,16 @@ if (!class_exists("sp_postLink")) {
          */
         function removeThumb(){
             if( !empty($this->urlThumb) ){
+
+                // Remove the featured thumb if it's our thumbnail
+                error_log( get_post_thumbnail_id( $this->postID ) );
+                error_log( $this->urlThumb );
+
+                if( get_post_thumbnail_id( $this->postID ) == $this->urlThumb ){
+
+                    delete_post_thumbnail( $this->postID );
+                }
+
                 wp_delete_attachment($this->urlThumb, true);
             }
             $this->urlThumb = 0;

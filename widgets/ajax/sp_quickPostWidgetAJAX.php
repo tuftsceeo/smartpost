@@ -54,6 +54,7 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
             if( !empty( $postComps ) ){
                 global $wp_query;
                 $wp_query->is_single = true;
+                $_GET['edit_mode'] = true;
                 foreach( $postComps as $postComp ){
                     $html .= $postComp->render();
                 }

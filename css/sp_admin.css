@@ -180,3 +180,7 @@ input.requiredAndDefault{
     height: 16px;
     vertical-align: middle;
 }
+#sp-version{
+    clear: both;
+    text-align: right;
+}

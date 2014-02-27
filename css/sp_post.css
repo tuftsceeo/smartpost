@@ -36,3 +36,10 @@
 .sp-component-stack{
     border: 2px dashed #ededed;
 }
+.sp-delete-post:hover{
+    cursor: pointer;
+    color: red;
+}
+.sp-delete-post:before{
+    float: left;
+}

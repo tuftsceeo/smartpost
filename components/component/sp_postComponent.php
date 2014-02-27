@@ -162,26 +162,22 @@ if (!class_exists("sp_postComponent")) {
         }
 
         /**
-         * Hook for [sp_component id=$id typeid=$typeid] shortcode where $id is the post component ID
+         * Hook for [sp_component id=$id] shortcode where $id is the post component ID
          */
-        function spShortCodeComponent($atts, $content = "", $tag){
+        function spShortCodeComponent($atts, $content = ""){
             global $post;
             if( sp_post::is_sp_post( $post->ID ) ){
-
                 extract( shortcode_atts( array(
                     'id' => 0,
                 ), $atts ) );
 
                 if($id > 0){
+                    $content = "";
                     $type = self::getCompTypeFromID($id);
-                    if( !empty($type) ){
-                        $class = 'sp_post' . $type;
-                        if( class_exists( $class ) ){
-                            $postComponent = new $class($id);
-                            $content =	$postComponent->render();
-                        }
-                    }else{
-                        $content = "";
+                    $class = 'sp_post' . $type;
+                    if( class_exists( $class ) ){
+                        $postComponent = new $class($id);
+                        $content = $postComponent->render();
                     }
                 }
             }

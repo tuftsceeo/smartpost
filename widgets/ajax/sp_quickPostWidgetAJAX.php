@@ -82,11 +82,6 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
                     $html .= '</span> ';
                 }
                 $html .= '<div class="clear"></div>';
-            }else{
-                global $current_user;
-                $admin = current_user_can('administrator');
-                $html .= '<p> No components exist for this category! </p>';
-                $html .= $admin ? '<p> Add new components <a href="' . admin_url() . '?page=smartpost">here</a>.</p>' : '<p> Please contact your site admins for new components. </p>';
             }
 
             //Add the post ID

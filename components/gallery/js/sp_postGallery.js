@@ -99,11 +99,11 @@
                         $('#sp-gallery-progress-msg-' + compID).html('<p><img src="' + SP_IMAGE_PATH + '/loading.gif" /> Uploading "' + file.name + '"… ' + file.percent + '%, ' + parseInt(up.total.bytesPerSec/1024) +'Kb/s</p>');
                     },
                     Error: function(up, err) {
-                        var out = '';
-                        for (var i in err) {
-                            out += i + ": " + err[i] + "\n";
+                        var filetext = '';
+                        if( err.file.name ){
+                            filetext =  'File name: "' + err.file.name + '"';
                         }
-                        alert( out );
+                        smartpost.sp_postComponent.showError( err.message + ' ' + filetext );
                     },
                     FileUploaded: function(up, files, response) {
                         if(response){

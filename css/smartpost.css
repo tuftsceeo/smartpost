@@ -72,3 +72,22 @@
 .sp-view-icon:hover:before{
     color: #21759b;
 }
+
+.sp-settings-icon:before{
+    content: "\f111";
+    display: inline-block;
+    -webkit-font-smoothing: antialiased;
+    font-size: 20px;
+    line-height: 1;
+    font-family: "dashicons";
+    text-decoration: inherit;
+    font-weight: normal;
+    font-style: normal;
+    vertical-align: text-top;
+    -moz-transition: color .1s ease-in 0;
+    -webkit-transition: color .1s ease-in 0;
+    text-align: center;
+}
+.sp-settings-icon:hover:before{
+    color: #21759b;
+}

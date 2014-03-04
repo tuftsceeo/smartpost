@@ -103,11 +103,11 @@
                     },
 
                     Error: function(up, err) {
-                        var out = '';
-                        for (var i in err) {
-                            out += i + ": " + err[i] + "\n";
+                        var filetext = '';
+                        if( err.file.name ){
+                            filetext =  'File name: "' + err.file.name + '"';
                         }
-                       alert( out );
+                        smartpost.sp_postComponent.showError( err.message + ' ' + filetext );
                     },
 
                     FileUploaded: function(up, files, response) {

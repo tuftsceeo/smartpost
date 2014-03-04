@@ -48,6 +48,7 @@ if ( !class_exists("smartpost") ){
             self::initClasses(dirname(__FILE__) . "/widgets");
 
             sp_post::init();
+            sp_category::init();
             if( is_admin() ){
                 sp_admin::init();
             }

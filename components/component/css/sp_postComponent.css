@@ -60,6 +60,9 @@ div.sp_component:hover .componentHandle{
     float: right;
     cursor: pointer;
 }
+#clearErrors:before{
+    margin: 0px;
+}
 .componentPlaceholder{
     height: 100px;
     margin-bottom: 10px;

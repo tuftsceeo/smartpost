@@ -64,7 +64,7 @@ class sp_postWidget extends WP_Widget {
                         <?php self::postStatusOptions(); ?>
                         <?php self::renderCompBlocks(); ?>
                     <?php else: ?>
-                        <p><a href="<?php echo get_permalink( $post->ID ) ?>/?edit_mode=true"><button type="button" class="button sp-edit-post sp_textIcon">Edit this post</button></a></p>
+                        <p><a href="<?php echo get_permalink( $post->ID ) ?>?edit_mode=true"><button type="button" class="button sp-edit-post sp_textIcon">Edit this post</button></a></p>
                     <?php endif; ?>
                 </div><!-- end .sp-widget-post-settings -->
                 <?php echo $after_widget ?>

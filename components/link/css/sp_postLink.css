@@ -68,6 +68,9 @@
     margin-right: 70px !important;
     max-width: 70%;
 }
+.sp-link-placeholder{
+    color: #999;
+}
 .sp_link_prev{
     height: 20px;
     width: 20px;

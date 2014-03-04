@@ -105,7 +105,8 @@ class sp_postTreeWidget extends WP_Widget {
 
             // Get the posts of the category
             if( $postArgs !== false ){
-                $postArgs = array_merge( $postArgs, array( 'category' => $category->term_id ) );
+                $child_cats = (array) get_term_children($category->term_id, 'category');
+                $postArgs = array_merge( $postArgs, array( 'category' => $category->term_id, 'category__not_in' => array_merge( $child_cats ) ) );
                 $catPosts = self::buildPostTree( $postArgs );
             }
 

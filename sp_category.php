@@ -18,9 +18,7 @@ if (!class_exists("sp_category")) {
                 self::load($catID);
             }else{
                 if( !empty($title) ){
-                    $catID = wp_insert_category(array('cat_name'             => $title,
-                                                      'category_description' => $description),
-                                                true);
+                    $catID = wp_insert_category(array('cat_name' => $title, 'category_description' => $description), true);
                     if(is_wp_error($catID)){
                         $this->errors = $catID;
                     }else{
@@ -59,21 +57,18 @@ if (!class_exists("sp_category")) {
                     $this->catComponents = array();
                     $this->iconID		 = $sp_cat_icons[$catID];
 
-                    if( !empty($sp_responseCats) )
+                    if( !empty($sp_responseCats) ){
                         $this->responseCats  = $sp_responseCats[$this->ID];
+                    }
 
                     //load cat components
                     $sp_catComponentsTable = $wpdb->prefix . "sp_catComponents";
-                    $componentResults 	   = $wpdb->get_results(
-                        "SELECT * FROM $sp_catComponentsTable where catID = $catID order by compOrder ASC;");
-
+                    $componentResults 	   = $wpdb->get_results( "SELECT * FROM $sp_catComponentsTable where catID = $catID order by compOrder ASC;" );
                     if( !empty($componentResults) ){
                         foreach($componentResults as $componentRow){
-                            $type = 'sp_cat' . sp_core::getTypeName($componentRow->typeID);
-                            //if(class_exists($type)){
-                                $component = new $type($componentRow->id);
-                                array_push($this->catComponents, $component);
-                            //}
+                            $type = 'sp_cat' . sp_core::getTypeName( $componentRow->typeID );
+                            $component = new $type($componentRow->id);
+                            array_push($this->catComponents, $component);
                         }
                     }
                 }
@@ -86,7 +81,11 @@ if (!class_exists("sp_category")) {
          * Initializes scripts, actions, hooks, variables for the sp_category class.
          */
         function init(){
-            add_action('delete_category', array('sp_category', 'deleteCategory'));
+            require_once('ajax/sp_categoryAJAX.php');
+            if( class_exists( 'SP_Category_AJAX' ) ){
+                SP_Category_AJAX::init();
+            }
+            add_action( 'delete_category', array('sp_category', 'deleteCategory') );
         }
 
         /**

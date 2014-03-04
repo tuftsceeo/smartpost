@@ -45,7 +45,8 @@ if (!class_exists("sp_postLink")) {
                 $html .= '<div id="sp_link_right_wrapper-' . $this->ID . '" class="sp_link_right_wrapper">';
                     $html .= $this->renderDesc();
                     $html .= $this->renderYouTubePlayer();
-                    $html .= '<div id="sp_the_link-' . $this->ID . '" data-compid="' . $this->ID . '" class="sp_the_link editable sp_textIcon">';
+                    $placeholder = empty($this->url) ? 'sp-link-placeholder' : '';
+                    $html .= '<div id="sp_the_link-' . $this->ID . '" data-compid="' . $this->ID . '" class="sp_the_link editable sp_textIcon ' . $placeholder . '">';
                         $html .= $this->url;
                     $html .= '</div>';
                     $html .= '<input type="hidden" id="sp-link-url-' . $this->ID . '" name="sp-link-url-' . $this->ID . '" value="' . $this->url . '">';

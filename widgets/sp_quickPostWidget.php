@@ -44,9 +44,9 @@ class sp_quickPostWidget extends WP_Widget {
 
             if( !$catMode && empty($instance['displayCats']) ){
                 if( current_user_can( 'edit_dashboard' ) ){
-                    echo 'This SmartPost widget is not configured! Go to the <a href="' . admin_url('widgets.php') . '"> widgets page </a> to configure it!.';
+                    $html = 'This SmartPost widget is not configured! Go to the <a href="' . admin_url('widgets.php') . '"> widgets page </a> to configure it!.';
                 }
-                return;
+                return $html;
             }
 
             $renderButton = false; //true if only one category needs to be displayed
@@ -76,9 +76,9 @@ class sp_quickPostWidget extends WP_Widget {
             //Display a button if it's only one category that's selected or we are in 'category mode'
             if ( $catMode || count( $instance['displayCats'] ) === 1 ) {
                 $renderButton = true;
-                $catID        = $instance['displayCats'][0];
-                $sp_cat       = new sp_category(null, null, $catID);
-                $catIcon      = wp_get_attachment_image($sp_cat->getIconID());
+                $catID = $instance['displayCats'][0];
+                $sp_cat  = new sp_category(null, null, $catID);
+                $catIcon = wp_get_attachment_image($sp_cat->getIconID());
                 $postButtonOpen  = '<button type="button" id="sp_addPostButton" class="sp_qp_button" data-catID="' . $catID . '">';
                 $postButtonTxt   = $catIcon . ' Submit a ' . ( $responseQP ? '' : $sp_cat->getTitle() );
                 $postButtonClose = '</button>';
@@ -100,19 +100,16 @@ class sp_quickPostWidget extends WP_Widget {
 
                 //Component Stack
                 $html .= '<div id="sp_qp_stack">';
+                    $html .= '<img src="' . SP_IMAGE_PATH . '/loading.gif" />';
                 $html .= '</div>';
 
                 //New component dialog
-                $html .= '<div>';
-                $html .= '<button type="button" id="sp_publish_post" class="sp_qp_button">Publish ' . (!$responseQP ? 'Post' : 'Response') . '</button> or ';
-                $html .= '<button type="button" id="sp_cancel_draft" class="sp_qp_button">Cancel ' . (!$responseQP ? 'Post' : 'Response') . '</button> ';
-                // $html .= !$responseQP ? 'Responding to a post? <span id="sp_qp_response">Publish as a response</span>.' : '';
-                $html .= '</div>';
-
-                //Response Post dialog
-                $html .= '<div id="sp_qp_responseDialog">';
-                $html .= '<div id="sp_qp_responsePosts"></div>';
-                $html .= '<div class="clear"></div>';
+                $html .= '<div id="sp-qp-post-buttons">';
+                    $html .= '<button type="button" id="sp_publish_post" class="sp_qp_button">Publish ' . (!$responseQP ? 'Post' : 'Response') . '</button> or ';
+                    $html .= '<button type="button" id="sp_cancel_draft" class="sp_qp_button">Cancel ' . (!$responseQP ? 'Post' : 'Response') . '</button> ';
+                    if( current_user_can( 'edit_dashboard' ) ){
+                        $html .= '<span class="sp-settings-icon"><a href="' . admin_url('admin.php?page=smartpost&catID=' . $catID) . '" target="_blank" title="Edit this template" alt="Edit this template">Edit this template</a></span>';
+                    }
                 $html .= '</div>';
             $html .= '</div>';
 

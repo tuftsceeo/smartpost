@@ -102,7 +102,6 @@
                     },
 
                     Error: function(up, err) {
-                        console.log(err);
                         var out = '';
                         for (var i in err) {
                             out += i + ": " + err[i] + "\n";

@@ -92,28 +92,12 @@ if (!class_exists("sp_admin")) {
          * @param sp_category $sp_category
          */
         function listCatComponents($sp_category){
-            $closed_meta_boxes = get_user_option( 'closedpostboxes_toplevel_page_smartpost' );
-            $catComponents     = $sp_category->getComponents();
+            $catComponents = $sp_category->getComponents();
             if( !empty($catComponents) ){
                 foreach($catComponents as $component){
                     $component->render();
-
-                    //handle meta box toggling
-                    /*
-                    $compElemID = $component->getCompType() . '-' . $component->getID();
-                    $key = array_search($compElemID, $closed_meta_boxes);
-                    if($key !== false){
-                        unset($closed_meta_boxes[$key]);
-                    }
-                    */
                 }
                 do_meta_boxes('toplevel_page_smartpost', 'normal', null);
-
-                /*
-                foreach($closed_meta_boxes as $box_id){
-                    echo '<input type="text" class="postbox closed hide" id="' . $box_id . '" />';
-                }
-                */
             }else{
                 echo '<div id="normal-sortables" class="meta-box-sortables ui-sortable"></div>';
             }
@@ -222,13 +206,21 @@ if (!class_exists("sp_admin")) {
             }
             ?>
             <h2 class="category_title">
-                <a href="<?php echo admin_url('edit-tags.php?action=edit&taxonomy=category&tag_ID=' . $catID . '&post_type=post') ?>">
-                    <?php echo $icon . ' ' . $title ?>
-                </a>
+                <a href="<?php echo admin_url('edit-tags.php?action=edit&taxonomy=category&tag_ID=' . $catID . '&post_type=post') ?>"><?php echo $icon . ' ' . $title ?></a>
+                |
+                <a href="<?php echo get_category_link( $catID ) ?>" target="_blank"><small>view template</small></a>
             </h2>
-            <?php echo '<p>' . $cat_desc . '</p>'; ?>
             <?php
-                if(!is_null($sp_category)){
+                echo sp_core::sp_editor(
+                    $cat_desc,
+                    null,
+                    false,
+                    'Add a category description ...',
+                    array( 'data-action' => 'sp_save_cat_desc_ajax', 'data-catid' => $catID )
+                );
+            ?>
+            <?php
+                if( !is_null($sp_category) ){
                 ?>
                     <input type="checkbox" id="sp_enabled" checked /> <label for="sp_enabled">Uncheck to disable SmartPost for this category.</label>
                 <?php

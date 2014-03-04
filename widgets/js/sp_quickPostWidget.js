@@ -9,27 +9,25 @@
          * Toggles the quickpost form and focuses on the title input
          */
         toggleForm: function(){
-            var thisObj = this;
+            var self = this;
 
             var newPostHandler = function(){
                 var clicked = $(this).data('clicked') || 0;
 
-                $('#sp_quickpost_form').show();
-
                 if( !clicked ){
-                        var catID = $('#sp_selectCat').exists() ? $('#sp_selectCat').val() : $('#sp_addPostButton').attr('data-catID');
-                        thisObj.newSPPost(catID);
+                    var catID = $('#sp_selectCat').exists() ? $('#sp_selectCat').val() : $('#sp_addPostButton').attr('data-catID');
+                    self.newSPPost(catID);
 
-                        //Add a dialogue in case window is closed
-                        window.onbeforeunload = function (e) {
-                          e = e || window.event;
-                          if (e) {
-                            e.returnValue = 'There is unsaved data, are you sure you want leave the page?';
-                          }
-                          return 'There is unsaved data, are you sure you want leave the page?';
-                        };
+                    //Add a dialogue in case window is closed
+                    window.onbeforeunload = function (e) {
+                      e = e || window.event;
+                      if (e) {
+                        e.returnValue = 'There is unsaved data, are you sure you want leave the page?';
+                      }
+                      return 'There is unsaved data, are you sure you want leave the page?';
+                    };
 
-                        $(this).data('clicked', true);
+                    $(this).data('clicked', true);
                 }
 
                 $('#new_sp_post_title').focus();
@@ -52,24 +50,24 @@
 
             //If postID input exists, we're inside a post
             var parentID = $('#postID').exists() ? $('#postID').val() : 0;
+            var sp_qp_stack = $('#sp_qp_stack');
 
             $.ajax({
                 url: SP_AJAX_URL,
                 type: 'POST',
                 data: { action: 'newSPDraftAJAX', nonce: SP_NONCE, catID: catID, parentID: parentID },
                 dataType: 'html',
-                success: function(response, statusText, jqXHR){
-
+                success: function( response, statusText, jqXHR ){
                     //Add the quickpost response to the DOM
-                    $('#sp_qp_stack').html(response);
+                    sp_qp_stack.html( response );
 
                     //Get the new postID
-                    var postID  = $('#sp_qp_stack').find('#sp_qpPostID').val();
-                    var componentStack = $('#sp_qp_stack').find('#spComponents');
+                    var postID = sp_qp_stack.find('#sp_qpPostID').val();
+                    var componentStack = sp_qp_stack.find('#spComponents');
 
                     //Add the new components and initialize them
                     if(smartpost.sp_postComponent){
-                        var components = $('#sp_qp_stack').find('#spComponents').children();
+                        var components = sp_qp_stack.find('#spComponents').children();
                         $(components).each(function() {
                             //Initialize each component
                             smartpost.sp_postComponent.initializeComponent($(this), undefined, postID, false);
@@ -88,6 +86,7 @@
                     //Make them sortable
                     smartpost.sp_postComponent.makeSortable(componentStack, postID);
 
+                    $('#sp_quickpost_form').show();
                 },
                 error: function(jqXHR, statusText, errorThrown){
                     if(smartpost.sp_postComponent)

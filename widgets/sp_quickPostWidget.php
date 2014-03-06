@@ -96,20 +96,24 @@ class sp_quickPostWidget extends WP_Widget {
 
             $html .= '<div id="sp_quickpost_form" class="sp_quickpost">';
                 $html .= '<p> Title <span style="color: red;">*</span></p>';
-                $html .= '<input type="text" id="new_sp_post_title" id="new_sp_post_title" class="sp_new_title" />';
+                $html .= '<input type="text" id="new_sp_post_title" id="new_sp_post_title" class="sp_new_title" placeholder="Type in a post title here ..." />';
 
-                //Component Stack
+                // Component Stack
                 $html .= '<div id="sp_qp_stack">';
                     $html .= '<img src="' . SP_IMAGE_PATH . '/loading.gif" />';
                 $html .= '</div>';
 
-                //New component dialog
+                // Post Tags
+                $html .= '<div id="sp-tags-container">';
+                    $html .= '<label for="sp-add-tags">Tag this post: </label>';
+                    $html .= '<input type="text" id="sp-add-tags" placeholder="Type in a tag here ..." value="" />';
+                    $html .= '<div id="sp-tags"></div>';
+                $html .= '</div>';
+
+                // New component publish/cancel buttons
                 $html .= '<div id="sp-qp-post-buttons">';
                     $html .= '<button type="button" id="sp_publish_post" class="sp_qp_button">Publish ' . (!$responseQP ? 'Post' : 'Response') . '</button> or ';
                     $html .= '<button type="button" id="sp_cancel_draft" class="sp_qp_button">Cancel ' . (!$responseQP ? 'Post' : 'Response') . '</button> ';
-                    if( current_user_can( 'edit_dashboard' ) ){
-                        $html .= '<span class="sp-settings-icon"><a href="' . admin_url('admin.php?page=smartpost&catID=' . $catID) . '" target="_blank" title="Edit this template" alt="Edit this template">Edit this template</a></span>';
-                    }
                 $html .= '</div>';
             $html .= '</div>';
 

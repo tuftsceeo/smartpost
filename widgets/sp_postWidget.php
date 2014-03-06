@@ -61,8 +61,27 @@ class sp_postWidget extends WP_Widget {
                     <?php echo $before_title . $title . $after_title ?>
                     <?php if( $editMode ): ?>
                         <p><a href="<?php echo get_permalink( $post->ID ) ?>"><button type="button" class="button sp-edit-post sp-view-icon">Go back to view mode</button></a></p>
-                        <?php self::postStatusOptions(); ?>
                         <?php self::renderCompBlocks(); ?>
+                        <div id="sp-tags-container">
+                            <label for="sp-add-tags">Tag this post: </label>
+                            <input type="text" id="sp-add-tags" placeholder="Type in a tag here..." value="" />
+                            <div id="sp-tags">
+                                <?php
+                                $posttags = get_the_tags();
+                                if ( $posttags ) {
+                                    foreach($posttags as $tag) {
+                                        ?>
+                                        <div class="sp-tag" id="tag-<?php echo $tag->term_id ?>">
+                                            <a href="<?php echo get_tag_link($tag->term_id) ?>"><?php echo $tag->name ?></a>
+                                            <span class="sp-remove-tag sp_xButton" data-tagid="<?php echo $tag->term_id ?>" title="Remove Tag" alt="Remove Tag"></span>
+                                        </div>
+                                        <?php
+                                    }
+                                }
+                                ?>
+                            </div>
+                        </div>
+                        <?php self::postStatusOptions(); ?>
                     <?php else: ?>
                         <p><a href="<?php echo get_permalink( $post->ID ) ?>?edit_mode=true"><button type="button" class="button sp-edit-post sp_textIcon">Edit this post</button></a></p>
                     <?php endif; ?>

@@ -6,6 +6,155 @@
     smartpost.sp_post = {
 
         /**
+         * Adds a tag to the tag set if one doesn't exist,
+         * otherwise adds it to the tag set.
+         */
+        addTag: function(tag, postID){
+
+            var self = this;
+
+            // Find the post ID
+            if(postID == undefined){
+                postID = $('#postID').val();
+            }
+
+            // If it's still undefined, then we are in using the QuickPost widget
+            if(postID == undefined){
+                postID = $('#sp_qpPostID').val();
+            }
+
+            $.ajax({
+                url     : SP_AJAX_URL,
+                dataType: 'json',
+                type    : 'POST',
+                data    : {
+                    action: 'sp_addNewTagAJAX',
+                    nonce: SP_NONCE,
+                    tag: tag,
+                    postID: postID
+                },
+                success : function( data, status, xhr ) {
+                    //console.log(data);
+                    var tagElem = $('#tag-' + data.tagID);
+                    if( tagElem.length > 0){
+                        smartpost.sp_postComponent.showError( 'Tag "' + data.tag + '" already used!' );
+                    }else{
+                        $( '#sp-tags' ).append(
+                            '<div class="sp-tag" id="tag-' + data.tagID + '">' +
+                                '<a href="' + data.tagLink + '">' + data.tag + '</a> ' +
+                                '<span class="sp-remove-tag sp_xButton" data-tagid="' + data.tagID + '" title="Remove Tag" alt="Remove Tag"></span>' +
+                            '</div>'
+                        );
+
+                        // Enable remove button
+                        $('#tag-' + data.tagID).find('.sp-remove-tag').click(function(){
+                            self.removeTag( postID, data.tagID );
+                        });
+                    }
+                }
+            });
+        },
+
+        /**
+         * Returns false if tag is < 2 chars or is empty.
+         * Empty entails the following strings:
+         * "", '', "\"\"", '\'\''
+         */
+        validateTag: function(tag){
+            if( tag.length < 1 ){
+                return false;
+            }else if( tag == "" ){
+                return false;
+            }else	if( tag == '' ){
+                return false;
+            }else if( tag == "\"\"" ){
+                return false;
+            }else if( tag == '\'\''){
+                return false;
+            }else{
+                return true;
+            }
+        },
+        /**
+         * Initialize autocomplete on searchElem where searchElem
+         * is an HTML DOMElement.
+         */
+        initAutoComplete: function(searchElem){
+            var cache = {}, lastXHR, self = this;
+
+            searchElem.autocomplete({
+                create: function( event, ui ){
+                    $(this).keypress(function (e) {
+                        if (e.which == 13) {
+                            var tag  = $(this).val();
+                            if ( self.validateTag( tag ) ){
+                                self.addTag( tag );
+                                $(this).val( '' );
+                            }else{
+                                smartpost.sp_postComponent.showError( "Please type in a tag name that is at least 1 characters long." );
+                            }
+                        }
+                    });
+                },
+                minLength: 1,
+                select: function( event, ui ){
+                    var tag = ui.item.label;
+                    self.addTag( tag );
+                    $(this).val( '' );
+                    return false;
+                },
+                source: function( request, response ) {
+                    var term = request.term;
+                    if ( term in cache ) {
+                        response( cache[ term ] );
+                        return;
+                    }
+                    lastXhr = $.ajax({
+                        url     : SP_AJAX_URL,
+                        dataType: 'json',
+                        type    : 'POST',
+                        data    : {
+                            action: 'sp_searchTagsAJAX',
+                            nonce: SP_NONCE,
+                            tagRequest: request
+                        },
+                        success : function( data, status, xhr ) {
+                            cache[ term ] = data;
+                            if ( xhr === lastXhr ) {
+                                response( data );
+                            }
+                        }
+                    });
+                }
+            });
+        },
+
+        /**
+         * Remove a post tag
+         */
+        removeTag: function(postID, tagID){
+            if(tagID == undefined || tagID == 0){
+                return;
+            }
+            $.ajax({
+                url     : SP_AJAX_URL,
+                dataType: 'json',
+                type    : 'POST',
+                data    : {
+                    action: 'sp_removeTagAJAX',
+                    nonce: SP_NONCE,
+                    tagID: tagID,
+                    postID: postID
+                },
+                success : function( data ) {
+                    if(data.success){
+                        $('#tag-' + tagID).remove();
+                    }
+                }
+            });
+        },
+
+        /**
          * Save the title of a component
          */
         savePostTitle: function(title, postID){
@@ -133,8 +282,20 @@
                 self.initCkEditors( $(this) );
             });
 
+            // Enable tagging
+            smartpost.sp_post.initAutoComplete( $( '#sp-add-tags' ) );
+
+            // Enable tag removal in posts
+            $('.sp-remove-tag').each(function(){
+                $(this).click(function(){
+                    console.log( this );
+                    console.log( $(this) );
+                    var tagID = $(this).data( 'tagid' );
+                    self.removeTag( $('#postID').val(), tagID );
+                });
+            });
         }
-    }
+    };
 
     $(document).ready(function(){
         smartpost.sp_post.init();

@@ -58,14 +58,14 @@
                 data: { action: 'newSPDraftAJAX', nonce: SP_NONCE, catID: catID, parentID: parentID },
                 dataType: 'html',
                 success: function( response, statusText, jqXHR ){
-                    //Add the quickpost response to the DOM
+                    // Add the quickpost response to the DOM
                     sp_qp_stack.html( response );
 
-                    //Get the new postID
+                    // Get the new postID
                     var postID = sp_qp_stack.find('#sp_qpPostID').val();
                     var componentStack = sp_qp_stack.find('#spComponents');
 
-                    //Add the new components and initialize them
+                    // Add the new components and initialize them
                     if(smartpost.sp_postComponent){
                         var components = sp_qp_stack.find('#spComponents').children();
                         $(components).each(function() {
@@ -73,17 +73,17 @@
                             smartpost.sp_postComponent.initializeComponent($(this), undefined, postID, false);
                         });
                     }else{
-                        alert('Error: Could not find the smartpost.sp_postComponent object!');
+                        smartpost.sp_postComponent.showError('Error: Could not find the smartpost.sp_postComponent object!');
                     }
 
-                    //Initialize new component buttons
+                    // Initialize new component buttons
                     $('.sp_qp_component').click(function(){
                         var catCompID = $(this).attr("data-compid");
                         var typeID    = $(this).attr("data-typeid");
                         smartpost.sp_postComponent.addNewComponent(catCompID, typeID, postID, componentStack);
                     });
 
-                    //Make them sortable
+                    // Make them sortable
                     smartpost.sp_postComponent.makeSortable(componentStack, postID);
 
                     $('#sp_quickpost_form').show();

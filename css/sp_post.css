@@ -43,3 +43,36 @@
 .sp-delete-post:before{
     float: left;
 }
+.sp-tag{
+    display: inline-block;
+    padding: 5px;
+    background: #ededed;
+    margin: 2px;
+}
+.sp-remove-tag{
+    cursor: pointer;
+}
+.sp-remove-tag:before{
+    display: inline;
+    vertical-align: text-bottom;
+}
+#sp-tags-container{
+    display: table;
+    width: 100%;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+#sp-tags{
+    margin-top: 15px;
+    margin-bottom: 15px;
+    display: block;
+    clear: both;
+}
+#sp-tags-container label{
+    display:table-cell;
+    width:15%;
+}
+#sp-add-tags{
+    display: table-cell;
+    width: 100%
+}

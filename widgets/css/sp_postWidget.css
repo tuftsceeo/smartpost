@@ -24,3 +24,10 @@ div.catComponentWidget:hover{
     float: left;
     color: inherit;
 }
+.sp-widget-post-settings #sp-tags-container{
+    display: inline-block;
+    width: auto;
+}
+.sp-widget-post-settings #sp-tags-container input{
+    width: auto;
+}

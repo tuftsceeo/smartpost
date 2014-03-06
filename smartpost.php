@@ -136,9 +136,9 @@ if ( !class_exists("smartpost") ){
             wp_register_script( 'jquery-editable', plugins_url('js/jquery.jeditable.mini.js', __FILE__), array( 'jquery' ) );
             wp_register_script( 'ckeditor'       , plugins_url('js/ckeditor/ckeditor.js', __FILE__), array( 'jquery' ) );
             wp_register_script( 'tooltipster'    , plugins_url('js/tooltipster/jquery.tooltipster.min.js', __FILE__), array( 'jquery' ) );
-            wp_register_script( 'jquery-webcam'  , plugins_url('js/jquery.webcam/jquery.webcam.js', __FILE__), array( 'jquery' ) );
             wp_register_script( 'jquery-dynatree', plugins_url('js/dynatree/jquery.dynatree.min.js', __FILE__), array( 'jquery-ui-core', 'jquery-ui-widget' ) );
             wp_register_script( 'jquery-dynatree-cookie', plugins_url('js/dynatree/jquery.cookie.js', __FILE__), array( 'jquery-dynatree' ) );
+            wp_register_script( 'jquery-ui-touch-punch', plugins_url('js/jquery.ui.touch-punch.min.js', __FILE__), array( 'jquery-ui-core' ) );
 
             //Enqueue default WP scripts
             wp_enqueue_script( 'jquery' );
@@ -151,6 +151,10 @@ if ( !class_exists("smartpost") ){
             wp_enqueue_script( 'jquery-ui-sortable' );
             wp_enqueue_script( 'jquery-ui-dialog' );
             wp_enqueue_script( 'jquery-ui-tabs' );
+            wp_enqueue_script( 'jquery-ui-widget' );
+            wp_enqueue_script( 'jquery-ui-position' );
+            wp_enqueue_script( 'jquery-ui-autocomplete' );
+            wp_enqueue_script( 'jquery-ui-touch-punch' );
             wp_enqueue_script( 'jquery-editable' );
             wp_enqueue_script( 'plupload' );
             wp_enqueue_script( 'plupload-all' );

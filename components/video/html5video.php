@@ -8,21 +8,20 @@
 
 // Collect video info arguments
 $ARGS = array(
-    'BASE_PATH' => $argv[1],
-    'POST_ID'   => $argv[2],
-    'VID_FILE'  => $argv[3],
-    'COMP_ID'   => $argv[4],
-    'AUTH_ID'   => $argv[5],
-    'MOV_ID'    => $argv[6],
-    'WIDTH'     => $argv[7],
-    'HEIGHT'    => $argv[8]
+    'BASE_PATH' => $argv[1], // Base directory of WordPress
+    'POST_ID'   => $argv[2], // The post ID of where the video was uploaded
+    'VID_FILE'  => $argv[3], // Path of the file to be converted
+    'COMP_ID'   => $argv[4], // The SmartPost component ID
+    'AUTH_ID'   => $argv[5], // The author ID
+    'WIDTH'     => $argv[6], // scaled video width
+    'HEIGHT'    => $argv[7]  // scaled video height
 );
 
 // Collect info on wpmu
 $WPMU_ARGS = array(
-    'HTTP_HOST' => $argv[9],
-    'BLOG_ID'   => $argv[10],
-    'IS_WPMU'   => $argv[11]
+    'HTTP_HOST' => $argv[8],
+    'BLOG_ID'   => $argv[9],
+    'IS_WPMU'   => $argv[10]
 );
 
 // If this is a WPMU instance, switch to the blog we're on
@@ -72,7 +71,7 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && !is_wp_error( $sp_ffmpeg_path ) ){
     }
 
     /**
-     * Get the correct orientation of the quicktime video if it exists
+     * Get the correct orientation of the quick time video if it exists
      * @todo Check if ffprobe and grep are callable on the operating system
      */
     $rotation = exec( $sp_ffmpeg_path . 'ffprobe -v quiet -show_streams ' . $ARGS['VID_FILE'] . ' | grep -o "rotate=[-]\?[0-9]\+" | grep -o "[-]\?[0-9]\+"' );
@@ -106,9 +105,10 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && !is_wp_error( $sp_ffmpeg_path ) ){
     /**
      * -q:v - Use video quality 2 (where 0 is equivalent to input video, and 31 is worst quality).
      * -vf  - Scaling and padding for videos that are not in 16:9 ratios
+     * -metadata:s:v:0 rotate=0 - Makes sure iOS/Mac devices don't unnecessarily rotate the video
      */
     $filter = '"scale=iw*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih):ih*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih), pad=' . $ARGS['WIDTH'] . ':' . $ARGS['HEIGHT'] . ':(' . $ARGS['WIDTH'] . '-iw*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih))/2:(' . $ARGS['HEIGHT'] . '-ih*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih))/2' . $rotationFilter .'"';
-    system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -qscale 2 -filter:v ' . $filter . ' ' . $filename . '.mp4' ); // .mp4 conversion
+    system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -qscale 2 -filter:v ' . $filter . ' -metadata:s:v:0 rotate=0 ' . $filename . '.mp4' ); // .mp4 conversion
 
     $uploads = wp_upload_dir();
 
@@ -132,12 +132,15 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && !is_wp_error( $sp_ffmpeg_path ) ){
         echo $videoComponent->errors['img'];
     }
 
-    $videoComponent->videoAttachmentIDs['mov'] = $ARGS['MOV_ID'];
+    if( $ARGS['VID_FILE'] != $mp4_filename){
+        unlink( $ARGS['VID_FILE'] ); // Remove the original .mov or .avi files
+    }
     $videoComponent->beingConverted = false;
     $success = $videoComponent->update(null);
 
     exit(0);
 } else {
+    if( empty( $ARGS['COMP_ID'] ) ){ echo 'COMP_ID argument not provided' . PHP_EOL; }
     if( empty( $ARGS['VID_FILE'] ) ){ echo 'VID_FILE argument not provided' . PHP_EOL; }
     if( empty( $ARGS['POST_ID'] ) ){ echo 'POST_ID argument not provided' . PHP_EOL; }
     if( empty( $sp_ffmpeg_path ) ){ echo 'FFmpeg path not found' . PHP_EOL; }

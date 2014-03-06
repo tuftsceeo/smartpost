@@ -9,7 +9,7 @@
 /* Usually used for deleting an object */
 .sp_xButton:before{
     content: '\f153';
-    display: block!important;
+    display: inline-block;
     font: 400 16px/1 dashicons;
     speak: none;
     height: 20px;
@@ -26,7 +26,7 @@
 /* Usually used for deleting an object */
 .sp_trashIcon:before{
     content: '\f182';
-    display: block!important;
+    display: inline-block;
     font: 400 16px/1 dashicons;
     speak: none;
     height: 20px;
@@ -43,7 +43,7 @@
 /* Editable elements */
 .sp_textIcon:before{
     content: '\f119';
-    display: block!important;
+    display: inline-block;
     font: 400 16px/1 dashicons;
     speak: none;
     height: 20px;
@@ -59,7 +59,7 @@
 
 .sp-view-icon:before{
     content: '\f177';
-    display: block!important;
+    display: inline-block;
     font: 400 16px/1 dashicons;
     speak: none;
     height: 20px;

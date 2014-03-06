@@ -14,6 +14,9 @@ if (!class_exists("sp_postVideoAJAX")) {
             add_action('wp_ajax_saveVideoDescAJAX', array('sp_postVideoAJAX', 'saveVideoDescAJAX'));
         }
 
+        /**
+         * AJAX function that saves the video caption/description.
+         */
         static function saveVideoDescAJAX(){
             $nonce = $_POST['nonce'];
             if( !wp_verify_nonce($nonce, 'sp_nonce') ){
@@ -117,26 +120,16 @@ if (!class_exists("sp_postVideoAJAX")) {
                 $videoComponent = new sp_postVideo($compID);
                 $postID = $videoComponent->getPostID();
 
-                $vid_id = sp_core::create_attachment( $videoFilePath, $postID );
-
-                if( !$vid_id ){
-                    header( "http/1.0 409 " . $vid_id->get_error_message() );
-                    die();
-                }
-
                 // Delete previous attachments if they exist
                 if( !empty($videoComponent->videoAttachmentIDs) ){
                     foreach($videoComponent->videoAttachmentIDs as $attach_id){
-                        if( $attach_id )
+                        if( $attach_id ){
                             wp_delete_attachment( $attach_id, true );
+                        }
                     }
                 }
 
-                // Update the component with at least the .mov in case something is up with converting..
-                $videoComponent->videoAttachmentIDs['mov'] = $vid_id;
-                $videoComponent->update();
-
-                $html5_encoding = (bool) get_site_option('sp_html5_encoding');
+                $html5_encoding = (bool) get_site_option( 'sp_html5_encoding' );
                 $sp_ffmpeg_path = get_site_option( 'sp_ffmpeg_path' );
 
                 if( $html5_encoding && !is_wp_error( $sp_ffmpeg_path ) ){
@@ -152,7 +145,6 @@ if (!class_exists("sp_postVideoAJAX")) {
                         'VID_FILE'  => $videoFilePath,
                         'COMP_ID'   => $compID,
                         'AUTH_ID'   => get_current_user_id(),
-                        'MOV_ID'    => $vid_id,
                         'WIDTH'     => get_site_option('sp_player_width'),
                         'HEIGHT'    => get_site_option('sp_player_height'),
                         'HTTP_HOST' => $_SERVER['HTTP_HOST'],

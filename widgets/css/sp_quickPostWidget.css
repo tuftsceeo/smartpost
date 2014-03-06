@@ -7,12 +7,15 @@
     margin-bottom: 15px;
 }
 .sp_qp_component{
+    display: inline-block;
     cursor: pointer;
-    margin-right: 15px;
+    margin: 5px;
     font-size: 16px;
+    padding: 10px;
+    border: 1px solid #ededed;
 }
 .sp_qp_component:hover{
-    text-decoration: underline;
+    background: #ededed;
 }
 .quickPostComps{
 	min-height: inherit !important;
@@ -35,6 +38,8 @@
 }
 button.sp_qp_button{
 	cursor: pointer;
+    font-size: 15px;
+    padding: 10px;
 }
 #sp_qp_response{
 	color: green;

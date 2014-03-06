@@ -71,6 +71,7 @@
                 filters : [
                         {title : "MOV files", extensions : "mov, MOV"},
                         {title : "AVI files", extensions : "avi, AVI"},
+                        {title : "MP4 files", extensions : "mp4, MP4"}
                 ],
                 init: {
 
@@ -129,6 +130,7 @@
          */
         checkVideoStatus: function(compID){
             var self = this;
+            var messageElem = $('#videoProgressMsg-' + compID);
             $.ajax({
                 url	 : SP_AJAX_URL,
                 type : 'POST',
@@ -141,9 +143,9 @@
                 success  : function(response, statusText, jqXHR){
                     if( response.converted ){
                         if( $('#sp_qp_stack').exists() ){
-                            alert( 'The video processed successfully! Submit your post to view the video.' );
+                            messageElem.html( 'The video processed successfully! Submit your post to view the video.' );
                         }else{
-                            alert( 'The video processed successfully! Refresh the page to view it.' );
+                            messageElem.html( 'The video processed successfully! Refresh the page to view it.' );
                         }
                     }else{
                         setTimeout( function(){ self.checkVideoStatus(compID) }, 5000 );

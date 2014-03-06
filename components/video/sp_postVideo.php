@@ -83,7 +83,7 @@ if (!class_exists("sp_postVideo")) {
                         $html .= 'Drag and drop a video file here';
                         $html .= '<br /><br /> Or <br /><br />';
                         $html .= 'Browse for a video: <input id="sp_videoBrowse-' . $this->ID .'" data-compid="' . $this->ID . '" type="file">';
-                        $html .= '<p>Note: We currently only support .mov and .avi video files.</p>';
+                        $html .= '<p>Note: We currently support .mp4, .mov, and .avi video files.</p>';
                     $html .= '</p>';
             }else{
                 $html .= '<p><img src="' . SP_IMAGE_PATH . '/loading.gif" /> Your video is being processed, thank you for your patience!</p>';

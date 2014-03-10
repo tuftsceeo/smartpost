@@ -160,7 +160,6 @@ if (!class_exists("sp_postGalleryAJAX")) {
 
                 // Issue #38: Before creating the image attachment, account for orientation
                 sp_core::fixImageOrientation( $file );
-
                 $id = sp_core::create_attachment( $file, $postID, $name );
 
                 $attachmentIDs = $galleryComponent->getAttachments();

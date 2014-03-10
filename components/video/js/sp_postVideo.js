@@ -189,6 +189,11 @@
         initComponent: function(component, postID, autoFocus){
             this.initFileDrop($(component));
             var editor = $( component ).find( '.sp-editor-content' );
+            var browseButton = $(component).find( '.sp-video-browse' );
+            browseButton.click(function(){
+                var compId = $(this).data( 'compid' );
+                $('#sp_videoBrowse-' + compId).click();
+            });
             smartpost.sp_post.initCkEditors(editor);
         },
 
@@ -198,6 +203,14 @@
         init: function(){
             this.setTypeID();
             var self = this;
+
+            // Trigger the browse button
+            $( '.sp-video-browse' ).each(function(){
+                $(this).click(function(){
+                    var compId = $(this).data( 'compid' );
+                    $( '#sp_videoBrowse-' + compId ).click();
+                });
+            });
 
             $('.sp_video').each(function(){
                 self.initFileDrop($(this));

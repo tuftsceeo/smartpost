@@ -64,7 +64,9 @@ if (!class_exists("sp_postAttachments")) {
                     'Click here to add a description ...',
                     array( 'data-action' => 'saveAttachmentsDescAJAX', 'data-compid' => $this->ID )
                 );
-                $html .= self::renderAttachmentsTable(true);
+                $html .= '<div id="sp-attachments-table-container-' . $this->ID .'" class="sp-attachments-table-container">';
+                    $html .= self::renderAttachmentsTable(true);
+                $html .= '</div>';
                 $html .= !empty($this->allowedExts) ? "Allowed file types: " . implode(', ', $this->allowedExts) : '';
                 $html .= '<div class="clear"></div>';
             $html .= '</div>';
@@ -77,7 +79,9 @@ if (!class_exists("sp_postAttachments")) {
         function renderViewMode(){
             $html = '<div id="sp-attachments-' . $this->ID .'" class="sp-attachments">';
                 $html .= '<div id="sp-attachments-desc-' . $this->ID .'" class="sp-attachments-desc">' . $this->description . '</div>';
-                $html .= self::renderAttachmentsTable();
+                $html .= '<div id="sp-attachments-table-container-' . $this->ID .'" class="sp-attachments-table-container">';
+                    $html .= self::renderAttachmentsTable();
+                $html .= '</div>';
                 $html .= '<div class="clear"></div>';
             $html .= '</div>';
             return $html;

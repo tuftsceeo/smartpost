@@ -46,7 +46,7 @@
         initFileDrop: function(component, postID){
             var self = this;
             var compID = component.data('compid');
-            var browse_id = 'sp-upload-' + compID;
+            var browse_id = 'sp-gallery-upload-' + compID;
             var prev_onbeforeunload = window.onbeforeunload;
 
             if(postID == undefined){
@@ -193,6 +193,11 @@
         initComponent: function(component, postID, autoFocus){
             this.initFileDrop( $(component) );
             var editor = $( component ).find( '.sp-editor-content' );
+            var browseButton = $(component).find( '.sp-gallery-browse' );
+            browseButton.click(function(){
+                var compId = $(this).data( 'compid' );
+                $('#sp-gallery-upload-' + compId).click();
+            });
             smartpost.sp_post.initCkEditors(editor);
         },
 
@@ -215,6 +220,14 @@
                 openEffect	: 'none',
                 closeEffect	: 'none',
                 helpers : { media : {} }
+            });
+
+            // Trigger the browse button
+            $( '.sp-gallery-browse' ).each(function(){
+                $(this).click(function(){
+                    var compId = $(this).data( 'compid' );
+                    $( '#sp-gallery-upload-' + compId ).click();
+                });
             });
         }
     }

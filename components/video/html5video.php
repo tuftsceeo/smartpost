@@ -79,22 +79,22 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && !is_wp_error( $sp_ffmpeg_path ) ){
     if( !empty($rotation) ){
         switch( $rotation ){
             case '-270':
-                $rotationFilter = ', transpose=2, transpose=2, transpose=2';
+                $rotationFilter = 'transpose=2, transpose=2, transpose=2, ';
                 break;
             case '270':
-                $rotationFilter = ', transpose=1, transpose=1, transpose=1';
+                $rotationFilter = 'transpose=1, transpose=1, transpose=1, ';
                 break;
             case '-180':
-                $rotationFilter = ', transpose=2, transpose=2';
+                $rotationFilter = 'transpose=2, transpose=2, ';
                 break;
             case '180':
-                $rotationFilter = ', transpose=1, transpose=1';
+                $rotationFilter = 'transpose=1, transpose=1, ';
                 break;
             case '-90':
-                $rotationFilter = ', transpose=2';
+                $rotationFilter = 'transpose=2, ';
                 break;
             case '90':
-                $rotationFilter = ', transpose=1';
+                $rotationFilter = 'transpose=1, ';
                 break;
             default:
                 $rotationFilter = '';
@@ -107,7 +107,7 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && !is_wp_error( $sp_ffmpeg_path ) ){
      * -vf  - Scaling and padding for videos that are not in 16:9 ratios
      * -metadata:s:v:0 rotate=0 - Makes sure iOS/Mac devices don't unnecessarily rotate the video
      */
-    $filter = '"scale=iw*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih):ih*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih), pad=' . $ARGS['WIDTH'] . ':' . $ARGS['HEIGHT'] . ':(' . $ARGS['WIDTH'] . '-iw*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih))/2:(' . $ARGS['HEIGHT'] . '-ih*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih))/2' . $rotationFilter .'"';
+    $filter = '"' . $rotationFilter . 'scale=iw*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih):ih*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih), pad=' . $ARGS['WIDTH'] . ':' . $ARGS['HEIGHT'] . ':(' . $ARGS['WIDTH'] . '-iw*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih))/2:(' . $ARGS['HEIGHT'] . '-ih*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih))/2"';
     system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -qscale 2 -filter:v ' . $filter . ' -metadata:s:v:0 rotate=0 ' . $filename . '.mp4' ); // .mp4 conversion
 
     $uploads = wp_upload_dir();

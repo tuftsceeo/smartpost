@@ -235,12 +235,12 @@ if (!class_exists("sp_postComponent")) {
 
             // Return edit mode component if we're an admin or an owner
             if( ( ( $canEdit &&  $owner) ||  $admin ) && !$isLocked && $editMode ){
-                $html = '<div id="comp-' . $this->ID . '" data-compid="' . $this->ID . '" data-required="' . $this->isRequired() . '" data-catcompid="' . $this->catCompID . '" data-typeid="' . $this->typeID . '" class="sp_component' . ( ($this->isRequired() && $this->lastOne() && $this->isEmpty() ) ?  ' requiredComponent' : '') . '">';
-                $html .= $this->renderCompTitle($owner);
-                $html .= '<span id="del" data-compid="' . $this->ID . '" class="sp_delete sp_xButton" title="Delete Component"></span>';
-                $html .= '<div class="componentHandle tooltip" title="Drag up or down"><div class="theHandle"></div></div>';
-                $html .= $this->renderEditMode();
-                $html .= '<div class="clear"></div>';
+                $html = '<div id="comp-' . $this->ID . '" data-compid="' . $this->ID . '" data-required="' . $this->isRequired() . '" data-catcompid="' . $this->catCompID . '" data-typeid="' . $this->typeID . '" class="sp-component-edit-mode' . ( ($this->isRequired() && $this->lastOne() && $this->isEmpty() ) ?  ' requiredComponent' : '') . '">';
+                    // $html .= $this->renderCompTitle( ($owner || $admin) );
+                    $html .= '<span id="del" data-compid="' . $this->ID . '" class="sp_delete sp_xButton" title="Delete Component"></span>';
+                    $html .= '<div class="componentHandle tooltip" title="Drag up or down"><div class="theHandle"></div></div>';
+                    $html .= $this->renderEditMode();
+                    $html .= '<div class="clear"></div>';
                 $html .= '</div><!-- end #comp-' . $this->ID .' -->';
                 return $html;
 
@@ -248,7 +248,7 @@ if (!class_exists("sp_postComponent")) {
 
                 if( !$this->isEmpty() ){
                     $html = '<div id="comp-' .  $this->ID . '" class="sp_component">';
-                    $html .= $this->renderCompTitle();
+                    // $html .= $this->renderCompTitle();
                     $html .= $this->renderViewMode();
                     $html .= '<div class="clear"></div>';
                     $html .= '</div><!-- end #comp-' . $this->ID .' -->';
@@ -263,6 +263,7 @@ if (!class_exists("sp_postComponent")) {
 
             $post = get_post($this->postID);
             $editable = 'componentTitle';
+            $html = '';
             if($owner){
                 $editable = 'editableCompTitle editable';
                 $html .= '<div id="comp-' . $this->ID .'-title" data-compid="' . $this->ID . '" class="' . $editable .'" title="Click to edit title">';

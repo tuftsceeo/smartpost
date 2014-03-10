@@ -222,13 +222,14 @@
             // Create inline editors for each .sp-editor-content element
             CKEDITOR.inline( editorElem.attr('id'), {
                 enterMode: CKEDITOR.ENTER_BR,
-                extraPlugins: 'sourcedialog,confighelper',
+                extraPlugins: 'sourcedialog,confighelper,removeformat',
                 toolbar: [
                     { name: 'document', items: [ 'Bold', 'Italic', 'Underline' ] },
                     { name: 'links', items: [ 'Link', 'Unlink' ] },
                     { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'bidi' ], items: [ 'NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight' ] },
                     { name: 'styles', items: [ 'FontSize' ] },
                     { name: 'colors', items: [ 'TextColor' ] },
+                    { name: 'Remove Formatting', items: [ 'RemoveFormat' ] },
                     { name: 'Source', items: [ 'Sourcedialog' ] }
                 ],
                 allowedContent:

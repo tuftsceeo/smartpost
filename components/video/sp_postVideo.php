@@ -79,12 +79,13 @@ if (!class_exists("sp_postVideo")) {
                         $html .= '<div class="clear"></div>';
                     $html .= '</div>';
 
-                    $html .= '<p id="sp_videoDropZone-' . $this->ID . '" class="sp_videoDropZone sp-upload-dropzone">';
-                        $html .= 'Drag and drop a video file here';
-                        $html .= '<br /><br /> Or <br /><br />';
-                        $html .= 'Browse for a video: <input id="sp_videoBrowse-' . $this->ID .'" data-compid="' . $this->ID . '" type="file">';
-                        $html .= '<p>Note: We currently support .mp4, .mov, and .avi video files.</p>';
-                    $html .= '</p>';
+                    $html .= '<div id="sp_videoDropZone-' . $this->ID . '" class="sp_videoDropZone">';
+                        $html .= '<button type="button" data-compid="' . $this-> ID .'" id="sp-video-browse-' . $this->ID . '" class="sp-video-browse sp-browse-button button">';
+                            $html .= '<img src="' . sp_core::getIcon( $this->typeID ) . '" /> Upload a Video';
+                        $html .= '</button>';
+                        $html .= '<p>You can also drag and drop a video file here</p>';
+                        $html .= '<input id="sp_videoBrowse-' . $this->ID .'" data-compid="' . $this->ID . '" type="file" style="display:none;">';
+                    $html .= '</div>';
             }else{
                 $html .= '<p><img src="' . SP_IMAGE_PATH . '/loading.gif" /> Your video is being processed, thank you for your patience!</p>';
             }

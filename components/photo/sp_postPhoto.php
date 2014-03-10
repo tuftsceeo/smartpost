@@ -75,11 +75,13 @@ if (!class_exists("sp_postPhoto")) {
                 $html .= '<div id="sp-photo-uploads-' . $this->ID . '" class="sp-photo-uploads">';
                     $html .= '<span id="sp-photo-progress-msg-' . $this->ID . '"></span>';
                     $html .= '<span id="sp-photo-progress-' . $this->ID . '"></span>';
-                    $html .= '<p class="sp-upload-dropzone">';
-                        $html .= 'Drag and drop a photo here';
-                        $html .= '<br /><br />Or<br /><br />';
-                        $html .= 'Browse for a photo here: <input type="file" id="sp-upload-' . $this->ID . '" />';
-                    $html .= '</p>';
+                    $html .= '<div id="sp-photo-dropzone-' . $this->ID . '" class="sp-photo-dropzone">';
+                        $html .= '<button type="button" data-compid="' . $this-> ID .'" id="sp-photo-browse-' . $this->ID . '" class="sp-photo-browse sp-browse-button button">';
+                            $html .= '<img src="' . sp_core::getIcon( $this->typeID ) . '" /> Upload a Photo';
+                        $html .= '</button>';
+                        $html .= '<p>You can also drag and drop a photo here</p>';
+                        $html .= '<input type="file" id="sp-photo-upload-' . $this->ID . '" style="display: none;" />';
+                    $html .= '</div>';
                     $html .= '<div class="clear"></div>';
                 $html .= '</div><!-- end .sp-photo-uploads -->';
 

@@ -180,7 +180,7 @@
             var browseButton = $(component).find( '.sp-attachments-browse-img' );
             browseButton.click(function(){
                 var compId = $(this).data( 'compid' );
-                $('#sp-attachments-upload-' + compId).click();
+                $('#sp-photo-upload--' + compId).click();
             });
             var editor = $(component).find( '.sp-editor-content' );
             smartpost.sp_post.initCkEditors(editor);

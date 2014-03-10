@@ -1,5 +1,5 @@
 <?php
-if (!class_exists("sp_admin")) {
+if ( !class_exists("sp_admin") ) {
 
     /**
      * sp_admin class
@@ -107,7 +107,8 @@ if (!class_exists("sp_admin")) {
          * Renders a new category form that users can fill out
          */
         function renderNewTemplateForm(){
-            //If a SP QP widget exists, do not check off "Add Widget" checkbox by default (minimizes confusion with unnecessary widgets)
+
+            // If a SP QP widget exists, do not check off "Add Widget" checkbox by default (minimizes confusion with unnecessary widgets)
             $sp_widget_instances = count( get_option( 'widget_sp_quickpostwidget' ) );
             ?>
             <div id="newTemplateForm">
@@ -129,24 +130,17 @@ if (!class_exists("sp_admin")) {
                                 <textarea class="regular-text" id="template_desc" name="template_desc" style="width: 100%; background: white;" rows="10" ></textarea>
                             </td>
                         </tr>
-                        <?php
-                            $nav_menus = wp_get_nav_menus();
-                            if ( !empty( $nav_menus ) ){
-                        ?>
+                        <?php $nav_menus = wp_get_nav_menus(); ?>
+                        <?php if ( !empty( $nav_menus ) ){ ?>
                         <tr>
                             <td>
                                 <input type="checkbox" checked="checked" id="add_to_menu" name="add_to_menu" /><label for="add_to_menu" id="add_to_menu_label" class="tooltip" title="Select the menu you'd like to add the template to. <br/> The template will then be accessible on the front-end via a menu item.">Add to menu</label>
                             </td>
                             <td>
                                 <select id="wp_menus" name="wp_menus">
-                                    <?php
-                                    $nav_menus = wp_get_nav_menus();
-                                    foreach($nav_menus as $menu){
-                                        ?>
+                                    <?php foreach($nav_menus as $menu){ ?>
                                         <option id="menu-<?php echo $menu->term_id ?>" name="menu-<?php echo $menu->term_id ?>" value="<?php echo $menu->term_id ?>"><?php echo $menu->name ?></option>
-                                        <?
-                                    }
-                                    ?>
+                                    <?php } ?>
                                 </select>
                             </td>
                         </tr>
@@ -157,10 +151,10 @@ if (!class_exists("sp_admin")) {
                             </td>
                             <td>
                                 <select id="widget_areas" name="widget_areas">
+                                    <?php $sidebars = $GLOBALS['wp_registered_sidebars']; ?>
+                                    <?php $recommended = ""; ?>
+                                    <?php $selected    = ""; ?>
                                     <?php
-                                    $sidebars = $GLOBALS['wp_registered_sidebars'];
-                                    $recommended = "";
-                                    $selected    = "";
                                     foreach($sidebars as $sidebar){
                                         if( defined('SP_CAT_SIDEBAR') ){
                                             if( $sidebar['id'] == SP_CAT_SIDEBAR ){
@@ -170,9 +164,7 @@ if (!class_exists("sp_admin")) {
                                         }
                                     ?>
                                     <option id="<?php echo $sidebar['id'] ?>" value="<?php echo $sidebar['id'] ?>" <?php echo $selected ?>><?php echo $sidebar['name'] . $recommended ?></option>
-                                    <?php
-                                    }
-                                    ?>
+                                    <?php } ?>
                                 </select>
                             </td>
                         </tr>
@@ -181,7 +173,7 @@ if (!class_exists("sp_admin")) {
                     <button type="submit" class="button button-large" id="save_template">Save Template</button>
                 </form>
             </div>
-            <?php
+        <?php
         }
 
         /**
@@ -191,10 +183,11 @@ if (!class_exists("sp_admin")) {
          */
         static function renderCatSettings($catID, $sp_categories){
             $sp_category = null;
-            $category    = null;
+            $category = null;
             $cat_desc = null;
             $title = null;
             $icon  = null;
+
             if( in_array($catID, $sp_categories) ){
                 $sp_category = new sp_category(null, null, $catID);
                 $title = $sp_category->getTitle();
@@ -241,7 +234,7 @@ if (!class_exists("sp_admin")) {
          * @param bool $include_parent - Whether to include the parent in the resulting array
          * @return array
          */
-        public static function buildSPDynaTree($args, $parent = 0, $include_parent = false){
+         static function buildSPDynaTree($args, $parent = 0, $include_parent = false){
 
             if($include_parent){
                 $parentCat  = get_category( $parent );
@@ -265,7 +258,7 @@ if (!class_exists("sp_admin")) {
                 $node->href     = admin_url('admin.php?page=smartpost&catID=' . $category->term_id);
                 $node->target   = '_self';
 
-                if( in_array( $category->term_id, $sp_categories ) ){
+                if( !empty($sp_categories) && in_array( $category->term_id, $sp_categories ) ){
 
                     $sp_category = new sp_category( null, null, $category->term_id );
 
@@ -413,8 +406,8 @@ if (!class_exists("sp_admin")) {
 
             ?>
             <div class="wrap">
-                <div class="error" <?php echo empty( $error_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_errors"><?php echo $error_msg ?></span><span class="hideMsg sp_xButton" title="Ok, got it"></span><div class="clear"></div></div>
-                <div class="updated" <?php echo empty( $update_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_update"><?php echo $update_msg ?></span><span class="hideMsg sp_xButton" title="Ok, got it"></span><div class="clear"></div></div>
+                <div class="error" <?php echo empty( $error_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_errors"></span><span class="hideMsg sp_xButton" title="Ok, got it"></span><div class="clear"></div></div>
+                <div class="updated" <?php echo empty( $update_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_update"></span><span class="hideMsg sp_xButton" title="Ok, got it"></span><div class="clear"></div></div>
             <h2><img src="<?php echo SP_IMAGE_PATH ?>/sp-icon.png" style="height: 17px;" /> <span style="color: #89b0ff;">Smart<span style="color: #07e007">Post</span> Templates</span> - Settings</h2>
             <div id="poststuff">
                 <div id="post-body" class="metabox-holder columns-2">
@@ -460,7 +453,6 @@ if (!class_exists("sp_admin")) {
             </div><!-- end #poststuff -->
             <div id="sp-version">SmartPost <?php echo SP_VERSION ?></div>
         <?php
-        }
-    }
-}
-?>
+        } // end sp_settings_page() method
+    } // end sp_admin class
+} // end if class_exists()

@@ -183,7 +183,7 @@ if (!class_exists("sp_core")) {
                 // Format the file name
                 $newFilePath = preg_replace( '/\s+/', '', $filePath ); // Remove all whitespace
                 $path_parts  = pathinfo($newFilePath);
-                $newFilePath = $path_parts['dirname'] . '/' . $path_parts['filename'] . '_' . uniqid() . '.' . $path_parts['extension']; // Add a unique ID to keep file names unique
+                $newFilePath = $path_parts['dirname'] . '/' . $path_parts['filename'] . '_' . uniqid() . '.' . strtolower( $path_parts['extension'] ); // Add a unique ID to keep file names unique
                 rename( "{$filePath}.part", $newFilePath ); // Strip the temp .part suffix off
                 return $newFilePath;
             }else{
@@ -238,7 +238,8 @@ if (!class_exists("sp_core")) {
             }
 
             // Read in EXIF data
-            $exif = @exif_read_data( $img_path );
+            $exif = exif_read_data( $img_path );
+
             if ( isset( $exif ) && isset( $exif['Orientation'] ) && $exif['Orientation'] > 1 ) {
 
                 // Get the correct orientation

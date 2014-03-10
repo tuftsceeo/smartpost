@@ -22,3 +22,10 @@
 .sp-attachments-desc{
     margin: 20px;
 }
+.sp-attachments-table-container{
+    padding-left: 20px;
+    padding-right: 20px;
+}
+.sp-attachments-table{
+    width: 100%;
+}

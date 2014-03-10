@@ -46,9 +46,11 @@ if (!class_exists("sp_postLink")) {
                     $html .= $this->renderDesc();
                     $html .= $this->renderYouTubePlayer();
                     $placeholder = empty($this->url) ? 'sp-link-placeholder' : '';
+                    $html .= $this->youTube ? '<div id="sp-link-youtube-link-' . $this->ID . '" class="sp-link-youtube-link">' : '';
                     $html .= '<div id="sp_the_link-' . $this->ID . '" data-compid="' . $this->ID . '" class="sp_the_link editable sp_textIcon ' . $placeholder . '">';
                         $html .= $this->url;
                     $html .= '</div>';
+                    $html .= $this->youTube ? '</div>' : ''; // end sp-link-youtube-link
                     $html .= '<input type="hidden" id="sp-link-url-' . $this->ID . '" name="sp-link-url-' . $this->ID . '" value="' . $this->url . '">';
                 $html .= '</div><!-- .sp_link_right_wrapper -->';
                 $html .= '<div class="clear"></div>';
@@ -71,7 +73,9 @@ if (!class_exists("sp_postLink")) {
                     $html .= '<div id="sp_link_right_wrapper-' . $this->ID . '" class="sp_link_right_wrapper">';
                         $html .= $this->renderDesc(false);
                         $html .= $this->renderYouTubePlayer();
-                        $html .= '<a href="' . $this->url .'" target="_new" class="sp-link-view">' . $this->url . '</a>';
+                        $html .= $this->youTube ? '<div id="sp-link-youtube-link-' . $this->ID . '" class="sp-link-youtube-link">' : '';
+                            $html .= '<a href="' . $this->url .'" target="_blank" class="sp-link-view">' . $this->url . '</a>';
+                        $html .= $this->youTube ? '</div>' : ''; // end sp-link-youtube-link
                     $html .= '</div><!-- .sp_link_desc -->';
                     $html .= '<div class="clear"></div>';
                 $html .= '</div>';

@@ -45,8 +45,7 @@ if (!class_exists("sp_install")) {
 		 */		
 		function tableExists($tableName){
 			global $wpdb;
-			$sql = "SELECT * FROM INFORMATION_SCHEMA.TABLES
-					WHERE TABLE_NAME =  '$tableName'";
+			$sql = "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '$tableName'";
 			$row = $wpdb->get_row($sql);
 			return is_null($row);
 		}

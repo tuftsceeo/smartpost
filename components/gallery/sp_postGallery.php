@@ -80,11 +80,13 @@ if (!class_exists("sp_postGallery")) {
                 $html .= '<div id="sp-gallery-uploads-' . $this->ID . '" class="sp-gallery-uploads">';
                     $html .= '<span id="sp-gallery-progress-msg-' . $this->ID . '"></span>';
                     $html .= '<span id="sp-gallery-progress-' . $this->ID . '"></span>';
-                    $html .= '<p class="sp-upload-dropzone">';
-                        $html .= 'Drag and drop pictures here';
-                        $html .= '<br /><br />Or<br /><br />';
-                        $html .= 'Browse for pictures here: <input type="file" id="sp-upload-' . $this->ID . '" />';
-                    $html .= '</p>';
+                    $html .= '<div class="sp-gallery-dropzone">';
+                        $html .= '<button type="button" data-compid="' . $this-> ID .'" id="sp-gallery-browse-' . $this->ID . '" class="sp-gallery-browse sp-browse-button button">';
+                            $html .= '<img src="' . sp_core::getIcon( $this->typeID ) . '" /> Upload Photos';
+                        $html .= '</button>';
+                        $html .= '<p>You can also drag and drop photos here</p>';
+                        $html .= '<input type="file" id="sp-gallery-upload-' . $this->ID . '" style="display: none;" />';
+                    $html .= '</div>';
                     $html .= '<div class="clear"></div>';
                 $html .= '</div><!-- end .sp-gallery-uploads -->';
 
@@ -97,8 +99,8 @@ if (!class_exists("sp_postGallery")) {
          * @see parent::renderViewMode()
          */
         function renderViewMode(){
-            $html = '<div id="sp-gallery-pics-' . $this->ID . '" class="sp-gallery-pics">';
-            $html .= '<div id="sp-gallery-desc-' . $this->ID . '" class="sp-gallery-desc">' . $this->description . '</div>';
+            $html = !empty($this->description) ? '<div id="sp-gallery-desc-' . $this->ID . '" class="sp-gallery-desc">' . $this->description . '</div>' : '';
+            $html .= '<div id="sp-gallery-pics-' . $this->ID . '" class="sp-gallery-pics">';
             if( !empty($this->attachmentIDs) ){
                 foreach($this->attachmentIDs as $id){
                     $html .= self::renderThumb($id, $this->ID, false);

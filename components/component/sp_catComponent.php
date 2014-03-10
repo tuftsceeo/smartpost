@@ -530,7 +530,6 @@ if (!class_exists("sp_catComponent")) {
 
         /**
          * Returns the icon URL.
-         *
          * @return string The URL of the icon
          */
         function getIcon(){

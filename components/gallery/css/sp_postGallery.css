@@ -3,8 +3,8 @@
  * Used in front-end posts
  */
 .sp-gallery-thumb{
-    float: left;
-    margin: 20px;
+    display: inline-block;
+    margin: 10px;
     position: relative;
 }
 .sp-gallery-caption{
@@ -41,7 +41,11 @@
 }
 .sp-gallery-pics{
     clear: both;
+    text-align: center;
 }
 .sp-gallery-desc{
     margin: 20px;
+}
+.sp-gallery-dropzone{
+    text-align: center;
 }

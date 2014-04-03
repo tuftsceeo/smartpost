@@ -73,13 +73,28 @@ if (!class_exists("sp_core")) {
          * @param $name
          * @return WP_Error|Object DB Object representing the component type
          */
-        static function getTypeIDByName($name){
+        static function get_type_id_by_name($name){
             if(!empty($name)){
                 global $wpdb;
                 $tableName = $wpdb->prefix . 'sp_compTypes';
                 return $wpdb->get_var("SELECT id FROM $tableName where name = '$name';");
             }else{
                 return new WP_Error('broke', ('Name not supplied.'));
+            }
+        }
+
+        /**
+         * @param $component_type_id
+         * @return WP_Error|array
+         */
+        static function get_components_by_type( $component_type_id ){
+            if( !empty( $component_type_id ) ){
+                global $wpdb;
+                $tableName = $wpdb->prefix . 'sp_postComponents';
+                $results = $wpdb->get_results( "SELECT * FROM $tableName where typeID = $component_type_id;" );
+                return $results;
+            }else{
+                return new WP_Error('broke', ('Component type ID not given.'));
             }
         }
 
@@ -205,14 +220,18 @@ if (!class_exists("sp_core")) {
 
         /**
          * Returns true if filename is a jpeg, png, or gif, otherwise false.
-         * @param $filename
+         * @param $filename - the full path to the file
          * @return bool
          */
         static function validImageUpload($filename){
-            $valid_extensions = array('jpg', 'jpeg', 'png', 'gif');
-            $validExt = self::validateExtension($filename, $valid_extensions);
-            $isImage  = getimagesize($filename);
-            return is_array($isImage) && $validExt;
+            if( !empty( $filename) ){
+                $valid_extensions = array('jpg', 'jpeg', 'png', 'gif');
+                $validExt = self::validateExtension($filename, $valid_extensions);
+                $isImage  = getimagesize($filename);
+                return is_array($isImage) && $validExt;
+            }else{
+                return false;
+            }
         }
 
         /**
@@ -317,12 +336,6 @@ if (!class_exists("sp_core")) {
             );
             $containerAttrs = array_merge( $defaultContainerAttrs, $containerAttrs );
             $contentAttrs = array_merge( $defaultContentAttrs, $contentAttrs );
-
-            /* Make sure to include the default sp-editor-content class
-            if( strpos($contentAttrs['class'], 'sp-editor-content') === false ){
-                $contentAttrs['class'] = 'sp-editor-content ' . $contentAttrs['class'];
-            }
-            */
 
             // Stringify the container attributes
             $formattedContainerAttrs = '';

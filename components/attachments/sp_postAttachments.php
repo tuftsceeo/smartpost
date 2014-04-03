@@ -16,13 +16,13 @@ if (!class_exists("sp_postAttachments")) {
             $compInfo = compact("compID", "catCompID", "compOrder", "name", "value", "postID");
 
             if($compID == 0){
-                //Set default options from category component
+                // Set default options from category component
                 $this->options = sp_catComponent::getOptionsFromID( $catCompID );
             }
 
             $this->initComponent($compInfo);
 
-            //Get the "default" allowed extensions
+            // Get the "default" allowed extensions
             $this->allowedExts = empty( $this->options ) ? array() : $this->options;
 
             // Load instance vars

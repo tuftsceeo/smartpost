@@ -61,14 +61,18 @@ if (!class_exists("sp_category")) {
                         $this->responseCats  = $sp_responseCats[$this->ID];
                     }
 
-                    //load cat components
+                    // load category/template components
                     $sp_catComponentsTable = $wpdb->prefix . "sp_catComponents";
-                    $componentResults 	   = $wpdb->get_results( "SELECT * FROM $sp_catComponentsTable where catID = $catID order by compOrder ASC;" );
+                    $componentResults = $wpdb->get_results( "SELECT * FROM $sp_catComponentsTable where catID = $catID order by compOrder ASC;" );
                     if( !empty($componentResults) ){
                         foreach($componentResults as $componentRow){
                             $type = 'sp_cat' . sp_core::getTypeName( $componentRow->typeID );
-                            $component = new $type($componentRow->id);
-                            array_push($this->catComponents, $component);
+                            if( class_exists( $type ) ){
+                                $component = new $type($componentRow->id);
+                                array_push($this->catComponents, $component);
+                            }else if( SP_DEBUG ){
+                                error_log('SmartPost Error: "' . $type . '" class does not found. In ' . __FILE__ . ', line: ' . __LINE__ );
+                            }
                         }
                     }
                 }
@@ -80,7 +84,7 @@ if (!class_exists("sp_category")) {
         /**
          * Initializes scripts, actions, hooks, variables for the sp_category class.
          */
-        function init(){
+        public static function init(){
             require_once('ajax/sp_categoryAJAX.php');
             if( class_exists( 'SP_Category_AJAX' ) ){
                 SP_Category_AJAX::init();

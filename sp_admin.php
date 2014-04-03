@@ -400,6 +400,7 @@ if ( !class_exists("sp_admin") ) {
          */
         function sp_settings_page(){
             $components = sp_core::getTypes();
+            $alert_flag = isset( $_GET['update'] );
             $currCompID = (int) $_GET['compID'];
             $currCompType = sp_core::getType( $currCompID );
             $currCompClass = 'sp_cat' . $currCompType->name;
@@ -419,8 +420,20 @@ if ( !class_exists("sp_admin") ) {
                             <div class="inside">
                                 <a href="<?php echo admin_url('admin.php?page=sp-cat-page') ?>" class="sp-settings-item"><img src="<?php echo SP_IMAGE_PATH ?>/sp-icon.png"> General Settings</a>
                                 <?php
+                                $bad_components = array();
                                 foreach($components as $comp){
-                                    echo '<a href="' . admin_url('admin.php?page=sp-cat-page') . '&compID=' . $comp->id . '" class="sp-settings-item"><img src="' . $comp->icon . '" /> ' . $comp->name . '</a>';
+                                    $comp_class_name = 'sp_cat' . $comp->name;
+                                    if( class_exists( $comp_class_name ) ){
+                                        echo '<a href="' . admin_url('admin.php?page=sp-cat-page') . '&compID=' . $comp->id . '" class="sp-settings-item"><img src="' . $comp->icon . '" /> ' . $comp->name . '</a>';
+                                    }else{
+                                        array_push($bad_components, $comp);
+                                    }
+                                }
+
+                                // There may be the case that old components exist from older versions of SmartPost, or they were renamed
+                                if( !empty( $bad_components ) ){
+                                    $bad_components_note = '(' .  count( $bad_components ) . ')';
+                                    echo '<a href="' . admin_url('admin.php?page=sp-cat-page') . '&update=true" class="sp-settings-item"><img src="' . SP_IMAGE_PATH . '/alert.png" /> Alerts ' . $bad_components_note . '</a>';
                                 }
                                 ?>
                             </div>
@@ -439,12 +452,31 @@ if ( !class_exists("sp_admin") ) {
                                         echo $settings;
                                     }
                                 ?>
-                                <?php else: ?>
-                                    <h2>SmartPost Settings</h2>
-                                    <p>SmartPost has a slew of features that make it more customizable.</p>
-                                    <p>On the right hand side bar title "SmartPost Components", you can navigate between the components and customize SmartPost further.</p>
+                            <?php elseif( $alert_flag ): ?>
+                                <h2><img src="<?php echo SP_IMAGE_PATH . '/alert.png' ?>" /> SmartPost Templates Alerts</h2>
+                                <p>When upgrading from previous SmartPost versions, it may be the case that certain components are not functioning properly and require an update.</p>
+                                <p>Below are the details of the various components that require your attention.</p>
+                                <p>It is highly recommended to run any updates, as various content may not be properly rendered (or rendered at all) on the front-end of the site.</p>
+                                    <?php
+                                    foreach( $bad_components as $bad_comp ){
+                                        echo '<h3>' . $bad_comp->name . '</h3>';
+
+                                        $update_script_class = 'sp_cat' . $bad_comp->name . '_Update';
+                                        if( class_exists( $update_script_class ) ){
+                                            $update_script_class::render_update_settings();
+                                        }else{
+                                            echo '<p>Failed to load a PHP class and an update script for the the component called "' . $bad_comp->name . '".</p>';
+                                            //echo 'You can delete the component from the database here: <button data-compid="' . $bad_comp->ID . '" class="sp-delete-component button" type="button">Delete ' . $bad_comp->name . '</p>';
+                                        }
+                                    }
+                                    ?>
+                            <?php else: ?>
+                                <h2>SmartPost Settings</h2>
+                                <p>SmartPost has a slew of features that make it more customizable.</p>
+                                <p>On the right hand side bar title "SmartPost Components", you can navigate between the components and customize SmartPost further.</p>
                                 <?php endif; ?>
                             </div>
+
                             <div class="clear"></div>
                         </div><!-- end #category_settings -->
                     </div>

@@ -8,6 +8,7 @@ var smartpost  = smartpost  || {};
 var sp_widgets = sp_widgets || {};
 var sp_globals = sp_globals || {};
 var sp_admin   = sp_admin   || {};
+var sp_update  = sp_update  || {};
 
 //To-do: remove these global variables to minimize namespace pollution
 var SP_AJAX_URL    = sp_globals.SP_AJAX_URL;

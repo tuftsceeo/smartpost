@@ -62,7 +62,7 @@ if (!class_exists("sp_postVideo")) {
             $html .= sp_core::sp_editor(
                 $this->description,
                 $this->ID,
-                true,
+                false,
                 'Click here to add a video description ...',
                 array('data-action' => 'saveVideoDescAJAX', 'data-compid' => $this->ID, 'data-postid' => $this->postID )
             );

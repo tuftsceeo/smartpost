@@ -25,12 +25,11 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
             }
 
             global $current_user;
-
-            if( !empty($_POST['parentID']) ){
+            if( !empty( $_POST['parentID'] ) ){
                 $post['post_parent'] = (int) $_POST['parentID'];
             }
 
-            //Create a new blank draft
+            // Create a new blank draft
             $post['post_status'] = 'draft';
             $post['post_title']  = 'New draft ' . date('d-m-y');
             $post['post_author'] = $current_user->ID;
@@ -38,24 +37,23 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
 
             // Set the category of the post
             $catID = (int) $_POST['catID'];
-            $post['post_category'] = array($catID);
+            $post['post_category'] = array( $catID );
 
+            // Create the draft post
             $id = wp_insert_post($post, true);
-
             if( is_wp_error($id) ){
                 header("HTTP/1.0 409 " . $id->get_error_message());
                 exit;
             }
 
             // Add any default/required components
-            $postComps = sp_post::getComponentsFromID($id);
-            $html = '';
-            $html .= '<div id="spComponents" class="sortableSPComponents quickPostComps">';
-            if( !empty( $postComps ) ){
+            $post_comps = sp_post::get_components_from_ID($id);
+            $html = '<div id="spComponents" class="sortableSPComponents quickPostComps">';
+            if( !empty( $post_comps ) ){
                 global $wp_query;
                 $wp_query->is_single = true;
                 $_GET['edit_mode'] = true;
-                foreach( $postComps as $postComp ){
+                foreach( $post_comps as $postComp ){
                     $html .= $postComp->render();
                 }
                 $wp_query->is_single = false;
@@ -84,7 +82,7 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
                 $html .= '<div class="clear"></div>';
             }
 
-            //Add the post ID
+            // Add the post ID
             $html .= '<input type="hidden" id="sp_qpPostID" name="sp_qpPostID" value="' . $id . '" />';
             echo $html;
             exit;
@@ -151,7 +149,7 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
 
 			foreach($responseCats as $responseCat){
 				$post_filters['categories']  = array($responseCat->getID());
-				$html .= $responseCat->renderPostTree('publish', 0, $post_filters);
+				$html = $responseCat->renderPostTree('publish', 0, $post_filters);
 			}
 			
 			if(class_exists('sp_postTreeWidget')){

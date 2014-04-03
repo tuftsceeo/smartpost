@@ -174,11 +174,11 @@ input.requiredAndDefault{
     margin: 10px;
     clear: both;
     display: block;
+    font-size: 18px;
 }
 .sp-settings-item img{
     width: 16px;
     height: 16px;
-    vertical-align: middle;
 }
 #sp-version{
     clear: both;

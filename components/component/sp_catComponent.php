@@ -210,7 +210,7 @@ if (!class_exists("sp_catComponent")) {
                 $icon_url = plugins_url('images/' . $icon_filename, $filepath );
             }
 
-            $typeID = sp_core::getTypeIDByName($name);
+            $typeID = sp_core::get_type_id_by_name($name);
 
             // The component already exists, so update it if necessary
             if($typeID > 0){

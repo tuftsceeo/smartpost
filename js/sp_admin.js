@@ -8,15 +8,15 @@
 
         /**
          * Displays errors to the user.
-         * @param errorDivID - The HTML DOM elm's ID where the error will be displayed. Default: #setting_errors
+         * @param errorElem - The HTML DOM elm's where the error will be displayed. Default: #setting_errors
          * @param errorText  - The error message to display (can be HTML)
          */
-        showError: function(errorText, errorDivID){
-            if(errorDivID == undefined)
-                errorDivID = '#sp_errors';
+        showError: function(errorText, errorElem){
+            if(errorElem == undefined)
+                errorElem = '#sp_errors';
 
-            $(errorDivID).html('<p>Error: ' + errorText + '</p>');
-            $(errorDivID).parent().show();
+            $(errorElem).html('<p>Error: ' + errorText + '</p>');
+            $(errorElem).parent().show();
         },
         /**
          * Saves the component order for a category template on the admin page.

@@ -22,17 +22,17 @@ if (!class_exists("sp_post")) {
             if($loadPost){
                 self::load($postID);
             }else{
-                //instantiate the post with any required/default components
+                // Instantiate the post with any required/default components
                 $wpPost = get_post($postID);
                 if( !is_null($wpPost) ){
 
-                    //Get the sp_category if there is one
+                    // Get the sp_category if there is one
                     $sp_category       = self::getSPCategory($postID);
                     $this->wpPost 	   = get_post($postID);
                     $this->sp_category = $sp_category;
                     $this->components  = array();
 
-                    //Add any required or default components
+                    // Add any required or default components
                     if( !is_null($this->sp_category) ){
                         $catComponents = $this->sp_category->getComponents();
 
@@ -67,7 +67,7 @@ if (!class_exists("sp_post")) {
                 //If yes, define member variables
                 $this->wpPost      = get_post($postID);
                 $this->sp_category = $sp_category;
-                $this->components  = self::getComponentsFromID($postID);
+                $this->components  = self::get_components_from_ID($postID);
             }else{
 
                 //Otherwise something went wrong
@@ -210,14 +210,16 @@ if (!class_exists("sp_post")) {
 
         /**
          * Action hook for wp_insert_post, called whenever a new post is created
-         *
          * @link http://codex.wordpress.org/Plugin_API/Action_Reference/save_post
          * @param $post
+         * @return null|sp_post
          */
         function newSPPost($post){
+            $sp_post = null;
             if(self::is_sp_post($post->ID) &&  !wp_is_post_revision( $post->ID )){
                 $sp_post = new sp_post($post->ID);
             }
+            return $sp_post;
         }
 
         /**
@@ -313,27 +315,23 @@ if (!class_exists("sp_post")) {
          * @return string        The content after filtering
          */
         function renderPost($content){
-            global $wp_query;
             global $post;
-            global $current_user;
 
             if( self::is_sp_post($post->ID) ){
-                $owner = ($current_user->ID == $post->post_author);
-                $admin = current_user_can('administrator');
                 $sp_post = new sp_post($post->ID, true);
                 $editMode = $_GET['edit_mode'];
 
-                if( ($owner || $admin) && is_single() ){
+                if( current_user_can( 'edit_post', $post->ID ) && is_single() ){
 
-                    //remove shortcodes since we don't want double rendering happening
+                    // remove shortcodes since we don't want double rendering happening
                     $content = strip_shortcodes($content);
 
-                    //Check for post errors
+                    // Check for post errors
                     if( is_wp_error($sp_post->errors) ){
                         $errors = '<p>' . $sp_post->errors->get_error_message() . '</p>';
                     }
 
-                    //Check if post is currently locked for editing
+                    // Check if post is currently locked for editing
                     require_once(ABSPATH . 'wp-admin/includes/post.php');
                     $isLocked = wp_check_post_lock( $post->ID );
 
@@ -348,7 +346,7 @@ if (!class_exists("sp_post")) {
                     //Add an errors div and display errors if necessary
                     $content = '<div id="component_errors"' . (!empty($errors) ? ' style="display: block;"' : '') . '>' . $errors . '<span id="clearErrors" class="sp_xButton"></span></div>' . $content;
 
-                    //load the components
+                    // load the components
                     $postComponents = $sp_post->getComponents();
                     $content .= '<div class="clear"></div>';
                     $addCompStackClass = $editMode ? 'sp-component-stack' : '';
@@ -361,10 +359,12 @@ if (!class_exists("sp_post")) {
                     $content .= '<div class="clear"></div>';
                 }
 
+                /*
                 if( is_single() ){
                     $content .= $sp_post->renderResponsePosts();
                     $content = do_shortcode($content);
                 }
+                */
 
                 if( !is_singular() || is_home() ){
                     // load the components
@@ -567,17 +567,6 @@ if (!class_exists("sp_post")) {
         }
 
         /**
-         * Finds the SP category from an array of category IDs (i.e. array( 0 => catID1, 1 => catID2, ...)
-         * Otherwise returns null.
-         *
-         * @param array $categories Array of catIDs array(0 => catID1, 1 => catID2, ...)
-         * @returns int the
-         */
-        function findSPCategories($categories){
-
-        }
-
-        /**
          * Returns true if the post is a SP-enabled post, false otherwise
          *
          * @param int $postID the post's ID
@@ -651,7 +640,7 @@ if (!class_exists("sp_post")) {
          * @param  int   $postID the ID of the post
          * @return array An array of sp_postComponent objects
          */
-        static function getComponentsFromID($postID){
+        static function get_components_from_ID($postID){
             global $wpdb;
             $postComponents = array();
             $tableName = $wpdb->prefix . 'sp_postComponents';
@@ -661,12 +650,15 @@ if (!class_exists("sp_post")) {
                 $postComponents = array();
                 $i = 0;
                 foreach( $componentResults as $rawComponent ){
-                    $postCompType         = 'sp_post' . sp_core::getTypeName($rawComponent->typeID);
-                    $sp_postComponent     = new $postCompType($rawComponent->id);
-                    $postComponents[$i++] = $sp_postComponent;
+                    $post_comp_type = 'sp_post' . sp_core::getTypeName($rawComponent->typeID);
+                    if( class_exists( $post_comp_type) ){
+                        $sp_postComponent = new $post_comp_type($rawComponent->id);
+                        $postComponents[$i++] = $sp_postComponent;
+                    }else if( SP_DEBUG ){
+                        error_log('SmartPost Error: "' . $post_comp_type . '" class does not found. In ' . __FILE__ . ', line: ' . __LINE__ );
+                    }
                 }
             }
-
             return $postComponents;
         }
 

@@ -295,6 +295,9 @@
                     self.removeTag( $('#postID').val(), tagID );
                 });
             });
+
+            // hide plupload thing
+            $('.plupload').css('height', '0px');
         }
     };
 

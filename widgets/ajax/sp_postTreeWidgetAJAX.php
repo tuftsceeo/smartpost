@@ -15,10 +15,12 @@ if (!class_exists("sp_postTreeWidgetAJAX")) {
          * @param $displayCats
          */
         private static function hideNodes(&$catTree, $displayCats){
+
             if( is_array( $catTree ) && is_array( $displayCats ) ){
                 foreach($catTree as $key => $node){
-                    if( in_array($node->catID, $displayCats) ){
-                        unset($catTree[$key]);
+                    if( isset( $node->catID ) && !in_array($node->catID, $displayCats) ){
+                        unset( $catTree[$key] );
+                        $catTree = array_values( $catTree ); // re-index the array to keep proper indexing for dynatree
                     }else{
                         if( !empty($node->children) ){
                             self::hideNodes($node->children, $displayCats);
@@ -47,7 +49,20 @@ if (!class_exists("sp_postTreeWidgetAJAX")) {
             $sp_treeWidgets = get_option( 'widget_sp_posttreewidget' );
             $displayCats = $sp_treeWidgets[$widgetId]['displayCats'];
 
+            /*
+            error_log('BEFORE');
+            error_log( print_r( $displayCats, true ) );
+            error_log( print_r( $catTree, true ) );
+            */
+
             self::hideNodes($catTree, $displayCats);
+
+            /*
+            error_log('AFTER');
+            error_log( print_r( $displayCats, true ) );
+            error_log( print_r( $catTree, true ) );
+            */
+
             echo json_encode( array_values($catTree) ); // Important to have array_values() here after filtering hidden nodes
             exit;
         }

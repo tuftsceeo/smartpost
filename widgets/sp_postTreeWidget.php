@@ -78,7 +78,7 @@ class sp_postTreeWidget extends WP_Widget {
     }
 
     /**
-     * Renders HTML ul list of representing the category hierarchy (i.e. subcategories and their posts)
+     * Returns a multi-dimensional array representing the category hierarchy (i.e. subcategories and their posts)
      * @param $catArgs - Query args used for displaying the categories
      * @param $postArgs - Query args used for displaying posts. If this is false, posts will not be shown.
      * @param int $parent - The category parent to start the search with, 0 will query all 'top-level' categories
@@ -132,15 +132,30 @@ class sp_postTreeWidget extends WP_Widget {
         $args['parent'] = $parent;
         $categories = get_categories( $args );
 
-        $id      = $this->get_field_id( 'displayCats' );
-        $name    = $this->get_field_name( 'displayCats' );
+        $id = $this->get_field_id( 'displayCats' );
+        $name = $this->get_field_name( 'displayCats' );
 
         $html = '';
         if( !empty($categories) && is_array( $displayCats ) ){
 
+            /*
+            $cat_tree = self::buildCatDynaTree( array( 'orderby' => 'name','order' => 'ASC', 'hide_empty' => 0 ) );
+
+            error_log( print_r($cat_tree, true) );
+
+            $html = '';
+            array_walk_recursive( $cat_tree, function($item, $key) use (&$html) {
+                $html .= $key .  ' ' . $item->title . '<br />';
+            });
+
+            */
             $html = '<ul>';
             foreach( $categories as $category ) {
-                $checked = in_array($category->term_id, $displayCats) ? 'checked="checked"' : '';
+                if( empty($displayCats) ){
+                    $checked = 'checked="checked"';
+                }else{
+                    $checked = in_array($category->term_id, $displayCats) ? 'checked="checked"' : '';
+                }
                 $html .= '<li>';
                     $html .= '<input type="checkbox" id="' . $id . '[]" name="' . $name .'[]" value="' . $category->term_id . '" ' . $checked . ' />';
                     $html .= $category->name;
@@ -148,6 +163,7 @@ class sp_postTreeWidget extends WP_Widget {
                 $html .= '</li>';
             }
             $html .= '</ul>';
+
         }
         return $html;
     }
@@ -164,8 +180,7 @@ class sp_postTreeWidget extends WP_Widget {
     function form($instance) {
         if ( isset( $instance[ 'title' ] ) ) {
             $title = $instance[ 'title' ];
-        }
-        else {
+        } else {
             $title = __( 'Browse Posts', 'text_domain' );
         }
 
@@ -180,7 +195,7 @@ class sp_postTreeWidget extends WP_Widget {
             <input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>" />
         </p>
         <p>
-            Check off the categories you'd like to <span style="font-size:16px; font-weight: bold; text-decoration: underline;">HIDE</span> on the front-end.
+            Check off the categories you'd like to <span style="font-size:16px; font-weight: bold; text-decoration: underline;">display</span> on the front-end widget.
         </p>
         <p><b><u>Note:</u></b> checking off a parent category will hide all of its children.</p>
         <div id="sp-cat-tree-container-<?php echo $this->id ?>" data-widgetid="<?php echo $this->id ?>" class="sp-widget-cat-tree-container">

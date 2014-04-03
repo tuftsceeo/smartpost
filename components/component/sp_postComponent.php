@@ -192,31 +192,22 @@ if (!class_exists("sp_postComponent")) {
         function delete(){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_postComponents';
-            return $wpdb->query(
-                $wpdb->prepare(
-                    "DELETE FROM $tableName
-					 WHERE id = %d",
-                    $this->ID
-                )
-            );
+            return $wpdb->query( $wpdb->prepare( "DELETE FROM $tableName WHERE id = %d", $this->ID ) );
         }
 
         /**
          * Renders the component in HTML. If the component is empty and renderViewMode is called,
          * then the component will not render.
-         * @return string HTML representation of the component
+         * @param bool $force_edit_mode - Forces the component to be rendered in "Edit Mode"
+         * @return string - XHTML of the component
          */
-        function render(){
-            global $current_user;
-            global $wp_query;
-            $post    = get_post($this->postID);
-            $canEdit = current_user_can( 'edit_posts' );
-            $owner = ( $current_user->ID == $post->post_author );
-            $admin = current_user_can( 'administrator' );
-            $editMode = (bool) $_GET['edit_mode'];
+        function render($force_edit_mode = false){
+
+            // Establish whether we are in edit mode or not
+            $edit_mode = $force_edit_mode ? true : (bool) $_GET['edit_mode'];
 
             require_once(ABSPATH . 'wp-admin/includes/post.php');
-            $isLocked = (bool) wp_check_post_lock( $this->postID );
+            $is_locked = (bool) wp_check_post_lock( $this->postID );
 
             // Return preview mode if we're listing posts
             if( !is_single() ){
@@ -226,45 +217,34 @@ if (!class_exists("sp_postComponent")) {
                 return $html;
             }
 
-            if( is_search() ){
-                if( !$this->isEmpty() ){
-                    $html = $this->renderViewMode() . ' ';
-                }
-                return $html;
-            }
-
             // Return edit mode component if we're an admin or an owner
-            if( ( ( $canEdit &&  $owner) ||  $admin ) && !$isLocked && $editMode ){
+            if( current_user_can('edit_post', $this->postID) && $edit_mode && !$is_locked ){
                 $html = '<div id="comp-' . $this->ID . '" data-compid="' . $this->ID . '" data-required="' . $this->isRequired() . '" data-catcompid="' . $this->catCompID . '" data-typeid="' . $this->typeID . '" class="sp-component-edit-mode' . ( ($this->isRequired() && $this->lastOne() && $this->isEmpty() ) ?  ' requiredComponent' : '') . '">';
-                    // $html .= $this->renderCompTitle( ($owner || $admin) );
+                    $html .= $this->render_comp_title();
                     $html .= '<span id="del" data-compid="' . $this->ID . '" class="sp_delete sp_xButton" title="Delete Component"></span>';
                     $html .= '<div class="componentHandle tooltip" title="Drag up or down"><div class="theHandle"></div></div>';
                     $html .= $this->renderEditMode();
                     $html .= '<div class="clear"></div>';
                 $html .= '</div><!-- end #comp-' . $this->ID .' -->';
-                return $html;
 
-            }else{ // Otherwise return viewMode
-
+            }else{ // Otherwise return "view mode"
                 if( !$this->isEmpty() ){
                     $html = '<div id="comp-' .  $this->ID . '" class="sp_component">';
-                    // $html .= $this->renderCompTitle();
                     $html .= $this->renderViewMode();
                     $html .= '<div class="clear"></div>';
                     $html .= '</div><!-- end #comp-' . $this->ID .' -->';
                 }
-                return $html;
-
             }
+            return $html;
         }
 
-        function renderCompTitle($owner = false){
-            global $current_user;
-
-            $post = get_post($this->postID);
-            $editable = 'componentTitle';
+        /**
+         * Returns an editable component title if the current user has privileges to edit it, otherwise just returns the title.
+         * @return string - XHTML of the title
+         */
+        function render_comp_title(){
             $html = '';
-            if($owner){
+            if( current_user_can('edit_post', $this->postID) ){
                 $editable = 'editableCompTitle editable';
                 $html .= '<div id="comp-' . $this->ID .'-title" data-compid="' . $this->ID . '" class="' . $editable .'" title="Click to edit title">';
                 $html .= trim($this->name);
@@ -281,7 +261,6 @@ if (!class_exists("sp_postComponent")) {
 
         /**
          * Returns true if this component is last of its kind in the post
-         *
          * @return bool true if it's the last one, false otherwise
          */
         function lastOne(){

@@ -77,8 +77,6 @@ if ( !class_exists("sp_catMedia_Update") ){
 
             $results = self::update();
 
-            error_log( print_r($results, true) );
-
             // Check the results before deleting the type entirely
             $delete_media_type = true;
             foreach( $results as $result ){

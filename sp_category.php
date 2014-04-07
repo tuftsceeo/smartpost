@@ -71,7 +71,7 @@ if (!class_exists("sp_category")) {
                                 $component = new $type($componentRow->id);
                                 array_push($this->catComponents, $component);
                             }else if( SP_DEBUG ){
-                                error_log('SmartPost Error: "' . $type . '" class does not found. In ' . __FILE__ . ', line: ' . __LINE__ );
+                                error_log('SmartPost Error: "' . $type . '" (with typeID: ' . $componentRow->typeID . ') class does not found. In ' . __FILE__ . ', line: ' . __LINE__ );
                             }
                         }
                     }

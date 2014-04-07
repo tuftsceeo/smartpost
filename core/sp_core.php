@@ -84,10 +84,43 @@ if (!class_exists("sp_core")) {
         }
 
         /**
+         * Returns all the post componetns in the sp_postComponents table where catCompID = $cat_comp_id
+         * @param $cat_comp_id
+         * @return WP_Error|array
+         */
+        static function get_post_components_by_cat_comp_id( $cat_comp_id ){
+            if( !empty( $cat_comp_id ) ){
+                global $wpdb;
+                $tableName = $wpdb->prefix . 'sp_postComponents';
+                $results = $wpdb->get_results( "SELECT * FROM $tableName where catCompID = $cat_comp_id;" );
+                return $results;
+            }else{
+                return new WP_Error('broke', ('Category Component ID not given.'));
+            }
+        }
+
+        /**
+         * Returns all the category components in the sp_catComponents table where typeID = $component_type_id
          * @param $component_type_id
          * @return WP_Error|array
          */
-        static function get_components_by_type( $component_type_id ){
+        static function get_cat_components_by_type( $component_type_id ){
+            if( !empty( $component_type_id ) ){
+                global $wpdb;
+                $tableName = $wpdb->prefix . 'sp_catComponents';
+                $results = $wpdb->get_results( "SELECT * FROM $tableName where typeID = $component_type_id;" );
+                return $results;
+            }else{
+                return new WP_Error('broke', ('Component type ID not given.'));
+            }
+        }
+
+        /**
+         * Returns all the post components in the sp_postComponents table organized by by component type
+         * @param $component_type_id
+         * @return WP_Error|array
+         */
+        static function get_post_components_by_type( $component_type_id ){
             if( !empty( $component_type_id ) ){
                 global $wpdb;
                 $tableName = $wpdb->prefix . 'sp_postComponents';
@@ -99,8 +132,27 @@ if (!class_exists("sp_core")) {
         }
 
         /**
+         * Deletes a SmartPost component from either the sp_postComponents or sp_catComponents tables
+         * @param $component_id
+         * @param $comp_type - post or category table
+         * @return bool
+         */
+        static function delete_component( $component_id, $comp_type  ){
+            if( !empty( $component_id) ){
+                global $wpdb;
+                if( $comp_type == 'post' ){
+                    $tableName = $wpdb->prefix . 'sp_postComponents';
+                }else{
+                    $tableName = $wpdb->prefix . 'sp_catComponents';
+                }
+                return $wpdb->query( $wpdb->prepare( "DELETE FROM $tableName WHERE id = %d", $component_id) );
+            }else{
+                return false;
+            }
+        }
+
+        /**
          * Updates a cell in $table based off $id
-         *
          * @param  string      $table      SmartPost table name (sp_compTypes, sp_postComponents, or sp_catComponents)
          * @param  int         $id         Unique ID of row to update
          * @param  string      $columnName The name of the column
@@ -224,7 +276,7 @@ if (!class_exists("sp_core")) {
          * @return bool
          */
         static function validImageUpload($filename){
-            if( !empty( $filename) ){
+            if( !empty( $filename) && file_exists( $filename ) ){
                 $valid_extensions = array('jpg', 'jpeg', 'png', 'gif');
                 $validExt = self::validateExtension($filename, $valid_extensions);
                 $isImage  = getimagesize($filename);

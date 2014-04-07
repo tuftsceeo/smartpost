@@ -139,7 +139,7 @@ if (!class_exists("sp_catComponentAJAX")) {
             //remove meta box toggle tracking
             $closed_meta_boxes = get_user_option( 'closedpostboxes_toplevel_page_smartpost' );
             $compElemID = $component->getCompType() . '-' . $component->getID();
-            $key        = array_search($compElemID, $closed_meta_boxes);
+            $key = array_search($compElemID, $closed_meta_boxes);
             if($key !== false){
                 unset($closed_meta_boxes[$key]);
             }

@@ -25,8 +25,11 @@
                     nonce: SP_NONCE,
                     action: 'sp_cat_media_update_ajax'
                 },
-                function(response){
-                    $('#sp_media_update_results').html(response);
+                function(response, statusText, jqXHR){
+                    console.log(response);
+                    console.log(statusText);
+                    console.log(jqXHR);
+                    $('#sp_media_update_results').html('<p><b>' + response + '</b> Media components successfully updated.</p>');
                 },
                 function(jqXHR, statusText, errorThrown){
                     sp_admin.adminpage.showError( errorThrown, '.error' );

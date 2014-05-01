@@ -83,7 +83,16 @@ class sp_postWidget extends WP_Widget {
                         </div>
                         <?php self::postStatusOptions(); ?>
                     <?php else: ?>
-                        <p><a href="<?php echo get_permalink( $post->ID ) ?>?edit_mode=true"><button type="button" class="button sp-edit-post sp_textIcon">Edit this post</button></a></p>
+                        <?php
+                        // Check if the permalink structure is with slashes, or the default structure with /?p=123
+                        $permalink_url = get_permalink( $post->ID );
+                        if( strpos( $permalink_url, '?')  ){
+                            $permalink_url .= '&edit_mode=true';
+                        }else{
+                            $permalink_url .= '?edit_mode=true';
+                        }
+                        ?>
+                        <p><a href="<?php echo  $permalink_url ?>"><button type="button" class="button sp-edit-post sp_textIcon">Edit this post</button></a></p>
                     <?php endif; ?>
                 </div><!-- end .sp-widget-post-settings -->
                 <?php echo $after_widget ?>

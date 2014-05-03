@@ -39,8 +39,13 @@ class sp_quickPostWidget extends WP_Widget {
         $catMode = $instance['categoryMode'];
         $thisCat = get_category( get_query_var('cat'), false);
 
+        // Don't return anything if we're not in a category AND category mode is enabled
+        if( $catMode && !sp_category::isSPCat($thisCat->term_id) ){
+            return '';
+        }
+
         //Load post components
-        if( current_user_can('edit_posts') && sp_category::isSPCat($thisCat->term_id) ){
+        if( current_user_can('edit_posts') ){
 
             if( !$catMode && empty($instance['displayCats']) ){
                 if( current_user_can( 'edit_dashboard' ) ){
@@ -75,8 +80,10 @@ class sp_quickPostWidget extends WP_Widget {
 
             //Display a button if it's only one category that's selected or we are in 'category mode'
             if ( $catMode || count( $instance['displayCats'] ) === 1 ) {
+
                 $renderButton = true;
-                $catID = $instance['displayCats'][0];
+                $catID = array_values($instance['displayCats']);
+                $catID = $catID[0];
                 $sp_cat  = new sp_category(null, null, $catID);
                 $catIcon = wp_get_attachment_image($sp_cat->getIconID());
                 $postButtonOpen  = '<button type="button" id="sp_addPostButton" class="sp_qp_button" data-catID="' . $catID . '">';

@@ -35,19 +35,23 @@ if (!class_exists("sp_postGallery")) {
         static function init(){
             require_once('ajax/sp_postGalleryAJAX.php');
             sp_postGalleryAJAX::init();
-            self::enqueueCSS();
-            self::enqueueJS();
+            self::enqueue_gallery_css();
+            self::enqueue_gallery_js();
         }
 			
-        static function enqueueCSS(){
+        static function enqueue_gallery_css(){
+            wp_register_style( 'magnific-popup-css', plugins_url('js/magnific-popup/magnific-popup.css', __FILE__) );
             wp_register_style( 'sp_postGalleryCSS', plugins_url('css/sp_postGallery.css', __FILE__) );
             wp_enqueue_style( 'sp_postGalleryCSS' );
+            wp_enqueue_style( 'magnific-popup-css' );
         }
-			
-        static function enqueueJS(){
-            //enqueue photo gallery related JS files
-            wp_register_script( 'sp_postGalleryJS', plugins_url('/js/sp_postGallery.js', __FILE__) );
-            wp_enqueue_script( 'sp_postGalleryJS', null, array( 'jquery', 'sp_globals', 'sp_postComponentJS' ) );
+
+        // Enqueue photo gallery related JS files
+        static function enqueue_gallery_js(){
+            wp_register_script( 'sp_postGalleryJS', plugins_url('/js/sp_postGallery.js', __FILE__), array( 'jquery', 'sp_globals', 'sp_postComponentJS' ) );
+            wp_register_script( 'magnific-popup', plugins_url('/js/magnific-popup/jquery.magnific-popup.min.js', __FILE__), array( 'sp_postGalleryJS' ) );
+            wp_enqueue_script( 'sp_postGalleryJS' );
+            wp_enqueue_script( 'magnific-popup' );
         }
 
         /**
@@ -119,7 +123,7 @@ if (!class_exists("sp_postGallery")) {
             $html = "";
             if( !is_null($attachment) ){
                 $html .= '<div id="sp-gallery-thumb-' . $id . '" data-thumbid="' . $id . '" data-compid="' . $compID . '" class="sp-gallery-thumb">';
-                    $html .= '<a href="' . wp_get_attachment_url($id) . '" class="fancybox" rel="gallery-' . $compID .'" title="' . $attachment->post_content . '">';
+                    $html .= '<a href="' . wp_get_attachment_url($id) . '" rel="gallery-' . $compID .'" title="' . $attachment->post_content . '">';
                         $html .= wp_get_attachment_image($id, array(125, 125), true);
                     $html .= '</a>';
 

@@ -127,12 +127,14 @@
                 success : function(response){
                     newComponent = $(response);
 
-                    //Add the new component to the DOM window if necessary
+                    // Add the new component to the DOM window if necessary
                     if(componentStack){
+                        newComponent.hide(); // Hide the component initially for a nice fade-in
                         newComponent.appendTo(componentStack);
+                        newComponent.fadeIn();
                     }
 
-                    //Call compHandler now that we have the component
+                    // Call compHandler now that we have the component
                     if(compHandler){
                         compHandler(newComponent);
                     }
@@ -172,16 +174,11 @@
                 componentJS.initComponent(component, postID, autoFocus);
             }
 
-            //Enable simple menu
-            if(smartpost.simpleMenu){
-                smartpost.simpleMenu.initComponent(component);
-            }
-
             //Enable delete
             this.deleteComponent(component);
 
             //Remove required marker if necessary
-            var catCompID = 	$(component).attr("data-catcompid");
+            var catCompID =	$(component).attr("data-catcompid");
             $('.sp_component[data-catcompid="' + catCompID + '"]').removeClass('requiredComponent');
         },
 

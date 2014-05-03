@@ -29,7 +29,7 @@ if (!class_exists("sp_install")) {
 			if( empty($category) ){
 				$defaultSPCat = new sp_category('SP QuickPost', 'Default category for QuickPosts');
 				
-				$types = sp_core::getTypes();
+				$types = sp_core::get_component_types();
 				foreach($types as $type){
 					if(class_exists('sp_cat' . $type->name)){
 						$defaultSPCat->addCatComponent($type->name, null, $type->id, false, false);

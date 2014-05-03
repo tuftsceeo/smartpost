@@ -89,26 +89,22 @@ if (!class_exists("sp_post")) {
             self::enqueueCSS();
         }
 
+        /**
+         * Enqueue JS scripts
+         */
         static function enqueueJS(){
             wp_register_script('sp_postJS', plugins_url('/js/sp_post.js', __FILE__));
-            wp_register_script('fancyBoxJS', plugins_url('/js/fancybox/source/jquery.fancybox.pack.js', __FILE__));
-            wp_register_script('fancyBox_thumbs', plugins_url('/js/fancybox/source/helpers/jquery.fancybox-thumbs.js', __FILE__));
-            wp_register_script('fancyBox_media', plugins_url('/js/fancybox/source/helpers/jquery.fancybox-media.js', __FILE__));
             wp_enqueue_script('sp_postJS');
-            wp_enqueue_script('fancyBoxJS');
-            wp_enqueue_script('fancyBox_thumbs');
-            wp_enqueue_script('fancyBox_media');
+            wp_enqueue_script( 'thickbox' );
         }
 
+        /**
+         * Enqueue CSS scripts
+         */
         static function enqueueCSS(){
             wp_register_style('sp_postCSS', plugins_url('/css/sp_post.css', __FILE__));
-            wp_register_style('fancyBoxCSS', plugins_url('/js/fancybox/source/jquery.fancybox.css', __FILE__));
-            wp_register_style('fancyBox_buttons', plugins_url('/js/fancybox/source/helpers/jquery.fancybox-buttons.css', __FILE__));
-            wp_register_style('fancyBox_thumbs', plugins_url('/js/fancybox/source/helpers/jquery.fancybox-thumbs.css', __FILE__));
             wp_enqueue_style('sp_postCSS');
-            wp_enqueue_style('fancyBoxCSS');
-            wp_enqueue_style('fancyBox_buttons');
-            wp_enqueue_style('fancyBox_thumbs');
+            wp_enqueue_style( 'thickbox' );
         }
 
         /**
@@ -359,13 +355,6 @@ if (!class_exists("sp_post")) {
                     $content .= '<div class="clear"></div>';
                 }
 
-                /*
-                if( is_single() ){
-                    $content .= $sp_post->renderResponsePosts();
-                    $content = do_shortcode($content);
-                }
-                */
-
                 if( !is_singular() || is_home() ){
                     // load the components
                     $postComponents = $sp_post->getComponents();
@@ -382,83 +371,6 @@ if (!class_exists("sp_post")) {
             }
             return $content;
         }
-
-
-        function renderResponsePosts(){
-            $responses = $this->sp_category->getResponseCats();
-
-            $args = array( 'numberposts' => -1, 'post_parent' => $this->wpPost->ID, 'post_status' => $post_status );
-            $my_query = new WP_Query( $args );
-
-            $html = "";
-
-            if(class_exists('sp_quickPostWidget')){
-                $spQuickPost = new sp_quickPostWidget();
-                $catResponseIDs = $this->sp_category->getResponseCats();
-
-                if( !empty($catResponseIDs) ){
-                    $responseCats['displayCats'] = array_keys($catResponseIDs);
-                }
-            }
-
-            if( !empty( $responseCats['displayCats'] ) || $my_query->have_posts() ){
-
-                $html .= '<div id="sp_responses-' . $this->wpPost->ID . '">';
-                $html .= '<h3 class="sp_response_header"> Post Responses </h3>';
-
-                if( !empty( $responseCats['displayCats'] )){
-                    $html .= $spQuickPost->widget(array(), $responseCats, true, true);
-                }
-
-                if( $my_query->have_posts() ) {
-                    global $wp_query;
-                    $wp_query->is_single = false;
-                    $wp_query->is_search = true;
-
-                    $html .= '<div id="the_responses-' . $this->wpPost->ID . '" class="sp_post_responses">';
-                    while ( $my_query->have_posts() ) {
-                        $my_query->the_post();
-
-                        $html .= '<article id="post-' . get_the_ID() . '" class="post type-post status-publish pw">';
-                        if(has_post_thumbnail()){
-                            $html .= get_the_post_thumbnail( get_the_ID(), array(100, 100), array('class' => 'alignleft'));
-                            $divClass = 'class="content-col"';
-                        }
-
-                        $html .= '<div ' . $divClass . '>';
-                        $html .= '<header>';
-
-                        $html .= '<hgroup>';
-                        $html .= '<h3 class="posttitle"><a href="' . get_permalink() . '">' . get_the_title() . '</a></h1>';
-                        $html .= '<h2 class="meta">';
-                        $html .=	'by <a href="' . get_author_link(false, $post->post_author) . '">' . get_the_author() . '</a> • ' . get_the_time('M d, Y');
-
-                        $category = get_the_category();
-                        $html .= ' • <a href="' . get_category_link($category[0]->term_id) . '">' . $category[0]->name . '</a>';
-                        $html .= '</h2>';
-                        $html .= '</hgroup>';
-
-                        $html .= '</header>';
-                        $html .= '<div class="storycontent">';
-                        $html .= get_the_excerpt();
-                        $html .= '</div>';
-
-                        $html .= '</div>';
-                        $html .= '</article>';
-                    }
-                }
-
-                $html .= '<div class="clear"></div>';
-                $html .= '</div><!-- end #sp_responses-' . $this->wpPost->ID . ' -->';
-            }
-
-            $wp_query->is_search = false;
-            $wp_query->is_single = true;
-            wp_reset_postdata();
-
-            return $html;
-        }
-
 
         /**
          * Adds any required components if the count is < 1

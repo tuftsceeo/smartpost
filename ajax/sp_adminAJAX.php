@@ -7,21 +7,17 @@ if (!class_exists("sp_adminAJAX")) {
          * AJAX requests.
          */
         static function init(){
-            add_action('wp_ajax_catFormAJAX', array('sp_adminAJAX', 'catFormAJAX'));
-            add_action('wp_ajax_newSPCatAJAX', array('sp_adminAJAX', 'newSPCatAJAX'));
-            add_action('wp_ajax_updateSPCatAJAX', array('sp_adminAJAX', 'updateSPCatAJAX'));
-            add_action('wp_ajax_renderSPCatSettingsAJAX', array('sp_adminAJAX', 'renderSPCatSettingsAJAX'));
-            add_action('wp_ajax_responseCatAJAX', array('sp_adminAJAX', 'responseCatAJAX'));
-            add_action('wp_ajax_switchCategoryAJAX', array('sp_adminAJAX', 'switchCategoryAJAX'));
-            add_action('wp_ajax_setCompOrderAJAX', array('sp_adminAJAX', 'setCompOrderAJAX'));
-            add_action('wp_ajax_getCategoryJSONTreeAJAX', array('sp_adminAJAX', 'getCategoryJSONTreeAJAX'));
-            add_action('wp_ajax_deleteTemplateAJAX', array('sp_adminAJAX', 'deleteTemplateAJAX'));
+            add_action('wp_ajax_newSPCatAJAX', array('sp_adminAJAX', 'new_sp_cat_ajax'));
+            add_action('wp_ajax_switchCategoryAJAX', array('sp_adminAJAX', 'switch_category_ajax'));
+            add_action('wp_ajax_setCompOrderAJAX', array('sp_adminAJAX', 'set_comp_order_ajax'));
+            add_action('wp_ajax_getCategoryJSONTreeAJAX', array('sp_adminAJAX', 'get_category_json_tree_ajax'));
+            add_action('wp_ajax_deleteTemplateAJAX', array('sp_adminAJAX', 'delete_template_ajax'));
         }
 
         /**
          * AJAX handler for deleting SmartPost templates
          */
-        function deleteTemplateAJAX(){
+        function delete_template_ajax(){
             $nonce = $_POST['nonce'];
             if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 header("HTTP/1.0 409 Security Check.");
@@ -55,7 +51,7 @@ if (!class_exists("sp_adminAJAX")) {
          * AJAX handler function that echos properly formatted JSON representing
          * SP Templates and their components.
          */
-        function getCategoryJSONTreeAJAX(){
+        function get_category_json_tree_ajax(){
             $nonce = $_POST['nonce'];
             if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 header("HTTP/1.0 409 Security Check.");
@@ -70,7 +66,7 @@ if (!class_exists("sp_adminAJAX")) {
             if( !empty( $_POST['includeParent'] ) )
                 $includeParent = $_POST['includeParent'];
 
-            $dynaTree = sp_admin::buildSPDynaTree( array( 'orderby' => 'name','order' => 'ASC', 'hide_empty' => 0 ), $parent, $includeParent );
+            $dynaTree = sp_admin::build_sp_dynatree( array( 'orderby' => 'name','order' => 'ASC', 'hide_empty' => 0 ), $parent, $includeParent );
 
             echo json_encode($dynaTree);
 
@@ -82,7 +78,7 @@ if (!class_exists("sp_adminAJAX")) {
          * If the catID is that of a SP category, it will be removed from the
          * from global WP option 'sp_categories', otherwise it will add it.
          */
-        function switchCategoryAJAX(){
+        function switch_category_ajax(){
             $nonce = $_POST['nonce'];
             if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 header("HTTP/1.0 409 Security Check.");
@@ -116,32 +112,10 @@ if (!class_exists("sp_adminAJAX")) {
         }
 
         /**
-         * Returns an HTML category form.
-         * @uses sp_admin::newCatForm()
-         * @uses sp_admin::catForm()
-         */
-        function catFormAJAX(){
-            $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
-                die('Security Check');
-            }
-
-            $newSPCat = $_POST['newSPCat'];
-            $catID 			= $_POST['catID'];
-
-            if( (bool) $newSPCat ){
-                echo sp_admin::newCatForm();
-            }else{
-                echo sp_admin::catForm($catID);
-            }
-            exit;
-        }
-
-        /**
          * Creates a new smartpost category via an AJAX request.
          * Requires $_POST variables 'cat_name'
          */
-        function newSPCatAJAX(){
+        function new_sp_cat_ajax(){
             $nonce = $_POST['nonce'];
             if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 die('Security Check');
@@ -210,154 +184,10 @@ if (!class_exists("sp_adminAJAX")) {
             exit;
         }
 
-        /*
-         * Renders HTML category settings
-         * @uses sp_admin::renderCatSettings()
-         */
-        function renderSPCatSettingsAJAX(){
-            $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
-                die('Security Check');
-            }
-
-            if( empty($_POST['catID']) ){
-                echo '<div class="errors">Could not load category settings</div>';
-            }else{
-                $sp_category = new sp_category(null, null, $_POST['catID']);
-                if(is_wp_error($sp_category->errors)){
-                    header("HTTP/1.0 409 " .  $sp_category->errors->get_error_message());
-                }else{
-                    echo sp_admin::renderCatSettings($sp_category);
-                }
-            }
-            exit;
-        }
-
-        /**
-         * Handles updating a SP Category via AJAX request.
-         * Requires $_POST variables 'catID' - the ID of the category.
-         */
-        function updateSPCatAJAX(){
-            $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
-                die('Security Check');
-            }
-            $xhr = $_SERVER['HTTP_X_REQUESTED_WITH'] == 'XMLHttpRequest';
-
-            if(empty($_POST['catID'])){
-                header("HTTP/1.0 409 Could not find the category ID");
-            }else{
-
-                $catID = $_POST['catID'];
-                $name  = $_POST['cat_name'];
-                $desc  = $_POST['category_description'];
-
-                //Cannot have catID be empty
-                if(empty($_POST['catID'])){
-                    header("HTTP/1.0 409 Could not find catID");
-                    if(!$xhr){
-                        echo '<textarea>' . json_encode(array('error' => "Could not find catID")) . '</textarea>';
-                    }
-                    exit;
-                }
-
-                //Cannot have cat_name be empty
-                if(empty($_POST['cat_name'])){
-                    header("HTTP/1.0 409 Please fill in the category name");
-                    if(!$xhr){
-                        echo '<textarea>' . json_encode(array('error' => "Please fill in the category name")) . '</textarea>';
-                    }
-                    exit;
-                }
-
-                //Validate icon upload
-                if($_FILES['category_icon']['size'] > 0){
-                    if(sp_core::validImageUpload($_FILES, 'category_icon') && sp_core::validateIcon($_FILES['category_icon']['tmp_name'])){
-                        $description = $name . ' icon';
-                        $iconID = sp_core::upload('category_icon', null, array('post_title' => $description, 'post_content' => $description));
-                    }else{
-                        $icon_error = 'File uploaded does not meet icon requirements.' .
-                            ' Please make sure the file uploaded is ' .
-                            ' 16x16 pixels and is a .png or .jpg file';
-                        if(!$xhr){
-                            echo '<textarea>' . json_encode(array('error' => $icon_error)) . '</textarea>';
-                        }
-                        exit;
-                    }
-                }
-
-                //If everything checks out, update the cateogry
-                $sp_category = new sp_category(null, null, $catID);
-                $sp_category->setTitle($name);
-                $sp_category->setDescription($desc);
-                if(!empty($iconID)){
-                    $sp_category->setIconID($iconID);
-                }
-
-                //Check for any update errors
-                if(is_wp_error($sp_category->errors)){
-                    header("HTTP/1.0 409 " .  $sp_category->errors->get_error_message());
-                    if(!$xhr){
-                        echo '<textarea>' . json_encode(array('error' => $sp_category->errors->get_error_message())) . '</textarea>';
-                    }
-                    exit;
-                }
-
-                //Delete the icon if it's checked off
-                if((bool) $_POST['deleteIcon']){
-                    $sp_category->deleteIcon();
-                }
-
-                //Return catID if everythign was succesfull!
-                if(!$xhr){
-                    echo '<textarea>' . json_encode(array('catID' => $sp_category->getID())) . '</textarea>';
-                }
-            }
-            exit;
-        }
-
-        /**
-         * Updates a SP Category's response categories via an AJAX request.
-         * Requires $_POST variables 'catID' - the category being updated.
-         */
-        function responseCatAJAX(){
-            $nonce = $_POST['nonce'];
-            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
-                die('Security Check');
-            }
-
-            if(empty($_POST['catID'])){
-                header("HTTP/1.0 409 Could not find the category ID");
-                exit;
-            }
-
-            $catID = $_POST['catID'];
-
-            //If everything checks out, update the cateogry
-            $sp_category = new sp_category(null, null, $catID);
-
-            //Check for any update errors
-            if(is_wp_error($sp_category->errors)){
-                header("HTTP/1.0 409 " .  $sp_category->errors->get_error_message());
-                exit;
-            }
-
-            $success = $sp_category->setResponseCats($_POST['responseCats']);
-
-            if($success === false){
-                header("HTTP/1.0 409 Could not update response categories.");
-            }
-
-            //Return catID if everything was successful!
-            echo json_encode( array('catID' => $sp_category->getID()) );
-
-            exit;
-        }
-
         /**
          * Sets the component order for a category template in the admin page.
          */
-        function setCompOrderAJAX(){
+        function set_comp_order_ajax(){
             $nonce = $_POST['nonce'];
             if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 die('Security Check');
@@ -395,7 +225,6 @@ if (!class_exists("sp_adminAJAX")) {
 
             echo json_encode(array('success' => true));
             exit;
-        }
-
+        } //end set_comp_order_ajax()
     }
 }

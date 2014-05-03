@@ -1,11 +1,13 @@
 <?php
 /*
 Plugin Name: SmartPost
-Plugin URI: http://ceeo.tufts.edu/
-Description: SmartPost as a dynamic templating and authoring tool that brings a lot of the features of the WordPress dashboard to the front end. SmartPost allows you to create category specific post templates that are then used by users on the front end to generates posts and content. Templates are broken down by post components such as pictures galleries, videos, and content blocks.
+Plugin URI: https://sptemplates.org
+Description: SmartPost is a dynamic templating and authoring tool that brings a lot of the features of the WordPress dashboard to the front end. SmartPost allows you to create category specific post templates that are then used by users on the front end to generates posts and content. Templates are broken down by post components such as pictures galleries, videos, and content blocks.
 Version: 2.2
-Author: Tufts CEEO
-Author URI: http://www.rafilabs.com/smartpost
+Author: Rafi Yagudin
+Author URI: http://www.rafilabs.com/
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 */
 require_once( ABSPATH . 'wp-includes/pluggable.php' );
 
@@ -30,28 +32,30 @@ if ( !class_exists("smartpost") ){
         function __construct(){
             require_once( 'core/sp_core.php' );
             require_once( 'sp_install.php' );
-            self::initClasses( dirname(__FILE__) . "/updates" );
+            self::init_sp_classes( dirname(__FILE__) . "/updates" );
 
             $this->sp_init();
 
             require_once( 'components/component/sp_catComponent.php' );
             require_once( 'components/component/sp_postComponent.php' );
-            sp_catComponent::initCatComponent();
-            sp_postComponent::initPostComponent();
+            sp_catComponent::init_cat_component();
+            sp_postComponent::init_post_component();
 
-            self::findClasses(dirname(__FILE__) . "/components/");
+            self::find_sp_classes( dirname(__FILE__) . "/components/" );
 
             require_once( 'sp_category.php' );
             require_once( 'sp_admin.php' );
             require_once( 'sp_post.php' );
 
-            self::initClasses(dirname(__FILE__) . "/widgets");
+            self::init_sp_classes( dirname(__FILE__) . "/widgets" );
 
             sp_post::init();
             sp_category::init();
             if( is_admin() ){
                 sp_admin::init();
             }
+
+            require_once( 'sp_uninstall.php' );
         }
 
         /**
@@ -59,23 +63,23 @@ if ( !class_exists("smartpost") ){
          */
         private static function sp_init(){
             get_currentuserinfo();
-            self::enqueueCSS();
-            self::enqueueJS();
+            self::enqueue_sp_css();
+            self::enqueue_sp_js();
         }
 
         /**
          * Given $dir, recursively iterates over all directories and
-         * calls initClasses() on each directory. Used for extending SmartPost with
+         * calls init_sp_classes() on each directory. Used for extending SmartPost with
          * future SmartPost components.
          *
          * @param string $dir The directory path
          */
-        static function findClasses($dir){
+        static function find_sp_classes($dir){
             if ( is_dir($dir) ) {
                 if ( $dh = opendir($dir) ) {
                     while ( ($file = readdir($dh)) !== false ) {
                         if( is_dir($dir . $file) && ($file != "." && $file != "..") ){
-                            self::initClasses( $dir . $file );
+                            self::init_sp_classes( $dir . $file );
                         }
                     }
                     closedir($dh);
@@ -91,7 +95,7 @@ if ( !class_exists("smartpost") ){
          *
          * @param string $folder The path/directory
          */
-        static function initClasses($folder){
+        static function init_sp_classes($folder){
             foreach ( glob( $folder . "/sp_*.php" ) as $filename ){
                 $class = basename($filename, ".php");
 
@@ -112,7 +116,7 @@ if ( !class_exists("smartpost") ){
         /**
          * Places globally used SmartPost CSS on the page.
          */
-        static function enqueueCSS(){
+        static function enqueue_sp_css(){
             wp_register_style( 'jquery-ui-theme', plugins_url('/css/jquery-ui-theme/jquery-ui-1.10.3.custom.css', __FILE__));
             wp_register_style( 'jquery-dynatree-css', plugins_url('js/dynatree/skin/ui.dynatree.css', __FILE__) );
             wp_register_style( 'tooltipster-css', plugins_url('js/tooltipster/css/tooltipster.css', __FILE__) );
@@ -127,9 +131,9 @@ if ( !class_exists("smartpost") ){
 
         /**
          * Places globally used JS on the page.
-         * @todo Use wp_sript_is() to avoid conflicts
+         * @todo Use wp_script_is() to avoid conflicts
          */
-        static function enqueueJS(){
+        static function enqueue_sp_js(){
             //Register scripts
             wp_register_script( 'sp_globals'     , plugins_url('js/sp_globals.js', __FILE__), array( 'jquery' ) );
             wp_register_script( 'strip_tags'     , plugins_url('js/strip_tags.js', __FILE__), array( 'jquery' ) );
@@ -195,12 +199,11 @@ if(class_exists('smartpost')){
  */
 if(isset($new_smartpost)){
 
-    register_activation_hook(__FILE__, array('sp_install','smartpost_install') );
-
     //Register SmartPost Widgets
     add_action('widgets_init', create_function('', 'return register_widget("sp_postTreeWidget");'));
     add_action('widgets_init', create_function('', 'return register_widget("sp_postWidget");'));
     add_action('widgets_init', create_function('', 'return register_widget("sp_quickPostWidget");'));
     add_action('widgets_init', create_function('', 'return register_widget("sp_myPostsWidget");'));
 
+    register_activation_hook( __FILE__, array('sp_install','smartpost_install') );
 }

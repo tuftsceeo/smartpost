@@ -86,7 +86,7 @@
                     // Make them sortable
                     smartpost.sp_postComponent.makeSortable(componentStack, postID);
 
-                    $('#sp_quickpost_form').show();
+                    $('#sp_quickpost_form').slideDown();
                 },
                 error: function(jqXHR, statusText, errorThrown){
                     if(smartpost.sp_postComponent)

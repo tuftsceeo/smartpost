@@ -20,13 +20,13 @@ if ( !class_exists("sp_admin") ) {
             sp_adminAJAX::init();
             add_action( 'admin_menu', array('sp_admin', 'sp_admin_add_template_page') );
             add_action( 'admin_menu', array('sp_admin', 'sp_admin_add_category_page') );
-            add_action( 'admin_enqueue_scripts', array('sp_admin', 'enqueueScripts') );
+            add_action( 'admin_enqueue_scripts', array('sp_admin', 'enqueue_admin_scripts') );
         }
 
         /**
          * CSS for the admin pages
          */
-        function enqueueCSS(){
+        function enqueue_admin_css(){
             wp_register_style( 'sp_admin_css', plugins_url('/css/sp_admin.css', __FILE__) );
             wp_enqueue_style( 'sp_admin_css' );
 
@@ -39,13 +39,13 @@ if ( !class_exists("sp_admin") ) {
         /**
          * JS/CSS for the admin pages
          */
-        function enqueueScripts($hook){
+        function enqueue_admin_scripts($hook){
 
             if( 'toplevel_page_smartpost' != $hook && 'smartpost_page_sp-cat-page' != $hook ){
                 return;
             }
 
-            self::enqueueCSS();
+            self::enqueue_admin_css();
 
             // load sp_admin.js only on the toplevel page
             wp_register_script( 'sp_admin_js', plugins_url('/js/sp_admin.js', __FILE__), array( 'post', 'postbox', 'jquery-dynatree' ) );
@@ -74,8 +74,8 @@ if ( !class_exists("sp_admin") ) {
         /**
          * Renders all the component types as a HTML-draggable blocks.
          */
-        public static function listCompTypes(){
-            $types = sp_core::getTypes();
+        public static function list_comp_types(){
+            $types = sp_core::get_component_types();
             ?>
             <div id="sp_compTypes">
                 <?php foreach($types as $compType){ ?>
@@ -91,7 +91,7 @@ if ( !class_exists("sp_admin") ) {
          * Renders all the components of a given SmartPost-enabled category.
          * @param sp_category $sp_category
          */
-        function listCatComponents($sp_category){
+        function render_component_meta_boxes($sp_category){
             $catComponents = $sp_category->getComponents();
             if( !empty($catComponents) ){
                 foreach($catComponents as $component){
@@ -106,7 +106,7 @@ if ( !class_exists("sp_admin") ) {
         /**
          * Renders a new category form that users can fill out
          */
-        function renderNewTemplateForm(){
+        function render_new_template_form(){
 
             // If a SP QP widget exists, do not check off "Add Widget" checkbox by default (minimizes confusion with unnecessary widgets)
             $sp_widget_instances = count( get_option( 'widget_sp_quickpostwidget' ) );
@@ -181,7 +181,7 @@ if ( !class_exists("sp_admin") ) {
          * @param int $catID - the category ID
          * @param array $sp_categories - Array of category IDs that are SP enabled.
          */
-        static function renderCatSettings($catID, $sp_categories){
+        static function render_template_details($catID, $sp_categories){
             $sp_category = null;
             $category = null;
             $cat_desc = null;
@@ -234,7 +234,7 @@ if ( !class_exists("sp_admin") ) {
          * @param bool $include_parent - Whether to include the parent in the resulting array
          * @return array
          */
-         static function buildSPDynaTree($args, $parent = 0, $include_parent = false){
+         static function build_sp_dynatree($args, $parent = 0, $include_parent = false){
 
             if($include_parent){
                 $parentCat  = get_category( $parent );
@@ -284,7 +284,7 @@ if ( !class_exists("sp_admin") ) {
                     $node->addClass = 'disableSPSortable';
                 }
 
-                $node->children = sp_admin::buildSPDynaTree($args, $category->term_id);
+                $node->children = sp_admin::build_sp_dynatree($args, $category->term_id);
 
                 if( !empty($compNodes) ){
                     $node->children = array_merge_recursive($compNodes, $node->children);
@@ -343,14 +343,14 @@ if ( !class_exists("sp_admin") ) {
                 <div class="error" <?php echo empty( $error_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_errors"><?php echo $error_msg ?></span><span class="hideMsg sp_xButton" title="Ok, got it"></span><div class="clear"></div></div>
                 <div class="updated" <?php echo empty( $update_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_update"><?php echo $update_msg ?></span><span class="hideMsg sp_xButton" title="Ok, got it"></span><div class="clear"></div></div>
                 <h2><img src="<?php echo SP_IMAGE_PATH ?>/sp-icon.png" style="height: 17px;" /> <span style="color: #89b0ff;">Smart<span style="color: #07e007">Post</span> Templates</span> <button id="newTemplateButton" class="button button-primary button-large" title="Create a new category template">New Template</button></h2>
-                <?php self::renderNewTemplateForm(); ?>
+                <?php self::render_new_template_form(); ?>
                 <div id="poststuff">
                     <div id="post-body" class="metabox-holder columns-2">
                         <div id="post-body-content" style="margin-bottom: 0;">
                             <div id="category_settings" class="postbox">
                                 <div id="the_settings">
                                     <span id="delete-<?php echo $catID ?>" class="deleteCat sp_xButton" data-cat-id="<?php echo $catID ?>" title="Delete Template"></span>
-                                    <?php self::renderCatSettings($catID, $sp_categories); ?>
+                                    <?php self::render_template_details($catID, $sp_categories); ?>
                                     <div class="clear"></div>
                                 </div><!-- end #the_settings -->
                                 <div class="clear"></div>
@@ -372,7 +372,7 @@ if ( !class_exists("sp_admin") ) {
                                 <h3 class="hndle" style="cursor: default;"><span>SmartPost Components</span></h3>
                                 <div class="inside">
                                     <p>← Drag components to the template on the left:</p>
-                                    <?php self::listCompTypes() ?>
+                                    <?php self::list_comp_types() ?>
                                 </div>
                             </div><!-- end sp_components -->
                         </div><!-- end #postbox-container-1 -->
@@ -381,7 +381,7 @@ if ( !class_exists("sp_admin") ) {
                         if( in_array($catID, $sp_categories) ){
                         ?>
                         <div id="postbox-container-2" class="postbox-container">
-                            <?php self::listCatComponents($sp_category) ?>
+                            <?php self::render_component_meta_boxes($sp_category) ?>
                         </div><!-- end #postbox-container-2 -->
                         <?php
                             //handle toggling for meta boxes
@@ -399,7 +399,7 @@ if ( !class_exists("sp_admin") ) {
          * @see sp_catComponent::renderGlobalOptions
          */
         function sp_settings_page(){
-            $components = sp_core::getTypes();
+            $components = sp_core::get_component_types();
             $alert_flag = isset( $_GET['update'] );
             $currCompID = (int) $_GET['compID'];
             $currCompType = sp_core::getType( $currCompID );
@@ -474,7 +474,22 @@ if ( !class_exists("sp_admin") ) {
                                 <h2>SmartPost Settings</h2>
                                 <p>SmartPost has a slew of features that make it more customizable.</p>
                                 <p>On the right hand side bar title "SmartPost Components", you can navigate between the components and customize SmartPost further.</p>
-                                <?php endif; ?>
+
+                                <p style="color: red;"><img src="<?php echo SP_IMAGE_PATH .'/alert.png'?>" stye="vertical-align: text-top;" /> Important: please read the below info before uninstalling this plugin!</p>
+
+                                <h3>Saving SmartPost shortcodes to HTML form</h3>
+                                <p>In the current version of this plugin, SmartPost "post component" content blocks are saved in a separate table in the WordPress database.</p>
+                                <p>Completely deleting or uninstalling the plugin will result in the content blocks not rendering properly or being completely lost.</p>
+                                <p>Before uninstalling or removing the plugin completely, it is recommended to convert all the components to HTML form by clicking the button below.</p>
+                                <button id="save_sp_posts_to_html" class="button">Save SmartPost posts as HTML</button>
+                                <p></p>
+
+                                <h3>Uninstall SmartPost</h3>
+                                <p>Deleting or de-activating this plugin will not remove the database tables and options due to its destructive nature (content may be permanently lost!).</p>
+                                <p>If you are sure you want to completely remove this plugin, including all the database tables and options, you can do so by clicking the button below.</p>
+                                <p style="color:red;">WARNING: do NOT click this button unless you really know what you're getting yourself into: <button id="uninstall_smartpost" class="button">Uninstall SmartPost</button></p>
+
+                            <?php endif; ?>
                             </div>
 
                             <div class="clear"></div>

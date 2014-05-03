@@ -29,7 +29,7 @@
     margin-bottom: 5px;
 }
 .sp_new_title{
-	height: 25px;
+	height: 35px;
 	width: 100%;
     font-size: 24px;
 }
@@ -52,4 +52,10 @@ button.sp_qp_button{
 	display: none; padding: 5px; 
 	border-bottom: 1px solid silver;
 	margin-bottom: 10px;
+}
+@media screen and (max-width: 700px){
+    .sp_qp_component{
+        display: block;
+        clear: both;
+    }
 }

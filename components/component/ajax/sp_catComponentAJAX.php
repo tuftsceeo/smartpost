@@ -140,7 +140,7 @@ if (!class_exists("sp_catComponentAJAX")) {
             $closed_meta_boxes = get_user_option( 'closedpostboxes_toplevel_page_smartpost' );
             $compElemID = $component->getCompType() . '-' . $component->getID();
             $key = array_search($compElemID, $closed_meta_boxes);
-            if($key !== false){
+            if($key !== false && is_array( $closed_meta_boxes ) ){
                 unset($closed_meta_boxes[$key]);
             }
             update_user_option( get_current_user_id(), 'closedpostboxes_toplevel_page_smartpost', $closed_meta_boxes, true);

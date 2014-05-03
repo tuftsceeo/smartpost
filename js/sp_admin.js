@@ -36,7 +36,7 @@
                     url	 : SP_AJAX_URL,
                     type : 'POST',
                     data : {
-                        action    : 'setCompOrderAJAX',
+                        action    : 'set_comp_order_ajax',
                         nonce     : SP_NONCE,
                         compOrder : compOrder,
                         catID     : catID
@@ -110,7 +110,7 @@
                         url	 : SP_AJAX_URL,
                         type : 'POST',
                         data : {
-                            action    : 'deleteTemplateAJAX',
+                            action    : 'delete_template_ajax',
                             nonce     : SP_NONCE,
                             catID     : catID
                         },
@@ -205,7 +205,7 @@
                     url: SP_AJAX_URL,
                     type: 'POST',
                     data: {
-                        action: 'getCategoryJSONTreeAJAX',
+                        action: 'get_category_json_tree_ajax',
                         nonce: SP_NONCE
                     }
                 },
@@ -250,7 +250,7 @@
                 url	 : SP_AJAX_URL,
                 type : 'POST',
                 data : {
-                    action : 'getCategoryJSONTreeAJAX',
+                    action : 'get_category_json_tree_ajax',
                     nonce  : SP_NONCE,
                     parent : $('#catID').val(),
                     includeParent: true
@@ -371,7 +371,7 @@
                 url	 : SP_AJAX_URL,
                 type : 'POST',
                 data : {
-                    action: 'newSPCatAJAX',
+                    action: 'new_sp_cat_ajax',
                     nonce : SP_NONCE
                 },
                 dataType: 'json',
@@ -413,7 +413,7 @@
                     url	 : SP_AJAX_URL,
                     type : 'POST',
                     data : {
-                        action : 'switchCategoryAJAX',
+                        action : 'switch_category_ajax',
                         nonce  : SP_NONCE,
                         catID  : catID
                     },

@@ -126,16 +126,13 @@
          */
         renderPhoto: function(galleryElem, thumbElem){
             var self = this;
+            thumbElem = $(thumbElem);
 
+            thumbElem.hide(); // hide the thumbnail initially for a nice fade-in
             galleryElem.append( thumbElem );
+            thumbElem.fadeIn();
 
-            // Get a handle on the DOM element
-            var thumbInfo = $( thumbElem ).data();
-            thumbElem = galleryElem.find('#sp-gallery-thumb-' + thumbInfo.thumbid);
-
-            var delElem = $(thumbElem).find('.sp-gallery-delete-thumb');
-            var editElem = $(thumbElem).find('.sp-gallery-edit-caption');
-
+            var delElem = thumbElem.find('.sp-gallery-delete-thumb');
             self.bindDelete( $(delElem) );
         },
 
@@ -216,17 +213,22 @@
                 self.bindDelete( $(this) );
             });
 
-            $(".fancybox").fancybox({
-                openEffect	: 'none',
-                closeEffect	: 'none',
-                helpers : { media : {} }
-            });
-
             // Trigger the browse button
             $( '.sp-gallery-browse' ).each(function(){
                 $(this).click(function(){
                     var compId = $(this).data( 'compid' );
                     $( '#sp-gallery-upload-' + compId ).click();
+                });
+            });
+
+            // Initialize magnific-popup
+            $('.sp-gallery-pics').each(function() { // the containers for all your galleries
+                $(this).magnificPopup({
+                    delegate: 'a', // the selector for gallery item
+                    type: 'image',
+                    gallery: {
+                        enabled:true
+                    }
                 });
             });
         }

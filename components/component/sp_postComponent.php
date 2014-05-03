@@ -128,7 +128,9 @@ if (!class_exists("sp_postComponent")) {
             }else{
                 $sp_postComponentsTable = $wpdb->prefix . "sp_postComponents";
                 $component = $wpdb->get_row( "SELECT * FROM $sp_postComponentsTable WHERE id = $compID;" );
+
                 if( !empty($component) ){
+
                     $this->ID        = $component->id;
                     $this->catCompID = $component->catCompID;
                     $this->compOrder = $component->compOrder;
@@ -137,13 +139,14 @@ if (!class_exists("sp_postComponent")) {
                     $this->postID    = $component->postID;
                     $this->options   = maybe_unserialize($component->options);
                     $this->typeID    = $component->typeID;
+
                 }else{
                     $this->errors = new WP_Error ('broke', __("Could not find component with ID: " . $compID));
                 }
             }
         }
 
-        static function initPostComponent(){
+        static function init_post_component(){
             require_once('ajax/sp_postComponentAJAX.php');
             sp_postComponentAJAX::init();
             self::enqueueBaseJS();
@@ -209,6 +212,8 @@ if (!class_exists("sp_postComponent")) {
             require_once(ABSPATH . 'wp-admin/includes/post.php');
             $is_locked = (bool) wp_check_post_lock( $this->postID );
 
+            $html = '';
+
             // Return preview mode if we're listing posts
             if( !is_single() ){
                 if( !$this->isEmpty() ){
@@ -230,6 +235,8 @@ if (!class_exists("sp_postComponent")) {
             }else{ // Otherwise return "view mode"
                 if( !$this->isEmpty() ){
                     $html = '<div id="comp-' .  $this->ID . '" class="sp_component">';
+                    $html .= $this->render_comp_title();
+                    $html .= '<div class="clear"></div>';
                     $html .= $this->renderViewMode();
                     $html .= '<div class="clear"></div>';
                     $html .= '</div><!-- end #comp-' . $this->ID .' -->';

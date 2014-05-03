@@ -5,7 +5,7 @@ if (!class_exists("sp_postAJAX")) {
 	 */
 	class sp_postAJAX{
 		
-        function init(){
+        public static function init(){
             add_action('wp_ajax_savePostTitleAJAX', array('sp_postAJAX', 'savePostTitleAJAX'));
             add_action('wp_ajax_sp_searchTagsAJAX', array('sp_postAJAX', 'sp_searchTagsAJAX'));
             add_action('wp_ajax_sp_addNewTagAJAX', array('sp_postAJAX', 'sp_addNewTagAJAX'));

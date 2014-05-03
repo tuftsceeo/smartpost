@@ -118,7 +118,7 @@ if (!class_exists("sp_postPhoto")) {
             if( !is_null($attachment) ){
                 $img_attrs = wp_get_attachment_image_src( $id, 'large' );
                 $html .= '<div id="sp-photo-thumb-' . $id . '" data-thumbid="' . $id . '" data-compid="' . $compID . '" class="sp-photo-thumb">';
-                    $html .= '<a href="' . wp_get_attachment_url($id) . '" class="fancybox" rel="photo-' . $compID .'" title="' . $attachment->post_content . '">';
+                    $html .= '<a href="' . wp_get_attachment_url($id) . '" class="thickbox" rel="photo-' . $compID .'" title="' . $attachment->post_content . '">';
                         $html .= '<img src="' . $img_attrs[0] . '">';
                     $html .= '</a>';
 

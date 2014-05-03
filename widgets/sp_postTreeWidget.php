@@ -28,8 +28,9 @@ class sp_postTreeWidget extends WP_Widget {
 
     /** @see WP_Widget::widget */
     function widget($args, $instance) {
-        global $post;
+        global $wp_query;
         extract($args);
+        $post = $wp_query->post;
 
         // Set the active post so the tree automatically selects it
         $activeNode = '';

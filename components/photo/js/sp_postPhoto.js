@@ -207,12 +207,6 @@
                 self.bindDelete( $(this) );
             });
 
-            $(".fancybox").fancybox({
-                openEffect	: 'none',
-                closeEffect	: 'none',
-                helpers : { media : {} }
-            });
-
             // Trigger the browse button
             $( '.sp-photo-browse' ).each(function(){
                 $(this).click(function(){

@@ -22,7 +22,7 @@ if (!class_exists("sp_postLink")) {
             $this->initComponent($compInfo);
 
             // Define URL properties
-            if(!empty($this->value)){
+            if( !empty($this->value) ){
                 $this->url = $this->value->url;
                 $this->urlThumb = $this->value->urlThumb;
                 $this->urlDesc = $this->value->urlDesc;
@@ -101,7 +101,7 @@ if (!class_exists("sp_postLink")) {
             $img = wp_get_attachment_image($this->urlThumb, null, false);
             if( $img && !$this->youTube ){
                 $html .= '<div id="sp_link_thumb-' . $this->ID . '" data-compid="' . $this->ID . '" class="sp_link_' . $this->urlType . '">';
-                    $html .= '<a href="' . $this->url . '" class="sp_link_thumb_link fancybox">';
+                    $html .= '<a href="' . $this->url . '" class="sp_link_thumb_link thickbox">';
                         $html .= $img;
                     $html .=	'</a>';
                     $html .= '<div class="clear"></div>';
@@ -125,7 +125,7 @@ if (!class_exists("sp_postLink")) {
 
                     foreach($this->urlThumbs as $thumbID => $thumb){
                         $hide = ($count > 0) ? 'style="display: none;"' : '';
-                        $html .= '<a href="' . $this->url . '" class="sp_link_thumb_link fancybox">';
+                        $html .= '<a href="' . $this->url . '" class="sp_link_thumb_link thickbox">';
                             $html .= '<img src="' . $thumb . '" ' . $hide . ' data-thumbid="' . $thumbID . '" />';
                         $html .= '</a>';
                         $count++;
@@ -217,7 +217,7 @@ if (!class_exists("sp_postLink")) {
             $urlData = new stdClass();
             $urlData->url = $this->url;
             $urlData->urlThumb = $this->urlThumb;
-            $urlData->urlDesc = $this->urlDesc;
+            $urlData->urlDesc = sanitize_text_field( $this->urlDesc );
             $urlData->urlType = $this->urlType;
             $urlData->youTube = $this->youTube;
             $serializedData = maybe_serialize( $urlData );
@@ -620,9 +620,6 @@ if (!class_exists("sp_postLink")) {
             if( !empty($this->urlThumb) ){
 
                 // Remove the featured thumb if it's our thumbnail
-                error_log( get_post_thumbnail_id( $this->postID ) );
-                error_log( $this->urlThumb );
-
                 if( get_post_thumbnail_id( $this->postID ) == $this->urlThumb ){
 
                     delete_post_thumbnail( $this->postID );

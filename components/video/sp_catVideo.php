@@ -95,7 +95,6 @@ if (!class_exists("sp_catVideo")) {
         }
 
         /**
-         * !TODO: Add as another abstract method to all components and call when plugin is deleted.
          * Removes video component options when plugin is deleted.
          */
         function uninstall(){

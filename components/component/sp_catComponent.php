@@ -155,7 +155,7 @@ if (!class_exists("sp_catComponent")) {
          * Includes base JS and CSS for all category component classes.
          * Called in the admin settings page.
          */
-        static function initCatComponent(){
+        static function init_cat_component(){
             if(is_admin()){
                 require_once('ajax/sp_catComponentAJAX.php');
                 sp_catComponentAJAX::init();
@@ -251,18 +251,13 @@ if (!class_exists("sp_catComponent")) {
          * @return bool|int false on failure, number of rows affected on success
          */
         function delete(){
-            global $wpdb;
-
-            //delete the icon
+            // delete the icon
             if(!empty($this->icon)){
                 wp_delete_attachment($this->icon, true);
             }
 
-            //delete the category componet from sp_catComponents table
-            $tableName = $wpdb->prefix . 'sp_catComponents';
-            return $wpdb->query(
-                $wpdb->prepare("DELETE FROM $tableName WHERE id = %d", $this->ID)
-            );
+            // delete the category component from sp_catComponents table
+            return sp_core::delete_component( $this->ID, 'cat');
         }
 
         /**
@@ -290,7 +285,7 @@ if (!class_exists("sp_catComponent")) {
 
         /**
          * Builds a meta box with the component's settings in XHTML format.
-         * @see sp_admin::listCatComponents
+         * @see sp_admin::render_component_meta_boxes
          * @return string
          */
         public function render(){

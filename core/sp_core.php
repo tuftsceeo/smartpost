@@ -10,7 +10,7 @@ if (!class_exists("sp_core")) {
         /**
          * Returns all types in sp_compTypes as a $wpdb object
          */
-        static function getTypes(){
+        static function get_component_types(){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_compTypes';
             return $wpdb->get_results("SELECT * FROM $tableName;");
@@ -142,8 +142,10 @@ if (!class_exists("sp_core")) {
                 global $wpdb;
                 if( $comp_type == 'post' ){
                     $tableName = $wpdb->prefix . 'sp_postComponents';
-                }else{
+                }else if( $comp_type == 'cat' ){
                     $tableName = $wpdb->prefix . 'sp_catComponents';
+                }else{
+                    return false;
                 }
                 return $wpdb->query( $wpdb->prepare( "DELETE FROM $tableName WHERE id = %d", $component_id) );
             }else{

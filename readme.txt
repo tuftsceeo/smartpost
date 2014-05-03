@@ -1,7 +1,7 @@
 === SmartPost Templates ===
 Contributors: rafdizzle86
 Donate link: http://rafilabs.com/
-Tags: templates, form, forms, front end posting, front end editor, front end uploader, video, video archives, ffmpeg, gallery, picture gallery, photo gallery, media, upload, upload media
+Tags: templates, forms, front end editor, video, ffmpeg, picture gallery, media, uploader
 Stable tag: 2.2
 Requires at least: 3.8
 Tested up to: 3.8
@@ -39,7 +39,7 @@ pictures and videos to your post.
 
 **Note: SmartPost is still in the Beta stage, check out the "Beta Testing" tab for more info!**
 
-[For more information, check out the plugin site here](http://smartpost.k12engineering.com).
+[For more information, check out the plugin site here](http://sptemplates.org).
 
 == Installation ==
 
@@ -88,7 +88,7 @@ of this plugin!
 
 If you are a developer and are interested in helping out with the development on this plugin, check out the [github
 repository](https://github.com/tuftsceeo/smartpost) and feel free to contact the developer. Also, check out
-the [plugin site](http://smartpost.k12engineering.com) while you're at it.
+the [plugin site](http://sptemplates.org) while you're at it.
 
 Thanks!
 - SmartPost Dev Team

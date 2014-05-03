@@ -9,7 +9,6 @@ if (!class_exists("sp_category")) {
         private $title;
         private $description;
         private $catComponents = array(); //array of sp_catComponent objects
-        private $responseCats  = array(); //array of ids of other categories array( [ID] => 1 );
         private $iconID;
         public 	$errors; //!TO-DO: make this an array of errors
 
@@ -49,17 +48,12 @@ if (!class_exists("sp_category")) {
                 if( is_wp_error($category) ){
                     $this->errors = new WP_Error('invalid', __("Invalid cat ID " . $catID));
                 }else{
-                    $sp_responseCats     = get_option('sp_responseCats');
                     $sp_cat_icons        = get_option('sp_cat_icons');
                     $this->ID 		   	 = $category->cat_ID;
                     $this->title		 = $category->name;
                     $this->description   = $category->category_description;
                     $this->catComponents = array();
                     $this->iconID		 = $sp_cat_icons[$catID];
-
-                    if( !empty($sp_responseCats) ){
-                        $this->responseCats  = $sp_responseCats[$this->ID];
-                    }
 
                     // load category/template components
                     $sp_catComponentsTable = $wpdb->prefix . "sp_catComponents";
@@ -115,56 +109,6 @@ if (!class_exists("sp_category")) {
         }
 
         /**
-         * Renders the response categories and automatically
-         * checks off the categories that are response categories
-         *
-         * Used in the administrative back-end
-         */
-        function renderResponseCatForm(){
-            if(is_admin()){
-                ?>
-                <p>Check off the Response Categories for <b><?php echo $this->title ?>:</b></p>
-                <form id="responseCatsForm" name="responseCatsForm" method="post">
-                    <table class="widefat responseCatTable">
-                        <thead>
-                        <tr>
-                            <th class="row-title">Category</th>
-                            <th>Description</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <?php
-                        $sp_categories = get_option('sp_categories');
-                        foreach($sp_categories as $sp_catID){
-                            $sp_category = new sp_category(null, null, $sp_catID);
-                            $checked = !empty($this->responseCats[$sp_catID]) ? 'checked="checked"' : '';
-                            ?>
-                            <tr>
-                                <td class="row-title">
-                                    <input type="checkbox" id="responseCats[<?php echo $sp_category->getID() ?>]" name="responseCats[<?php echo $sp_category->getID() ?>]" value="1" <?php echo $checked ?> />
-                                    <label for="responseCats[<?php echo $sp_category->getID() ?>]"><?php echo $sp_category->getTitle(); ?></label>
-                                </td>
-                                <td><?php echo $sp_category->getDescription() ?></td>
-                            </tr>
-                        <?php
-                        }
-                        ?>
-                        </tbody>
-                        <tfoot>
-                        <tr>
-                            <th class="row-title"></th>
-                            <th></th>
-                        </tr>
-                        </tfoot>
-                    </table>
-                    <button type="submit" id="submitResponseCats" class="button-primary">Update Category</button>
-                    <input type="hidden" id="catID" name="catID" value="<?php echo $this->ID ?>" />
-                </form>
-            <?php
-            }
-        }
-
-        /**
          * Pre-condition: called via the WP delete_category action. Function should not
          * be called from an instantiated sp_category object
          *
@@ -181,18 +125,6 @@ if (!class_exists("sp_category")) {
                     $key = array_search($catID, $sp_categories);
                     unset($sp_categories[$key]);
                     update_option('sp_categories', array_values($sp_categories));
-
-                    //remove catID from any response categories
-                    $sp_responseCats = get_option('sp_responseCats');
-
-                    if( !empty($sp_responseCats) ){
-                        foreach( $sp_responseCats as $sp_catID => $inc ){
-                            if( isset($sp_responseCats[$sp_catID][$catID]) );
-                            unset($sp_responseCats[$sp_catID][$catID]);
-                        }
-
-                        update_option('sp_responseCats', $sp_responseCats);
-                    }
 
                     $sp_category = new sp_category(null, null, $catID);
 
@@ -257,32 +189,6 @@ if (!class_exists("sp_category")) {
         function setDescription($description){
             $this->description = $description;
             return wp_update_category(array('cat_ID' => $this->ID, 'category_description' => $description));
-        }
-
-
-        /**
-         * Sets the response categories of the category
-         *
-         * @param array $responseCats An array of SP category IDs: array( ID1 => true, ID2 => true, etc... )
-         * @return bool True if update succesful, false otherwise
-         */
-        function setResponseCats($responseCats){
-            $sp_responseCats  = get_option('sp_responseCats');
-            if($sp_responseCats[$this->ID] != $responseCats){
-                if( empty($sp_responseCats) )
-                    $sp_responseCats = array();
-
-                $this->responseCats = $responseCats;
-                $sp_responseCats[$this->ID] = $this->responseCats;
-                return update_option('sp_responseCats', $sp_responseCats);
-            }else{
-                //If nothing is updated, return true
-                return true;
-            }
-        }
-
-        function getResponseCats(){
-            return $this->responseCats;
         }
 
         function getID(){

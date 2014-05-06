@@ -30,15 +30,13 @@ if (!class_exists("sp_myPostsWidgetAJAX")) {
 					exit;
 				}
 				
-				global $current_user;
-				
-				if($post->post_author != $current_user->ID){
-					header("HTTP/1.0 409 You can only delete your own posts!");
-					exit;					
-				}
-				
-				wp_delete_post($postID, true);
-				
+				if( current_user_can('edit_post', $postID) ){
+                    wp_delete_post($postID, true);
+				}else{
+                    header("HTTP/1.0 409 You can only delete your own posts!");
+                    exit;
+                }
+
 				exit;
 			}
 		}

@@ -48,6 +48,19 @@
                 }
             }
 
+            var videoFilters;
+            if( sp_postVideoJS.SP_VIDEO_HTML5 ){
+                videoFilters = [
+                    {title : "MOV files", extensions : "mov, MOV"},
+                    {title : "AVI files", extensions : "avi, AVI"},
+                    {title : "MP4 files", extensions : "mp4, MP4"}
+                ]
+            }else{
+                videoFilters = [
+                    {title : "MP4 files", extensions : "mp4, MP4"}
+                ]
+            }
+
             var uploader = new plupload.Uploader({
                 runtimes      : 'html5,silverlight,flash,html4',
                 chunk_size    : '1mb',
@@ -68,11 +81,7 @@
                     postID  : postID
                 },
                 max_file_size : '1gb',
-                filters : [
-                        {title : "MOV files", extensions : "mov, MOV"},
-                        {title : "AVI files", extensions : "avi, AVI"},
-                        {title : "MP4 files", extensions : "mp4, MP4"}
-                ],
+                filters : videoFilters,
                 init: {
 
                     FilesAdded: function(up, files) {

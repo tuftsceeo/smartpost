@@ -40,18 +40,15 @@ if (!class_exists("sp_postGallery")) {
         }
 			
         static function enqueue_gallery_css(){
-            wp_register_style( 'magnific-popup-css', plugins_url('js/magnific-popup/magnific-popup.css', __FILE__) );
             wp_register_style( 'sp_postGalleryCSS', plugins_url('css/sp_postGallery.css', __FILE__) );
             wp_enqueue_style( 'sp_postGalleryCSS' );
-            wp_enqueue_style( 'magnific-popup-css' );
+
         }
 
         // Enqueue photo gallery related JS files
         static function enqueue_gallery_js(){
             wp_register_script( 'sp_postGalleryJS', plugins_url('/js/sp_postGallery.js', __FILE__), array( 'jquery', 'sp_globals', 'sp_postComponentJS' ) );
-            wp_register_script( 'magnific-popup', plugins_url('/js/magnific-popup/jquery.magnific-popup.min.js', __FILE__), array( 'sp_postGalleryJS' ) );
             wp_enqueue_script( 'sp_postGalleryJS' );
-            wp_enqueue_script( 'magnific-popup' );
         }
 
         /**

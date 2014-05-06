@@ -474,21 +474,6 @@ if ( !class_exists("sp_admin") ) {
                                 <h2>SmartPost Settings</h2>
                                 <p>SmartPost has a slew of features that make it more customizable.</p>
                                 <p>On the right hand side bar title "SmartPost Components", you can navigate between the components and customize SmartPost further.</p>
-
-                                <p style="color: red;"><img src="<?php echo SP_IMAGE_PATH .'/alert.png'?>" stye="vertical-align: text-top;" /> Important: please read the below info before uninstalling this plugin!</p>
-
-                                <h3>Saving SmartPost shortcodes to HTML form</h3>
-                                <p>In the current version of this plugin, SmartPost "post component" content blocks are saved in a separate table in the WordPress database.</p>
-                                <p>Completely deleting or uninstalling the plugin will result in the content blocks not rendering properly or being completely lost.</p>
-                                <p>Before uninstalling or removing the plugin completely, it is recommended to convert all the components to HTML form by clicking the button below.</p>
-                                <button id="save_sp_posts_to_html" class="button">Save SmartPost posts as HTML</button>
-                                <p></p>
-
-                                <h3>Uninstall SmartPost</h3>
-                                <p>Deleting or de-activating this plugin will not remove the database tables and options due to its destructive nature (content may be permanently lost!).</p>
-                                <p>If you are sure you want to completely remove this plugin, including all the database tables and options, you can do so by clicking the button below.</p>
-                                <p style="color:red;">WARNING: do NOT click this button unless you really know what you're getting yourself into: <button id="uninstall_smartpost" class="button">Uninstall SmartPost</button></p>
-
                             <?php endif; ?>
                             </div>
 

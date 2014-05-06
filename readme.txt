@@ -64,10 +64,10 @@ However, it's fairly easy to create a category widget-area for you to place your
 
 == Screenshots ==
 
-1. Build category templates across your taxonomy -- each category can have its own template. Posts created using the "SP QuickPost" widget will follow the template.
-2. Create rich posts with videos and picture galleries, no more jumping back and forth between the dashboard and the front-end of your site.
-3. Re-arrange components in your post to customize the look and feel of your post.
-4. Use the "link" component to easily embed YouTube videos and other types of web content.
+1. Build category templates across your taxonomy - each category can have its own template. Posts created using the "SP QuickPost" widget will follow the structure of the template.
+2. SmartPost comes with a wide variety of useful widgets that makes post management easier on the front-end of WordPress.
+2. Drag and drop images, videos, and files from your desktop to create rich posts with videos and picture galleries with immediate feedback. No more jumping back and forth between the dashboard and the front-end of your site.
+3. How a post looks after submitting it via a SmartPost template.
 
 == Changelog ==
 

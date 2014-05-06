@@ -225,7 +225,7 @@ if (!class_exists("sp_postComponent")) {
             // Return edit mode component if we're an admin or an owner
             if( current_user_can('edit_post', $this->postID) && $edit_mode && !$is_locked ){
                 $html = '<div id="comp-' . $this->ID . '" data-compid="' . $this->ID . '" data-required="' . $this->isRequired() . '" data-catcompid="' . $this->catCompID . '" data-typeid="' . $this->typeID . '" class="sp-component-edit-mode' . ( ($this->isRequired() && $this->lastOne() && $this->isEmpty() ) ?  ' requiredComponent' : '') . '">';
-                    $html .= $this->render_comp_title();
+                    $html .= $this->render_comp_title(true);
                     $html .= '<span id="del" data-compid="' . $this->ID . '" class="sp_delete sp_xButton" title="Delete Component"></span>';
                     $html .= '<div class="componentHandle tooltip" title="Drag up or down"><div class="theHandle"></div></div>';
                     $html .= $this->renderEditMode();
@@ -247,11 +247,12 @@ if (!class_exists("sp_postComponent")) {
 
         /**
          * Returns an editable component title if the current user has privileges to edit it, otherwise just returns the title.
-         * @return string - XHTML of the title
+         * @param bool $edit_mode - weather to display the title in edit mode. User has to be able to edit the post for this to work.
+         * @return string
          */
-        function render_comp_title(){
+        function render_comp_title( $edit_mode = false ){
             $html = '';
-            if( current_user_can('edit_post', $this->postID) ){
+            if( current_user_can('edit_post', $this->postID) && $edit_mode ){
                 $editable = 'editableCompTitle editable';
                 $html .= '<div id="comp-' . $this->ID .'-title" data-compid="' . $this->ID . '" class="' . $editable .'" title="Click to edit title">';
                 $html .= trim($this->name);

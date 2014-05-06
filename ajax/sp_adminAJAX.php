@@ -7,11 +7,11 @@ if (!class_exists("sp_adminAJAX")) {
          * AJAX requests.
          */
         static function init(){
-            add_action('wp_ajax_newSPCatAJAX', array('sp_adminAJAX', 'new_sp_cat_ajax'));
-            add_action('wp_ajax_switchCategoryAJAX', array('sp_adminAJAX', 'switch_category_ajax'));
-            add_action('wp_ajax_setCompOrderAJAX', array('sp_adminAJAX', 'set_comp_order_ajax'));
-            add_action('wp_ajax_getCategoryJSONTreeAJAX', array('sp_adminAJAX', 'get_category_json_tree_ajax'));
-            add_action('wp_ajax_deleteTemplateAJAX', array('sp_adminAJAX', 'delete_template_ajax'));
+            add_action('wp_ajax_new_sp_cat_ajax', array('sp_adminAJAX', 'new_sp_cat_ajax'));
+            add_action('wp_ajax_switch_category_ajax', array('sp_adminAJAX', 'switch_category_ajax'));
+            add_action('wp_ajax_set_comp_order_ajax', array('sp_adminAJAX', 'set_comp_order_ajax'));
+            add_action('wp_ajax_get_category_json_tree_ajax', array('sp_adminAJAX', 'get_category_json_tree_ajax'));
+            add_action('wp_ajax_delete_template_ajax', array('sp_adminAJAX', 'delete_template_ajax'));
         }
 
         /**

@@ -36,20 +36,24 @@ if (!class_exists("sp_postVideo")) {
         static function init(){
             require_once('ajax/sp_postVideoAJAX.php');
             sp_postVideoAJAX::init();
-            self::enqueueJS();
-            self::enqueueCSS();
+            self::enqueue_sp_video_js();
+            self::enqueue_sp_video_css();
         }
 
-        static function enqueueCSS(){
+        static function enqueue_sp_video_css(){
             wp_register_style( 'sp_postVideoCSS', plugins_url('css/sp_postVideo.css', __FILE__) );
             wp_enqueue_style( 'sp_postVideoCSS' );
             wp_enqueue_style( 'wp-mediaelement' );
         }
 
-        static function enqueueJS(){
+        static function enqueue_sp_video_js(){
             wp_register_script( 'sp_postVideoJS', plugins_url('js/sp_postVideo.js', __FILE__), array( 'jquery', 'sp_globals', 'sp_postComponentJS', 'plupload-all', 'wp-mediaelement' ) );
             wp_enqueue_script( 'wp-mediaelement' );
             wp_enqueue_script( 'sp_postVideoJS' );
+            wp_localize_script( 'sp_postVideoJS', 'sp_postVideoJS', array(
+                    'SP_VIDEO_HTML5' => (bool) get_site_option( 'sp_html5_encoding' )
+                )
+            );
         }
 
         /**
@@ -84,6 +88,7 @@ if (!class_exists("sp_postVideo")) {
                             $html .= '<img src="' . sp_core::getIcon( $this->typeID ) . '" /> Upload a Video';
                         $html .= '</button>';
                         $html .= '<p>You can also drag and drop a video file here</p>';
+                        $html .= !get_site_option( 'sp_html5_encoding' ) ? '<p>Note: only .mp4 files are allowed.</p>' : '';
                         $html .= '<input id="sp_videoBrowse-' . $this->ID .'" data-compid="' . $this->ID . '" type="file" style="display:none;">';
                     $html .= '</div>';
             }else{

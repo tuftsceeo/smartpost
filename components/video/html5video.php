@@ -136,7 +136,7 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && !is_wp_error( $sp_ffmpeg_path ) ){
         unlink( $ARGS['VID_FILE'] ); // Remove the original .mov or .avi files
     }
     $videoComponent->beingConverted = false;
-    $success = $videoComponent->update(null);
+    $success = $videoComponent->update();
 
     exit(0);
 } else {

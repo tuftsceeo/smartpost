@@ -115,7 +115,6 @@ if (!class_exists("sp_postVideoAJAX")) {
 
             if( file_exists( $videoFilePath ) ){
 
-                // Create a new attachment of the .mov
                 $compID = (int) $_POST['compID'];
                 $videoComponent = new sp_postVideo($compID);
                 $postID = $videoComponent->getPostID();
@@ -160,6 +159,20 @@ if (!class_exists("sp_postVideoAJAX")) {
                     }else{
                         shell_exec('php ' . $script_path . ' ' . implode(' ', $script_args) . ' &> /dev/null &');
                     }
+                }else{
+
+                    // Check to see that it's mp4 format
+                    $ext = pathinfo($videoFilePath, PATHINFO_EXTENSION);
+                    if( $ext !== 'mp4' ){
+                        unlink($videoFilePath);
+                        header( "HTTP/1.0 409 Error: only mp4 files are allowed to be uploaded when HTML5 encoding is not enabled!" );
+                        exit;
+                    }else{
+                        // Create the attachment
+                        $videoComponent->videoAttachmentIDs['mp4'] = sp_core::create_attachment( $videoFilePath, $postID, '', get_current_user_id() );
+                        $videoComponent->update();
+                    }
+
                 }
                 echo $videoComponent->renderPlayer();
 

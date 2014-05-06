@@ -189,6 +189,13 @@
          */
         initComponent: function(component, postID, autoFocus){
             this.initFileDrop( $(component) );
+            $(component).magnificPopup({
+                delegate: 'a', // the selector for gallery item
+                type: 'image',
+                gallery: {
+                    enabled:true
+                }
+            });
             var editor = $( component ).find( '.sp-editor-content' );
             var browseButton = $(component).find( '.sp-gallery-browse' );
             browseButton.click(function(){

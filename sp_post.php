@@ -93,18 +93,22 @@ if (!class_exists("sp_post")) {
          * Enqueue JS scripts
          */
         static function enqueueJS(){
+            wp_register_script( 'magnific-popup', plugins_url('/js/magnific-popup/jquery.magnific-popup.min.js', __FILE__), array( 'sp_postGalleryJS' ) );
+            wp_enqueue_script( 'magnific-popup' );
+
             wp_register_script('sp_postJS', plugins_url('/js/sp_post.js', __FILE__));
             wp_enqueue_script('sp_postJS');
-            wp_enqueue_script( 'thickbox' );
         }
 
         /**
          * Enqueue CSS scripts
          */
         static function enqueueCSS(){
-            wp_register_style('sp_postCSS', plugins_url('/css/sp_post.css', __FILE__));
-            wp_enqueue_style('sp_postCSS');
-            wp_enqueue_style( 'thickbox' );
+            wp_register_style( 'magnific-popup-css', plugins_url('js/magnific-popup/magnific-popup.css', __FILE__) );
+            wp_enqueue_style( 'magnific-popup-css' );
+
+            wp_register_style( 'sp_postCSS', plugins_url('/css/sp_post.css', __FILE__) );
+            wp_enqueue_style( 'sp_postCSS' );
         }
 
         /**
@@ -115,9 +119,9 @@ if (!class_exists("sp_post")) {
          */
         function validatePostCatSave($newPostCats){
             global $post;
-            $spCatCount        = 0;
-            $sp_categories     = get_option('sp_categories');
-            $currentPostCats   = get_the_category($post->ID);
+            $spCatCount = 0;
+            $sp_categories = get_option('sp_categories');
+            $currentPostCats = get_the_category($post->ID);
 
             //Check if the post is getting updated to more than 1 SP category
             if( !empty($newPostCats) ){
@@ -140,9 +144,8 @@ if (!class_exists("sp_post")) {
                 return $currentPostCatIDs;
             }elseif($spCatCount == 1){
                 return $newPostCats;
-                //if($newPostCats[1] != $currentPostCats[0]->term_id)
-                //update_option('sp_convert_' . $post->ID, true);
             }
+            return $newPostCats;
         }
 
         /**

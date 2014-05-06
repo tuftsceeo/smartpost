@@ -26,6 +26,27 @@ if ( !class_exists("sp_uninstall") ) {
         }
 
         /**
+         * Renders uninstall settings and details
+         */
+        public static function render_uninstall_settings(){
+            ?>
+            <p style="color: red;"><img src="<?php echo SP_IMAGE_PATH .'/alert.png'?>" stye="vertical-align: text-top;" /> Important: please read the below info before uninstalling this plugin!</p>
+
+            <h3>Saving SmartPost shortcodes to HTML form</h3>
+            <p>In the current version of this plugin, SmartPost "post component" content blocks are saved in a separate table in the WordPress database.</p>
+            <p>Completely deleting or uninstalling the plugin will result in the content blocks not rendering properly or being completely lost.</p>
+            <p>Before uninstalling or removing the plugin completely, it is recommended to convert all the components to HTML form by clicking the button below.</p>
+            <button id="save_sp_posts_to_html" class="button">Save SmartPost posts as HTML</button>
+            <p></p>
+
+            <h3>Uninstall SmartPost</h3>
+            <p>Deleting or de-activating this plugin will not remove the database tables and options due to its destructive nature (content may be permanently lost!).</p>
+            <p>If you are sure you want to completely remove this plugin, including all the database tables and options, you can do so by clicking the button below.</p>
+            <p style="color:red;">WARNING: do NOT click this button unless you really know what you're getting yourself into: <button id="uninstall_smartpost" class="button">Uninstall SmartPost</button></p>
+            <?php
+        }
+
+        /**
          * Saves component data to posts
          */
         public static function uninstall_sp_data(){
@@ -83,7 +104,6 @@ if ( !class_exists("sp_uninstall") ) {
          * Call this function to uninstall SmartPost
          */
         public static function uninstall_smartpost(){
-            error_log( 'uninstall_smartpost' );
 
             if ( __FILE__ != WP_UNINSTALL_PLUGIN )
                 return;

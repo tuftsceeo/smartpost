@@ -618,13 +618,10 @@ if (!class_exists("sp_postLink")) {
          */
         function removeThumb(){
             if( !empty($this->urlThumb) ){
-
                 // Remove the featured thumb if it's our thumbnail
                 if( get_post_thumbnail_id( $this->postID ) == $this->urlThumb ){
-
                     delete_post_thumbnail( $this->postID );
                 }
-
                 wp_delete_attachment($this->urlThumb, true);
             }
             $this->urlThumb = 0;

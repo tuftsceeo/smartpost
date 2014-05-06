@@ -143,8 +143,14 @@
             var thumbInfo = $( thumbElem ).data();
             thumbElem = photoElem.find('#sp-photo-thumb-' + thumbInfo.thumbid);
 
+            // Apply delete event to the delete elem
             var delElem = $(thumbElem).find('.sp-photo-delete-thumb');
             self.bindDelete( $(delElem) );
+
+            // Enable photo pop-ups
+            $(photoElem).find( '.sp-photo-link' ).magnificPopup({
+                type:'image'
+            });
         },
 
         /**
@@ -178,17 +184,21 @@
         },
 
         /**
-         * Initializes a single component with filedrop
+         * Initializes a single new component with filedrop
          */
         initComponent: function(component, postID, autoFocus){
+            // Enable file drop
             this.initFileDrop( $(component) );
             var editor = $( component ).find( '.sp-editor-content' );
 
+            // Enable browse button
             var browseButton = $(component).find( '.sp-photo-browse' );
             browseButton.click(function(){
                 var compId = $(this).data( 'compid' );
                 $('#sp-photo-upload-' + compId).click();
             });
+
+            // Enable any CK editors
             smartpost.sp_post.initCkEditors(editor);
         },
 
@@ -199,11 +209,11 @@
             var self = this;
             self.setTypeID();
 
-            $('.sp-photo').each(function(){
+            $( '.sp-photo' ).each(function(){
                 self.initFileDrop( $(this) );
             });
 
-            $('.sp-photo-delete-thumb').each(function(){
+            $( '.sp-photo-delete-thumb' ).each(function(){
                 self.bindDelete( $(this) );
             });
 
@@ -214,8 +224,13 @@
                     $( '#sp-photo-upload-' + compId ).click();
                 });
             });
+
+            // Enable photo pop-ups
+            $( '.sp-photo-link' ).magnificPopup({
+                type:'image'
+            });
         }
-    }
+    };
 
     $(document).ready(function(){
         smartpost.sp_postPhoto.init();

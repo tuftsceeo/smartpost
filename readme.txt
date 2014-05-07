@@ -62,6 +62,36 @@ However, it's fairly easy to create a category widget-area for you to place your
 2. Once you created this file, read up on how to register a new sidebar area [here](http://codex.wordpress.org/Function_Reference/register_sidebar).
 3. In your `category.php` file, place the sidebar somewhere under the category title, right before the post loop.
 
+= How do I get HTML5 video encoding to work? =
+
+**Note: SmartPost only supports video encoding on Linux servers! We are hoping to extend support for Windows servers soon.**
+
+[FFmpeg](http://www.ffmpeg.org/) is required for video encoding to work! The server that your WordPress instance resides on needs to have
+ffmpeg and ffprobe executables present in the same directory. If ffmpeg is already installed, these executables usually reside in /usr/local/bin/,
+but sometimes not. To find the full path of where ffmpeg lives, you can use the shell command `command -v ffmpeg`.
+
+Once you've found the full path, then in the WordPress dashboard go to SmartPost -> Settings and click on the "Video" link on the right hand side.
+Copy and paste the full path of where the ffmpeg executable resides in the text input (make sure there is a trailing "/" at the end of the path).
+Click on the "Test" button to see if SmartPost is able to properly invoke the ffmpeg executable. **Note: PHP needs to be configured to allow
+SmartPost to use the [shell_exec()](http://us3.php.net/manual/en/function.shell-exec.php), [exec()](http://us3.php.net/manual/en/function.exec.php), and
+[system()](http://us3.php.net/manual/en/function.system.php) commands for this work!**
+
+If you're not confident in installing ffmpeg on your server, the easiest thing to do is to download static builds from the [ffmpeg website](http://www.ffmpeg.org/download.html).
+In order to download the right build, you will need to know the type of operating system of the server your WordPress site is hosted on. If it's a Linux server (in most
+cases it is), then you will need to know the appropriate kernel version. There are various ways to look up the kernal version, the easiest being via the shell command "uname -r".
+You can also look it up via phpinfo() or use the [php_uname()](http://us3.php.net/manual/en/function.php-uname.php) command.
+
+Once you've downloaded the appropriate static builds, un-compress them, and upload them to a directory where the "apache" user has permisions to execute them.
+A good place might be inside the SmartPost folder under wp-content/plugins/smartpost-templates/components/video/ffmpeg/ (you would have to create the ffmpeg folder).
+
+= How do I uninstall SmartPost? =
+
+We are currently working on putting in place an uninstall script! If you want to completely purge your WordPress instance of SmartPost, then you will have
+to delete the following:
+
+1. The tables 'sp_postComponents', 'sp_catComponents', 'sp_compTypes'
+2. The options: 'sp_categories', 'sp_db_version', 'sp_defaultCat', 'sp_cat_icons', 'sp_responseCats', 'sp_cat_save_error' from the wp_options table.
+
 == Screenshots ==
 
 1. Build category templates across your taxonomy - each category can have its own template. Posts created using the "SP QuickPost" widget will follow the structure of the template.

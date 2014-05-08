@@ -252,12 +252,58 @@ if (!class_exists("sp_core")) {
                 // Format the file name
                 $newFilePath = preg_replace( '/\s+/', '', $filePath ); // Remove all whitespace
                 $path_parts  = pathinfo($newFilePath);
-                $newFilePath = $path_parts['dirname'] . '/' . $path_parts['filename'] . '_' . uniqid() . '.' . strtolower( $path_parts['extension'] ); // Add a unique ID to keep file names unique
+
+                /**
+                 * - Adds a unique ID to keep file names unique
+                 * - Makes all file extensions lowercase (cases like .JPG or .MOV => .jpg/.mov)
+                 * - sanitize_title slugifies the filename, so names like "John's Movie.mov" => "johnsmovie.mov"
+                 */
+                $newFilePath = $path_parts['dirname'] . '/' . sanitize_title( $path_parts['filename'] ) . '_' . uniqid() . '.' . strtolower( $path_parts['extension'] );
                 rename( "{$filePath}.part", $newFilePath ); // Strip the temp .part suffix off
                 return $newFilePath;
             }else{
                 return false;
             }
+        }
+
+        /**
+         * Replaces $code with $replacement inside $content
+         * @param $code
+         * @param $replacement
+         * @param $content
+         * @return mixed
+         */
+        public static function replace_shortcode($code, $replacement, $content){
+            global $shortcode_tags;
+            $stack = $shortcode_tags;
+            $shortcode_tags = array($code => 1);
+
+            // replace the shortcode with replacement
+            $pattern = get_shortcode_regex();
+            $content = preg_replace_callback( "/$pattern/s", function($m) use($replacement) {
+                // error_log( "made it " );
+                // error_log( print_r($m, true) );
+                return $replacement;
+            }, $content );
+
+            $shortcode_tags = $stack;
+            return $content;
+        }
+
+        /**
+         * @link http://stackoverflow.com/questions/9440423/wordpress-strip-single-shortcode-from-posts
+         * @param $code
+         * @param $content
+         * @return string
+         */
+        public static function strip_shortcode($code, $content)
+        {
+            global $shortcode_tags;
+            $stack = $shortcode_tags;
+            $shortcode_tags = array($code => 1);
+            $content = strip_shortcodes($content);
+            $shortcode_tags = $stack;
+            return $content;
         }
 
         /**
@@ -268,7 +314,7 @@ if (!class_exists("sp_core")) {
          * @return bool
          */
         static function validateExtension($filename, $allowedExtensions){
-            $path_parts  = pathinfo($filename);
+            $path_parts = pathinfo($filename);
             return in_array($path_parts['extension'], $allowedExtensions);
         }
 

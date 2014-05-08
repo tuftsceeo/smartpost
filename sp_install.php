@@ -41,7 +41,7 @@ if (!class_exists("sp_install")) {
 		
 		/* Table: sp_compTypes
 		 *	Description: contains the 'base-package' types for SmartPost.
-		 *														Is extendable to future types.
+		 *	Is extendable to future types.
 		 */		
 		function tableExists($tableName){
 			global $wpdb;

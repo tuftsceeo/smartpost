@@ -68,8 +68,8 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
 
                     $catCompID = $component->getID();
                     $typeID = $component->getTypeID();
-                    $desc   = $component->getDescription();
-                    $icon   = $component->getIcon();
+                    $desc = $component->getDescription();
+                    $icon = $component->getIcon();
 
                     if( !empty($icon) ){
                         $icon_img = '<img src="' . $component->getIcon() . '" />';
@@ -116,52 +116,6 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
 		}
 		
 		/**
-		 * Load response posts
-		 */
-		function loadResponsePostsAJAX(){
-			
-			if( empty($_POST['ID']) ){
-				header("HTTP/1.0 409 could not find postID");
-				exit;
-			}	
-
-			$postID = (int) $_POST['ID'];
-			
-			//Get the category of the response post
-			$sp_postCatID = sp_post::getSPCategory($postID);
-			
-			//Search all SP categories that have the response posts's category as one
-			//of their response categories. i.e. find all SP categoriese we can respond to..
-			$sp_categories = get_option('sp_categories');
-			$responseCats = array();
-			
-			foreach($sp_categories as $catID){
-				$sp_category  = new sp_category(null, null, $catID);
-				$responseCatIDs = $sp_category->getResponseCats();
-				
-				if( !empty($responseCatIDs) ){
-					if( (bool) $responseCatIDs[$sp_postCatID] );
-					  array_push($responseCats, $sp_category);
-				}
-			}
-			
-			$post_filters['post_status']   = 'publish';
-
-			foreach($responseCats as $responseCat){
-				$post_filters['categories']  = array($responseCat->getID());
-				$html = $responseCat->renderPostTree('publish', 0, $post_filters);
-			}
-			
-			if(class_exists('sp_postTreeWidget')){
-				$postTree = new sp_postTreeWidget();
-				$postTree->widget();
-			}
-
-			//echo $html;
-			exit;
-		}
-		
-		/**
 		 * Publish the post (as a response if necessary)
 		 */
 		function publishPostAJAX(){
@@ -181,7 +135,7 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
 				exit;
 			}
 			
-			$post['ID'] 								 = (int) $_POST['ID'];
+			$post['ID'] = (int) $_POST['ID'];
 			$post['post_title']  = (string) $_POST['post_title'];
 			$post['post_status'] = 'publish';
 			

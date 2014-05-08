@@ -9,21 +9,6 @@
 if ( !class_exists("sp_uninstall") ) {
 
     class sp_uninstall{
-        /**
-         * @link http://stackoverflow.com/questions/9440423/wordpress-strip-single-shortcode-from-posts
-         * @param $code
-         * @param $content
-         * @return string
-         */
-        public static function strip_shortcode($code, $content)
-        {
-            global $shortcode_tags;
-            $stack = $shortcode_tags;
-            $shortcode_tags = array($code => 1);
-            $content = strip_shortcodes($content);
-            $shortcode_tags = $stack;
-            return $content;
-        }
 
         /**
          * Renders uninstall settings and details

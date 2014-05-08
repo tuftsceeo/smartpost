@@ -40,6 +40,7 @@ if (!class_exists("sp_post")) {
                             foreach($catComponents as $catComp){
                                 if($catComp->getRequired() || $catComp->getDefault()){
                                     $catCompID = $catComp->getID();
+                                    // TODO: this calls save() multiple times for each component, which is inefficient
                                     $this->addComponent($catCompID);
                                 }
                             }
@@ -85,14 +86,16 @@ if (!class_exists("sp_post")) {
             add_action( 'before_delete_post', array('sp_post', 'delete'));
             add_action( 'admin_notices', array('sp_post', 'cat_save_error'));
             add_action( 'pre_get_posts', array('sp_post', 'excludeDeletedPosts'));
-            self::enqueueJS();
-            self::enqueueCSS();
+            add_action( 'sp_updates', array('sp_post', 'update_sp_posts') );
+            add_shortcode( 'sp-components', array('sp_post' , 'sp_components_shortcode') );
+            self::enqueue_sp_post_js();
+            self::enqueue_sp_post_css();
         }
 
         /**
          * Enqueue JS scripts
          */
-        static function enqueueJS(){
+        static function enqueue_sp_post_js(){
             wp_register_script( 'magnific-popup', plugins_url('/js/magnific-popup/jquery.magnific-popup.min.js', __FILE__), array( 'sp_postGalleryJS' ) );
             wp_enqueue_script( 'magnific-popup' );
 
@@ -103,12 +106,54 @@ if (!class_exists("sp_post")) {
         /**
          * Enqueue CSS scripts
          */
-        static function enqueueCSS(){
+        static function enqueue_sp_post_css(){
             wp_register_style( 'magnific-popup-css', plugins_url('js/magnific-popup/magnific-popup.css', __FILE__) );
             wp_enqueue_style( 'magnific-popup-css' );
 
             wp_register_style( 'sp_postCSS', plugins_url('/css/sp_post.css', __FILE__) );
             wp_enqueue_style( 'sp_postCSS' );
+        }
+
+        /**
+         * Hooks into the 'sp_update' action (see sp_updates.php).
+         * @param $sp_site_version
+         */
+        static function update_sp_posts( $sp_site_version ){
+
+            /**
+             * Conversion from 2.2 to 2.3. Introduction of the [sp-components][/sp-components] shortcode.
+             * This update wraps all [sp_component] shortcodes with the [sp-components] tag.
+             * e.g. [sp_component id="1"][sp_component id="2"] becomes [sp-components][sp_component id="1"][sp_component id="2"][/sp-components].
+             * The [sp-components] shortcode wraps the components in a sortable div, allowing users to add new components, and re-order them.
+             */
+            $sp_cat_ids = get_option( 'sp_categories' );
+            foreach($sp_cat_ids as $cat_id){
+                $sp_posts = get_posts( array( 'category' => $cat_id, 'numberposts' => -1, 'post_status' => 'publish|draft|trash' ) );
+                if( !empty( $sp_posts ) ){
+                    foreach( $sp_posts as $post ){
+                        $content = $post->post_content;
+                        if( !has_shortcode( $content, 'sp-components') ){
+                            $pattern = '/\[sp_component id=\"[0-9]+\"\]/';
+                            preg_match_all( $pattern, $content, $matches, PREG_OFFSET_CAPTURE);
+
+                            $first_match = $matches[0][0];
+                            $first_match_start = $first_match[1]; // Start position of the first match
+
+                            $last_match = $matches[0][ count($matches[0]) - 1 ];
+                            $last_match_start = $last_match[1];
+                            $last_match_end = $last_match_start + strlen($last_match[0]);
+
+                            $before_html = substr($content, 0, $first_match_start); // Get all the content before the first match of [sp_component]
+                            $component_shortcodes = substr($content, $first_match_start, $last_match_end - $first_match_start ); // Get everything in between the first [sp_component] and the last
+                            $after_html = substr($content, $last_match_end ); // Get everything after the last [sp_component] match
+
+                            $new_content = $before_html . '[sp-components]' . $component_shortcodes . '[/sp-components]' . $after_html;
+                            $post->post_content = $new_content;
+                            wp_update_post( $post );
+                        }
+                    }
+                }
+            }
         }
 
         /**
@@ -179,20 +224,24 @@ if (!class_exists("sp_post")) {
             if(self::is_sp_post($post->ID)){
                 $sp_post = new sp_post($post->ID, true);
                 $postComponents = $sp_post->getComponents();
-
+                $shortCodes = '';
                 foreach($postComponents as $postComponent){
                     $compID = $postComponent->getID();
-                    $shortCodes = '[sp_component id="' . $compID . '"]';
+                    $shortCodes .= '[sp_component id="' . $compID . '"]';
                 }
                 $updatedPost['ID'] = $post->ID;
-                $updatedPost['post_content'] = strip_shortcodes($post->post_content) . $shortCodes;
+                $new_sp_content = '[sp-components]' . $shortCodes . '[/sp-components]';
+                if( has_shortcode($sp_post->wpPost->post_content, 'sp-components') ){
+                    $updatedPost['post_content'] = sp_core::replace_shortcode('sp-components', $new_sp_content, $sp_post->wpPost->post_content);
+                }else{
+                    $updatedPost['post_content'] = $sp_post->wpPost->post_content . $new_sp_content;
+                }
                 wp_update_post($updatedPost);
             }
         }
 
         /**
-         * Same as saveShortcodes but dynamically bound
-         *
+         * Same as saveShortcodes() but dynamically bound
          * @see saveShortcodes()
          */
         function save(){
@@ -203,7 +252,13 @@ if (!class_exists("sp_post")) {
                 $shortCodes .= '[sp_component id="' . $compID . '"]';
             }
             $updatedPost['ID'] = $this->wpPost->ID;
-            $updatedPost['post_content'] = strip_shortcodes($this->wpPost->post_content) . $shortCodes;
+            $new_sp_content = '[sp-components]' . $shortCodes . '[/sp-components]';
+
+            if( has_shortcode($this->wpPost->post_content, 'sp-components') ){
+                $updatedPost['post_content'] = sp_core::replace_shortcode('sp-components', $new_sp_content, $this->wpPost->post_content);
+            }else{
+                $updatedPost['post_content'] = $this->wpPost->post_content . $new_sp_content;
+            }
             wp_update_post($updatedPost);
         }
 
@@ -255,7 +310,7 @@ if (!class_exists("sp_post")) {
                     $wpPost->post_title   = '[deleted]';
                     $wpPost->post_author  = $anonymousUser;
                     $wpPost->comment_status = 'closed';
-                    $success = wp_update_post($wpPost);
+                    wp_update_post($wpPost);
 
                     //Add post_meta to indicate the post has been removed
                     add_post_meta($wpPost->ID, 'sp_deleted', true, true);
@@ -307,6 +362,29 @@ if (!class_exists("sp_post")) {
         }
 
         /**
+         * Shortcode that pads the components with a sortable div
+         */
+        function sp_components_shortcode($atts, $content = ""){
+            global $post;
+            if( sp_post::is_sp_post( $post->ID ) ){
+                $edit_mode = $_GET['edit_mode'];
+                $add_sortable_class = $edit_mode ? 'sp-component-stack' : '';
+
+                // HTML padding before
+                $html_before = '<div class="clear"></div>';
+                $html_before .= '<div id="spComponents" class="sortableSPComponents ' . $add_sortable_class . '">';
+
+                // HTML padding after
+                $html_after = '</div><!-- end #spComponents -->';
+                $html_after .= '<input type="hidden" id="postID" name="postID" value="' . $post->ID . '" />';
+                $html_after .= '<div class="clear"></div>';
+
+                return $html_before . do_shortcode( $content ) . $html_after;
+            }
+            return $content;
+        }
+
+        /**
          * Filter for the_content
          *
          * @link http://codex.wordpress.org/Plugin_API/Filter_Reference/the_content)
@@ -318,14 +396,11 @@ if (!class_exists("sp_post")) {
 
             if( self::is_sp_post($post->ID) ){
                 $sp_post = new sp_post($post->ID, true);
-                $editMode = $_GET['edit_mode'];
 
                 if( current_user_can( 'edit_post', $post->ID ) && is_single() ){
 
-                    // remove shortcodes since we don't want double rendering happening
-                    $content = strip_shortcodes($content);
-
                     // Check for post errors
+                    $errors = '';
                     if( is_wp_error($sp_post->errors) ){
                         $errors = '<p>' . $sp_post->errors->get_error_message() . '</p>';
                     }
@@ -333,11 +408,10 @@ if (!class_exists("sp_post")) {
                     // Check if post is currently locked for editing
                     require_once(ABSPATH . 'wp-admin/includes/post.php');
                     $isLocked = wp_check_post_lock( $post->ID );
-
                     if( $isLocked > 0 ){
                         $lockUser = get_userdata($isLocked);
-                        $user     = '<a href="' . get_author_posts_url($lockUser->ID) . ' ">' . $lockUser->first_name . ' ' . $lockUser->last_name . '</a>';
-                        $errors  .= '<p>Warning: post is currently being edited by ' . $user . '.';
+                        $user   = '<a href="' . get_author_posts_url($lockUser->ID) . ' ">' . $lockUser->first_name . ' ' . $lockUser->last_name . '</a>';
+                        $errors = '<p>Warning: post is currently being edited by ' . $user . '.';
                     }else{
                         wp_set_post_lock($post->ID);
                     }
@@ -345,17 +419,24 @@ if (!class_exists("sp_post")) {
                     //Add an errors div and display errors if necessary
                     $content = '<div id="component_errors"' . (!empty($errors) ? ' style="display: block;"' : '') . '>' . $errors . '<span id="clearErrors" class="sp_xButton"></span></div>' . $content;
 
-                    // load the components
-                    $postComponents = $sp_post->getComponents();
-                    $content .= '<div class="clear"></div>';
-                    $addCompStackClass = $editMode ? 'sp-component-stack' : '';
-                    $content .= '<div id="spComponents" class="sortableSPComponents ' . $addCompStackClass . '">';
-                    foreach($postComponents as $postComponent){
-                        $content .= $postComponent->render();
-                    }
-                    $content .= '</div><!-- end #spComponents -->';
-                    $content .= '<input type="hidden" id="postID" name="postID" value="' . $post->ID . '" />';
-                    $content .= '<div class="clear"></div>';
+                    /*
+                    $pattern = '/\[sp_component id=\"[0-9]+\"\]/';
+                    preg_match_all( $pattern, $content, $matches, PREG_OFFSET_CAPTURE);
+
+                    $first_match = $matches[0][0];
+                    $first_match_start = $first_match[1]; // Start position of the first match
+
+                    $last_match = $matches[0][ count($matches[0]) - 1 ];
+                    $last_match_start = $last_match[1];
+                    $last_match_end = $last_match_start + strlen($last_match[0]);
+
+                    $before_html = substr($content, 0, $first_match_start); // Get all the content before the first match of [sp_component]
+                    $component_shortcodes = substr($content, $first_match_start, $last_match_end - $first_match_start ); // Get everything in between the first [sp_component] and the last
+                    $after_html = substr($content, $last_match_end ); // Get everything after the last [sp_component] match
+
+                    $content = $before_html . '[sp-sortable]' . $component_shortcodes . '[/sp-sortable]' . $after_html;
+                    $content = do_shortcode( $content );
+                    */
                 }
 
                 if( !is_singular() || is_home() ){
@@ -647,10 +728,6 @@ if (!class_exists("sp_post")) {
             $postID = $this->wpPost->ID;
             return $wpdb->get_var( "SELECT COUNT(*) FROM $tableName where postID = $postID" );
         }
-
-        /**************************************
-         * Getters/Setters																				*
-         **************************************/
 
         function getwpPost(){
             return $this->wpPost;

@@ -311,8 +311,8 @@ if (!class_exists("sp_category")) {
             $component = new $type($catCompID);
 
             if($component->getRequired() || $component->getDefault()){
-                $args      = array( 'numberposts' => -1, 'category' => $this->ID, 'post_status' => 'publish|draft|trash');
-                $posts     = get_posts( $args );
+                $args = array( 'numberposts' => -1, 'category' => $this->ID, 'post_status' => 'publish|draft|trash');
+                $posts = get_posts( $args );
                 foreach($posts as $post){
                     $sp_post = new sp_post($post->ID, true);
 

@@ -15,7 +15,7 @@ define("SP_PLUGIN_NAME", "SmartPost");
 define("SP_IMAGE_PATH", plugins_url('/images', __FILE__));
 define("SP_PLUGIN_PATH", plugins_url('/', __FILE__));
 define("SP_DEBUG", true); // Turns on useful errors that are dumped into the php error log for debugging
-define("SP_VERSION", "2.2");
+define("SP_VERSION", "2.3");
 
 if ( !class_exists("smartpost") ){
 
@@ -32,7 +32,7 @@ if ( !class_exists("smartpost") ){
         function __construct(){
             require_once( 'core/sp_core.php' );
             require_once( 'sp_install.php' );
-            self::init_sp_classes( dirname(__FILE__) . "/updates" );
+            require_once( 'sp_updates.php' );
 
             $this->sp_init();
 
@@ -55,7 +55,7 @@ if ( !class_exists("smartpost") ){
                 sp_admin::init();
             }
 
-            require_once( 'sp_uninstall.php' );
+            sp_updates::check_for_updates();
         }
 
         /**

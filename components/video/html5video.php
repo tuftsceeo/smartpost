@@ -49,6 +49,7 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && !is_wp_error( $sp_ffmpeg_path ) ){
     $path = dirname( $ARGS['VID_FILE'] );
 
     $filename = $path . DIRECTORY_SEPARATOR . $name;
+    $filename_encoded = $path . DIRECTORY_SEPARATOR . $name . '_encoded';
 
     if(DEBUG_SP_VIDEO){
         echo 'ABSPATH: ' . $base_path . PHP_EOL;
@@ -60,6 +61,7 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && !is_wp_error( $sp_ffmpeg_path ) ){
     }
 
     $mp4_filename  = $filename . '.mp4';
+    $mp4_filename_encoded = $filename_encoded . '.mp4';
     $png_filename  = $filename . '.png';
     $content = $filename;
 
@@ -105,19 +107,19 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && !is_wp_error( $sp_ffmpeg_path ) ){
     /**
      * -q:v - Use video quality 2 (where 0 is equivalent to input video, and 31 is worst quality).
      * -vf  - Scaling and padding for videos that are not in 16:9 ratios
+     * -y - automatically overwrite files
      * -metadata:s:v:0 rotate=0 - Makes sure iOS/Mac devices don't unnecessarily rotate the video
      */
     $filter = '"' . $rotationFilter . 'scale=iw*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih):ih*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih), pad=' . $ARGS['WIDTH'] . ':' . $ARGS['HEIGHT'] . ':(' . $ARGS['WIDTH'] . '-iw*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih))/2:(' . $ARGS['HEIGHT'] . '-ih*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih))/2"';
-    system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -qscale 2 -filter:v ' . $filter . ' -metadata:s:v:0 rotate=0 ' . $filename . '.mp4' ); // .mp4 conversion
-
+    system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -qscale 2 -filter:v ' . $filter . ' -metadata:s:v:0 rotate=0 ' . $filename_encoded . '.mp4' ); // .mp4 conversion
     $uploads = wp_upload_dir();
 
     // Create a .mp4 attachment and a .png file based off the .mp4 file in case it got rotated
-    if( file_exists( $mp4_filename ) ){
-        system( $sp_ffmpeg_path . 'ffmpeg -i ' . $mp4_filename . ' -f image2 -vframes 1 ' . $filename  .'.png'); // Video thumb creation
-        $videoComponent->videoAttachmentIDs['mp4'] = sp_core::create_attachment( $mp4_filename, $ARGS['POST_ID'], $mp4_filename, $ARGS['AUTH_ID'] );
+    if( file_exists( $mp4_filename_encoded ) ){
+        system( $sp_ffmpeg_path . 'ffmpeg -i ' . $mp4_filename_encoded . ' -f image2 -vframes 1 ' . $filename  .'.png'); // Video thumb creation
+        $videoComponent->videoAttachmentIDs['mp4'] = sp_core::create_attachment( $mp4_filename_encoded, $ARGS['POST_ID'], $mp4_filename_encoded, $ARGS['AUTH_ID'] );
     }else{
-        $videoComponent->errors['mp4'] = 'Could not generate ' . $mp4_filename . '!' . PHP_EOL;
+        $videoComponent->errors['mp4'] = 'Could not find ' . $mp4_filename . '!' . PHP_EOL;
         echo $videoComponent->errors['mp4'];
     }
 
@@ -128,13 +130,11 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && !is_wp_error( $sp_ffmpeg_path ) ){
             set_post_thumbnail( $ARGS['POST_ID'], $videoComponent->videoAttachmentIDs['img']);
         }
     }else{
-        $videoComponent->errors['img'] = 'Could not generate ' . $png_filename . '!' . PHP_EOL;
+        $videoComponent->errors['img'] = 'Could not find ' . $png_filename . '!' . PHP_EOL;
         echo $videoComponent->errors['img'];
     }
 
-    if( $ARGS['VID_FILE'] != $mp4_filename){
-        unlink( $ARGS['VID_FILE'] ); // Remove the original .mov or .avi files
-    }
+    unlink( $ARGS['VID_FILE'] ); // Remove the original .mov or .avi files
     $videoComponent->beingConverted = false;
     $success = $videoComponent->update();
 

@@ -2,7 +2,7 @@
 Contributors: rafdizzle86
 Donate link: http://rafilabs.com/
 Tags: templates, forms, front end editor, video, ffmpeg, picture gallery, media, uploader
-Stable tag: 2.2
+Stable tag: 2.3
 Requires at least: 3.8
 Tested up to: 3.8
 License: GPLv2 or later
@@ -116,6 +116,7 @@ to delete the following:
 
 = 2.3 =
 Users should update to 2.3 due to a few major bugs that were fixed:
+
 * Uploaded files with apostrophes were not being handled properly
 * .mp4 video files were not being uploaded properly
 * Other shortcodes in post content were being destroyed

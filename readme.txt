@@ -4,7 +4,7 @@ Donate link: http://rafilabs.com/
 Tags: templates, forms, front end editor, video, ffmpeg, picture gallery, media, uploader
 Stable tag: 2.3
 Requires at least: 3.8
-Tested up to: 3.8
+Tested up to: 3.9.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 

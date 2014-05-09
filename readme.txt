@@ -101,10 +101,24 @@ to delete the following:
 
 == Changelog ==
 
+= 2.3 =
+* Fixed a shortcode bug where SmartPost would strip all shortcodes from a post
+* Added new shortcode called [sp-components] that wraps around all [sp_components] shortcodes
+* Add new shortcodes functions to handle shortcode logic
+* Modified update logic and design to a more simple design that relies on the version numbers
+* Fixed upload bug where apostrophes were not being properly handled
+* Fixed bug where .mp4 files were not being properly encoded and uploaded
+
 = 2.2 =
 * Initial release into to the WordPress plugin repository.
 
 == Upgrade Notice ==
+
+= 2.3 =
+Users should update to 2.3 due to a few major bugs that were fixed:
+* Uploaded files with apostrophes were not being handled properly
+* .mp4 video files were not being uploaded properly
+* Other shortcodes in post content were being destroyed
 
 = 2.2 =
 * First release to WordPress plugin repository.

@@ -195,6 +195,7 @@ if (!class_exists("sp_catComponent")) {
             }
 
             //Try and find the icon
+            $icon_rel_path = '';
             $icon_ext = array('.png', '.jpg', '.jpeg');
             $path = dirname($filepath);
 
@@ -206,8 +207,8 @@ if (!class_exists("sp_catComponent")) {
                 }
             }
 
-            if(!empty($icon_filename)){
-                $icon_url = plugins_url('images/' . $icon_filename, $filepath );
+            if( !empty($icon_filename) ){
+                $icon_rel_path = strtolower($name) . '/images/' . $icon_filename;
             }
 
             $typeID = sp_core::get_type_id_by_name($name);
@@ -220,7 +221,7 @@ if (!class_exists("sp_catComponent")) {
                     array(
                         'name' 		  => $name,
                         'description' => $description,
-                        'icon'        => $icon_url
+                        'icon'        => $icon_rel_path
                     ),
                     array( 'id' => $typeID ),
                     array(
@@ -238,7 +239,7 @@ if (!class_exists("sp_catComponent")) {
                     array(
                         'name' 		  => $name,
                         'description' => $description,
-                        'icon'		  => $icon_url
+                        'icon'		  => $icon_rel_path
                     ),
                     array('%s','%s','%s')
                 );
@@ -529,17 +530,19 @@ if (!class_exists("sp_catComponent")) {
          */
         function getIcon(){
 
+
             //If icon hasn't been set, return the default icon
-            if(empty($this->icon)){
-                $defaultIcon = sp_core::getIcon($this->typeID); //the default component type icon
-                return $defaultIcon;
+            $default_icon = sp_core::getIcon($this->typeID); //the default component type icon
+
+            if( empty($this->icon) ){
+                return $default_icon;
             }
 
             $icon_url = wp_get_attachment_url($this->icon);
 
             //in case $this->icon is broken (may have been deleted)
-            if(empty($icon_url)){
-                return $defaultIcon;
+            if( empty($icon_url) ){
+                return $default_icon;
             }
 
             //Otherwise return the icon url

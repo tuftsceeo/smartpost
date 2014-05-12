@@ -59,61 +59,6 @@
         },
 
         /**
-         * Given a compID that represents a component, copies that component
-         * instance to a category represented by catID
-         * @param compID - The component ID of the component to copy
-         * @param catID - The categoryID receiving the copy
-         * @param cl - closure that gets passed response from server
-         * @return DOMElement - An HTML
-         */
-        copyComponent: function(compID, catID, cl){
-            $.ajax({
-                url		 : SP_AJAX_URL,
-                type     : 'POST',
-                data	 : {
-                    action : 'copyComponentAJAX',
-                    nonce  : SP_NONCE,
-                    compID : compID,
-                    catID  : catID
-                },
-                dataType : 'html',
-                success  : function(response, statusText, jqXHR){
-                    //Remove the outer parent: <div id="advanced-sortables">
-                    cl($(response).html(),  statusText, jqXHR);
-                },
-                error    : function(jqXHR, statusText, errorThrown){
-                    sp_admin.adminpage.showError(errorThrown, null);
-                }
-            })
-        },
-
-        /**
-         * Copies all of the components of a source category to a destination category,
-         * effectively copying over an entire template.
-         * @param srcCatID - The source category from which to copy the components
-         * @param destCatID - The destination category to copy the templates to
-         */
-        copyTemplate: function(srcCatID, destCatID, cl){
-            $.ajax({
-                url		 : SP_AJAX_URL,
-                type     : 'POST',
-                data	 : {
-                    action : 'copyTemplateAJAX',
-                    nonce  : SP_NONCE,
-                    srcCatID  : srcCatID,
-                    destCatID : destCatID
-                },
-                dataType : 'html',
-                success  : function(response, statusText, jqXHR){
-                    cl(response, statusText, jqXHR);
-                },
-                error    : function(jqXHR, statusText, errorThrown){
-                    sp_admin.adminpage.showError(errorThrown, null);
-                }
-            })
-        },
-
-        /**
          * Given a component typeID and a category ID, adds that component
          * to a category template represented by catID
          * @param catID

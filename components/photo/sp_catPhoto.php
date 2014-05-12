@@ -4,7 +4,7 @@ if (!class_exists("sp_catPhoto")) {
 	/**
 	 * Extends sp_catComponent
 	 * The photo photo component allows users to upload pictures into
-     * a photo. Photo uses thickbox to browse through the pictures.
+     * a photo. Photo uses magnific-popups to browse through the pictures.
 	 *
 	 * @see sp_catComponent
 	 */

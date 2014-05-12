@@ -148,7 +148,7 @@ input.requiredAndDefault{
     color: #0074a2;
 }
 #newTemplateForm{
-    visibility: hidden;
+    display: none;
 }
 #the_settings{
     position: relative;

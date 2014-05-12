@@ -43,7 +43,7 @@
                     },
                     dataType : 'json',
                     success  : function(response){
-                        console.log(response);
+                        // console.log(response);
                     },
                     error    : function(jqXHR, statusText, errorThrown){
                         thisObj.showError(errorThrown, null);
@@ -70,11 +70,38 @@
               draggableDiv.draggable({
                   addClasses: true,
                   helper: dragHelper,
-                  revert: 'valid',
                   connectToSortable: sortableDiv,
                   cancel: ".disableSPSortable"
               })
           }
+        },
+
+        /**
+         * Given a compID that represents a component, copies that component
+         * instance to a category represented by catID
+         * @param compID - The component ID of the component to copy
+         * @param catID - The categoryID receiving the copy
+         * @param cl - closure that gets passed response from server
+         */
+        copyComponent: function(compID, catID, cl){
+            $.ajax({
+                url		 : SP_AJAX_URL,
+                type     : 'POST',
+                data	 : {
+                    action : 'copyComponentAJAX',
+                    nonce  : SP_NONCE,
+                    compID : compID,
+                    catID  : catID
+                },
+                dataType : 'html',
+                success  : function(response, statusText, jqXHR){
+                    //Remove the outer parent: <div id="advanced-sortables">
+                    cl($(response).html(),  statusText, jqXHR);
+                },
+                error    : function(jqXHR, statusText, errorThrown){
+                    sp_admin.adminpage.showError(errorThrown, null);
+                }
+            })
         },
 
         /**
@@ -119,7 +146,7 @@
                             if(response.success){
                                 window.location.href = SP_ADMIN_URL + '?page=smartpost';
                             }else{
-                                console.log(response);
+                                // console.log(response);
                                 self.showError('Something bad happened! Dump: ' + response, null);
                             }
                         },
@@ -258,7 +285,7 @@
                 dataType : 'json',
                 success  : function(nodeChildren){
 
-                    console.log(nodeChildren[0].children);
+                    // console.log(nodeChildren[0].children);
 
                     node.removeChildren();
                     $(nodeChildren[0].children).each(function(index, childNode){
@@ -296,9 +323,40 @@
             // Initialize the component with its own init method
             var compType = componentElem.attr('id').split('-')[0]; // Get the component type
             var compObj = sp_admin.SP_TYPES[compType]; // Get component object
-            compObj.initComponent(componentElem);
+
+            // Note: category components with no options may not have a JS object!
+            if( compObj instanceof Object ){
+                compObj.initComponent(componentElem);
+            }
 
             //TODO: Enable postbox open/close
+        },
+
+        /**
+         * Copies all of the components of a source category to a destination category,
+         * effectively copying over an entire template.
+         * @param srcCatID - The source category from which to copy the components
+         * @param destCatID - The destination category to copy the templates to
+         * @param cl - closure that gets called after ajax success
+         */
+        copyTemplate: function(srcCatID, destCatID, cl){
+            $.ajax({
+                url		 : SP_AJAX_URL,
+                type     : 'POST',
+                data	 : {
+                    action : 'copyTemplateAJAX',
+                    nonce  : SP_NONCE,
+                    srcCatID  : srcCatID,
+                    destCatID : destCatID
+                },
+                dataType : 'html',
+                success  : function(response, statusText, jqXHR){
+                    cl(response, statusText, jqXHR);
+                },
+                error    : function(jqXHR, statusText, errorThrown){
+                    sp_admin.adminpage.showError(errorThrown, null);
+                }
+            })
         },
 
         /**
@@ -310,41 +368,52 @@
         replaceDroppedItem: function(e, ui){
             var self  = this;
             var catID = $('#catID').val();
+            var loadingPlaceholder = $('<p><img src="' + SP_IMAGE_PATH + '/loading.gif" /> Loading ...</p>');
 
             var newCompHndlr = function(newComponent){
                 var component = $(newComponent);
-                ui.item.replaceWith(component);
+                component.hide();
+                loadingPlaceholder.replaceWith( component );
+                component.fadeIn();
+
                 self.initializeComponent(component, catID);
                 self.saveCompOrder( $(".meta-box-sortables").sortable( 'toArray' ) );
             };
 
-            //Handle drag n' drop via component draggables
+            // Handle drag n' drop via component draggables
             if ( ui.item.hasClass('catCompDraggable') ){
-
                 var typeID = ui.item.attr("type-id").split("-")[1];
+                ui.item.replaceWith( loadingPlaceholder );
                 sp_admin.sp_catComponent.addComponent(catID, typeID, newCompHndlr);
 
-            //Handle drag n' drop via dynaTree
+            // Handle drag n' drop via dynaTree
             }else if( ui.item.hasClass('dynatree-node') ){
 
                 var node = $.ui.dynatree.getNode(ui.item.context);
 
+                // Case 1: We are dragging and dropping a component
                 if(node.data.compID){
-                    sp_admin.sp_catComponent.copyComponent(node.data.compID, catID, newCompHndlr);
+                    ui.item.replaceWith( loadingPlaceholder );
+                    self.copyComponent(node.data.compID, catID, newCompHndlr);
                 }
 
+                // Case 2: We are dragging and dropping a template
                 if(node.data.catID){
-                    if((node.childList instanceof Array) && node.childList.length > 0){
+                    if( (node.childList instanceof Array) && node.childList.length > 0){
+
+                        ui.item.replaceWith( loadingPlaceholder );
                         var copyTemplateHndlr = function(response, statusText, jqXHR){
                             var components = $(response).children('div');
-                            ui.item.replaceWith(components);
+                            components.hide();
+                            loadingPlaceholder.replaceWith( components );
+                            components.fadeIn();
 
                             $.each(components, function(key, val){
                                 self.initializeComponent( $(val), catID );
                             });
                             self.saveCompOrder( $(".meta-box-sortables").sortable( 'toArray' ) );
-                        }
-                        sp_admin.sp_catComponent.copyTemplate(node.data.catID, catID, copyTemplateHndlr);
+                        };
+                        self.copyTemplate(node.data.catID, catID, copyTemplateHndlr);
                     }else{
                         self.showError( 'The template you are trying to copy has no components!', null );
                     }
@@ -431,34 +500,6 @@
         },
 
         /**
-         * Creates a new jQuery UI dialog with template form submission.
-         * @param templateForm - jQuery object representing the form
-         * @param templateDescTextareaID - Textarea inside the form
-         * @param openDialogButton - jQuery object representing the open dialog button
-         */
-        initTemplateForm: function(templateForm, templateDescTextareaID, openDialogButton){
-
-            //Initialize the dialog
-            templateForm.dialog({
-                resizable: false,
-                draggable: false,
-                autoOpen: false,
-                title: "Create a new template:",
-                modal: true,
-                width: "auto"
-            });
-
-            //Enable dialog for new category form
-            openDialogButton.click(function () {
-                templateForm.dialog( 'open' );
-                //templateForm.find('.tooltip').tooltipster();
-            });
-
-            //Enable new template submission
-            this.submitNewTemplate( templateForm );
-        },
-
-        /**
          * Initializes the sp_admin object with click handlers and variables
          * necessary for initialization.
          */
@@ -507,7 +548,7 @@
                 this.editableCatCompTitle( $('.editableCatCompTitle') );
 
                 //Initialize the new template form dialog
-                self.initTemplateForm( $('#template_form'), 'template_desc', $('#newTemplateButton') )
+                this.submitNewTemplate( $('#template_form') );
 
                 //Click handler for enable/disable checkboxes
                 $( '#sp_enabled' ).click(function(){

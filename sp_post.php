@@ -121,35 +121,37 @@ if (!class_exists("sp_post")) {
         static function update_sp_posts( $sp_site_version ){
 
             /**
-             * Conversion from 2.2 to 2.3. Introduction of the [sp-components][/sp-components] shortcode.
+             * Conversion from 2.2 to 2.3+. Introduction of the [sp-components][/sp-components] shortcode.
              * This update wraps all [sp_component] shortcodes with the [sp-components] tag.
              * e.g. [sp_component id="1"][sp_component id="2"] becomes [sp-components][sp_component id="1"][sp_component id="2"][/sp-components].
              * The [sp-components] shortcode wraps the components in a sortable div, allowing users to add new components, and re-order them.
              */
-            $sp_cat_ids = get_option( 'sp_categories' );
-            foreach($sp_cat_ids as $cat_id){
-                $sp_posts = get_posts( array( 'category' => $cat_id, 'numberposts' => -1, 'post_status' => 'publish|draft|trash' ) );
-                if( !empty( $sp_posts ) ){
-                    foreach( $sp_posts as $post ){
-                        $content = $post->post_content;
-                        if( !has_shortcode( $content, 'sp-components') ){
-                            $pattern = '/\[sp_component id=\"[0-9]+\"\]/';
-                            preg_match_all( $pattern, $content, $matches, PREG_OFFSET_CAPTURE);
+            if( $sp_site_version == "2.2" ){
+                $sp_cat_ids = get_option( 'sp_categories' );
+                foreach($sp_cat_ids as $cat_id){
+                    $sp_posts = get_posts( array( 'category' => $cat_id, 'numberposts' => -1, 'post_status' => 'publish|draft|trash' ) );
+                    if( !empty( $sp_posts ) ){
+                        foreach( $sp_posts as $post ){
+                            $content = $post->post_content;
+                            if( !has_shortcode( $content, 'sp-components') ){
+                                $pattern = '/\[sp_component id=\"[0-9]+\"\]/';
+                                preg_match_all( $pattern, $content, $matches, PREG_OFFSET_CAPTURE);
 
-                            $first_match = $matches[0][0];
-                            $first_match_start = $first_match[1]; // Start position of the first match
+                                $first_match = $matches[0][0];
+                                $first_match_start = $first_match[1]; // Start position of the first match
 
-                            $last_match = $matches[0][ count($matches[0]) - 1 ];
-                            $last_match_start = $last_match[1];
-                            $last_match_end = $last_match_start + strlen($last_match[0]);
+                                $last_match = $matches[0][ count($matches[0]) - 1 ];
+                                $last_match_start = $last_match[1];
+                                $last_match_end = $last_match_start + strlen($last_match[0]);
 
-                            $before_html = substr($content, 0, $first_match_start); // Get all the content before the first match of [sp_component]
-                            $component_shortcodes = substr($content, $first_match_start, $last_match_end - $first_match_start ); // Get everything in between the first [sp_component] and the last
-                            $after_html = substr($content, $last_match_end ); // Get everything after the last [sp_component] match
+                                $before_html = substr($content, 0, $first_match_start); // Get all the content before the first match of [sp_component]
+                                $component_shortcodes = substr($content, $first_match_start, $last_match_end - $first_match_start ); // Get everything in between the first [sp_component] and the last
+                                $after_html = substr($content, $last_match_end ); // Get everything after the last [sp_component] match
 
-                            $new_content = $before_html . '[sp-components]' . $component_shortcodes . '[/sp-components]' . $after_html;
-                            $post->post_content = $new_content;
-                            wp_update_post( $post );
+                                $new_content = $before_html . '[sp-components]' . $component_shortcodes . '[/sp-components]' . $after_html;
+                                $post->post_content = $new_content;
+                                wp_update_post( $post );
+                            }
                         }
                     }
                 }

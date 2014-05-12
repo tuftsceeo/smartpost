@@ -25,7 +25,7 @@ if (!class_exists("sp_catContent")) {
          * @see parent::installComponent()
          */
         function install(){
-            self::installComponent("Content", "Rich and plain text editor. Uses the <a href='http://nicedit.com/'>NicEdit</a> as its editor.", __FILE__);
+            self::installComponent("Content", "Rich text editor.", __FILE__);
         }
 
         /**

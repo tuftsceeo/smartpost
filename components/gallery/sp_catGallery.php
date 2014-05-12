@@ -4,7 +4,7 @@ if (!class_exists("sp_catGallery")) {
 	/**
 	 * Extends sp_catComponent
 	 * The photo gallery component allows users to upload pictures into
-     * a gallery. Gallery uses thickbox to browse through the pictures.
+     * a gallery. Gallery uses magnific-popup to browse through the pictures.
 	 *
 	 * @see sp_catComponent
 	 */

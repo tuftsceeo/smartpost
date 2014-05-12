@@ -10,7 +10,7 @@
          * Makes all the component divs sortable
          */
         makeSortable: function(sortableElem, postID){
-            var thisObj = this;
+            var self = this;
             if(sortableElem == undefined){
                 sortableElem = $('.sortableSPComponents');
             }
@@ -29,15 +29,19 @@
                 },
                 stop  : function(event, ui){
                     if( ui.item.hasClass('catComponentWidget') ){
+                        var loadingPlaceholder = $('<p><img src="' + SP_IMAGE_PATH + '/loading.gif" /> Loading ...</p>');
                         var catCompID = ui.item.attr("data-compid");
                         var typeID    = ui.item.attr("data-typeid");
+                        ui.item.replaceWith( loadingPlaceholder );
                         var replaceMe = function(newComponent){
-                            sortableElem.find('.catComponentWidget').replaceWith(newComponent);
-                            thisObj.setCompOrder(sortableElem.sortable('toArray'), postID);
+                            newComponent.hide();
+                            loadingPlaceholder.replaceWith( newComponent );
+                            newComponent.fadeIn();
+                            self.setCompOrder(sortableElem.sortable('toArray'), postID);
                         }
-                        thisObj.addNewComponent(catCompID, typeID, postID, false, replaceMe);
+                        self.addNewComponent(catCompID, typeID, postID, false, replaceMe);
                     }else{
-                        thisObj.setCompOrder($(this).sortable('toArray'), postID);
+                        self.setCompOrder($(this).sortable('toArray'), postID);
                     }
                 }
             });
@@ -106,7 +110,7 @@
             var newComponent = null;
 
             if(componentStack == undefined && componentStack != false ){
-                var componentStack = $('#spComponents');
+                componentStack = $('#spComponents');
             }
 
             if( postID == undefined){
@@ -246,7 +250,7 @@
          * Delete the component when "Delete" is clicked from the component menu
          */
         deleteComponent: function(component){
-            var thisObj = this;
+            var self = this;
             var deleteElem;
 
             //In case we need to bind this function to a DOMElem
@@ -258,8 +262,10 @@
 
             $(deleteElem).click(function(){
                 var compID    = $(this).attr('data-compid');
-                var catCompID = $('#comp-' + compID).attr('data-catcompid');
-                var typeID    = $('#comp-' + compID).attr('data-typeid');
+                var doomedComponent =  $('#comp-' + compID);
+                var catCompID = doomedComponent.attr('data-catcompid');
+                var typeID    = doomedComponent.attr('data-typeid');
+                var loadingPlaceholder = $('<p><img src="' + SP_IMAGE_PATH + '/loading.gif" /> Deleting ...</p>');
 
                 $.ajax({
                     url  : SP_AJAX_URL,
@@ -270,15 +276,18 @@
                         compID : compID
                     },
                     dataType : 'json',
+                    beforeSend: function(){
+                        doomedComponent.replaceWith( loadingPlaceholder );
+                    },
                     success  : function(response, statusText, jqXHR){
                         //Remove the component from the DOM
-                        $('#comp-' + compID).remove();
+                        loadingPlaceholder.remove();
 
-                        //Mark required components if any exist
-                        if(catCompID > 0 && thisObj.isRequired(compID)){
+                        // Mark required components if any exist
+                        if(catCompID > 0 && self.isRequired(compID)){
                             var filter = new Array();
 
-                            var components = thisObj.getComponents(filter[0] = catCompID);
+                            var components = self.getComponents(filter[0] = catCompID);
                             if(components.length == 1 ){
                                 var componentJS = sp_globals.SP_TYPES ? sp_globals.SP_TYPES[typeID] : false;
                                 if(componentJS.isEmpty(components[0])){
@@ -287,8 +296,8 @@
                             }
                         }
                     },
-                    error    : function(jqXHR, statusText, errorThrown){
-                            thisObj.showError(errorThrown);
+                    error : function(jqXHR, statusText, errorThrown){
+                        self.showError(errorThrown);
                     }
                 });
                 return false;

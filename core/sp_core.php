@@ -398,15 +398,24 @@ if (!class_exists("sp_core")) {
 
         /*
          * Returns the default icon of a component type based off $typeID
-         *
+         * Looks for icon.{png|jpg|jpeg} in the images/ folder -- this no longer relies on the
+         * hardcoded value in the "icon" column of sp_compTypes. This column will get removed in future versions.
          * @param  integer $typeID the component type ID
          * @return string  url of the icon image
          */
         static function getIcon($typeID){
-            global $wpdb;
-            $tableName = $wpdb->prefix . 'sp_compTypes';
-            $sql = "SELECT icon FROM $tableName where id = $typeID;";
-            return $wpdb->get_var($sql);
+            $component_name = strtolower( self::getTypeName( $typeID ) );
+            //look for the right extension
+            $img_url = '';
+            $icon_ext = array('.png', '.jpg', '.jpeg');
+            foreach($icon_ext as $ext){
+                $img_path = plugin_dir_path( dirname( __FILE__ ) ) . 'components/' . $component_name . '/images/icon' . $ext;
+                if( is_readable( $img_path ) ){
+                    $img_url = plugin_dir_url( $img_path ) .  'icon' . $ext;
+                    break;
+                }
+            }
+            return $img_url;
         }
 
         /**

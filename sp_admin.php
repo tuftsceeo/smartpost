@@ -80,7 +80,7 @@ if ( !class_exists("sp_admin") ) {
             <div id="sp_compTypes">
                 <?php foreach($types as $compType){ ?>
                     <div type-id="type-<?php echo $compType->id ?>"  title="<?php echo $compType->description ?>" class="catCompDraggable tooltip">
-                        <h3><?php echo '<img src="' . $compType->icon . '" />' ?> <?php echo trim($compType->name) ?></h3>
+                        <h3><?php echo '<img src="' . sp_core::getIcon( $compType->id ) . '" />' ?> <?php echo trim($compType->name) ?></h3>
                     </div>
                 <?php } ?>
             </div>
@@ -201,7 +201,7 @@ if ( !class_exists("sp_admin") ) {
             <h2 class="category_title">
                 <a href="<?php echo admin_url('edit-tags.php?action=edit&taxonomy=category&tag_ID=' . $catID . '&post_type=post') ?>"><?php echo $icon . ' ' . $title ?></a>
                 |
-                <a href="<?php echo get_category_link( $catID ) ?>" target="_blank"><small>view template</small></a>
+                <a href="<?php echo get_category_link( $catID ) ?>" target="_blank"><small>View Template</small></a>
             </h2>
             <?php
                 echo sp_core::sp_editor(
@@ -342,7 +342,11 @@ if ( !class_exists("sp_admin") ) {
             <div class="wrap">
                 <div class="error" <?php echo empty( $error_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_errors"><?php echo $error_msg ?></span><span class="hideMsg sp_xButton" title="Ok, got it"></span><div class="clear"></div></div>
                 <div class="updated" <?php echo empty( $update_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_update"><?php echo $update_msg ?></span><span class="hideMsg sp_xButton" title="Ok, got it"></span><div class="clear"></div></div>
-                <h2><img src="<?php echo SP_IMAGE_PATH ?>/sp-icon.png" style="height: 17px;" /> <span style="color: #89b0ff;">Smart<span style="color: #07e007">Post</span> Templates</span> <button id="newTemplateButton" class="button button-primary button-large" title="Create a new category template">New Template</button></h2>
+                <h2>
+                    <img src="<?php echo SP_IMAGE_PATH ?>/sp-icon.png" style="height: 17px;" /> <span style="color: #89b0ff;">Smart<span style="color: #07e007">Post</span> Templates</span>
+                    <?php add_thickbox(); ?>
+                    <a href="#TB_inline?width=600&height=500&inlineId=newTemplateForm" class="button button-primary button-large thickbox" title="Create a new category template">New Template</a>
+                </h2>
                 <?php self::render_new_template_form(); ?>
                 <div id="poststuff">
                     <div id="post-body" class="metabox-holder columns-2">
@@ -410,7 +414,7 @@ if ( !class_exists("sp_admin") ) {
             foreach($components as $comp){
                 $comp_class_name = 'sp_cat' . $comp->name;
                 if( class_exists( $comp_class_name ) ){
-                    array_push( $good_components, '<a href="' . admin_url('admin.php?page=sp-cat-page') . '&compID=' . $comp->id . '" class="sp-settings-item"><img src="' . $comp->icon . '" /> ' . $comp->name . '</a>' );
+                    array_push( $good_components, '<a href="' . admin_url('admin.php?page=sp-cat-page') . '&compID=' . $comp->id . '" class="sp-settings-item"><img src="' . sp_core::getIcon( $comp->id ) . '" /> ' . $comp->name . '</a>' );
                 }else{
                     array_push($bad_components, $comp->name);
                 }

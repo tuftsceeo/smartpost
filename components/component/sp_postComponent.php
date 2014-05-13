@@ -147,7 +147,7 @@ if (!class_exists("sp_postComponent")) {
         }
 
         static function init_post_component(){
-            require_once('ajax/sp_postComponentAJAX.php');
+            require_once( dirname( __FILE__ ) . '/ajax/sp_postComponentAJAX.php');
             sp_postComponentAJAX::init();
             self::enqueueBaseJS();
             self::enqueueBaseCSS();

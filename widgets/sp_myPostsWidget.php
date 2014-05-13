@@ -11,7 +11,7 @@ class sp_myPostsWidget extends WP_Widget {
     }
 
     static function init(){
-        require_once('ajax/sp_myPostsWidgetAJAX.php');
+        require_once( dirname( __FILE__ ) . '/ajax/sp_myPostsWidgetAJAX.php');
         if(class_exists('sp_myPostsWidgetAJAX')){
             sp_myPostsWidgetAJAX::init();
         }

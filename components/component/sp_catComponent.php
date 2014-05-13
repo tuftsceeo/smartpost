@@ -157,7 +157,7 @@ if (!class_exists("sp_catComponent")) {
          */
         static function init_cat_component(){
             if(is_admin()){
-                require_once('ajax/sp_catComponentAJAX.php');
+                require_once( dirname( __FILE__ ) . '/ajax/sp_catComponentAJAX.php');
                 sp_catComponentAJAX::init();
                 self::enqueueBaseJS();
             }

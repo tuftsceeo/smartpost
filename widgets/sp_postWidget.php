@@ -10,7 +10,7 @@ class sp_postWidget extends WP_Widget {
     }
 
     static function init(){
-        require_once('ajax/sp_postWidgetAJAX.php');
+        require_once( dirname( __FILE__ ) . '/ajax/sp_postWidgetAJAX.php');
         sp_postWidgetAJAX::init();
         self::enqueueCSS();
         self::enqueueJS();

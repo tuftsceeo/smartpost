@@ -33,7 +33,7 @@ if (!class_exists("sp_postGallery")) {
          * @see parent::init()
          */
         static function init(){
-            require_once('ajax/sp_postGalleryAJAX.php');
+            require_once( dirname( __FILE__ ) . '/ajax/sp_postGalleryAJAX.php');
             sp_postGalleryAJAX::init();
             self::enqueue_gallery_css();
             self::enqueue_gallery_js();

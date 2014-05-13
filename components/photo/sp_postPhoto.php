@@ -33,7 +33,7 @@ if (!class_exists("sp_postPhoto")) {
          * @see parent::init()
          */
         static function init(){
-            require_once('ajax/sp_postPhotoAJAX.php');
+            require_once( dirname( __FILE__ ) . '/ajax/sp_postPhotoAJAX.php');
             sp_postPhotoAJAX::init();
             self::enqueueCSS();
             self::enqueueJS();

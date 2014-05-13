@@ -10,7 +10,7 @@ class sp_postTreeWidget extends WP_Widget {
     }
 
     function init(){
-        require_once('ajax/sp_postTreeWidgetAJAX.php');
+        require_once( dirname( __FILE__ ) . '/ajax/sp_postTreeWidgetAJAX.php');
         sp_postTreeWidgetAJAX::init();
         self::enqueueCSS();
         self::enqueueJS();

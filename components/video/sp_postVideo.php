@@ -34,7 +34,7 @@ if (!class_exists("sp_postVideo")) {
         }
 
         static function init(){
-            require_once('ajax/sp_postVideoAJAX.php');
+            require_once( dirname( __FILE__ ) . '/ajax/sp_postVideoAJAX.php');
             sp_postVideoAJAX::init();
             self::enqueue_sp_video_js();
             self::enqueue_sp_video_css();

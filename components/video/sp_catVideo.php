@@ -108,7 +108,7 @@ if (!class_exists("sp_catVideo")) {
          * Adds CSS / JS to stylize and handle any UI actions
          */
         static function init(){
-            require_once( 'ajax/sp_catVideoAJAX.php' );
+            require_once( dirname( __FILE__ ) . '/ajax/sp_catVideoAJAX.php' );
             sp_catVideoAJAX::init();
             wp_register_script( 'sp_catVideoJS', plugins_url('js/sp_catVideo.js', __FILE__), array('jquery', 'sp_admin_js') );
             wp_enqueue_script( 'sp_catVideoJS' );

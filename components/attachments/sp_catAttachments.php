@@ -48,7 +48,7 @@ if (!class_exists("sp_catAttachments")) {
 		 * Adds CSS / JS to stylize and handle any UI actions
 		 */		
 		static function init(){
-            require_once('ajax/sp_catAttachmentsAJAX.php');
+            require_once( dirname( __FILE__ ) . '/ajax/sp_catAttachmentsAJAX.php');
 			sp_catAttachmentsAJAX::init();
 			wp_register_script( 'sp_catAttachmentsJS', plugins_url('js/sp_catAttachments.js', __FILE__), array( 'jquery', 'sp_globals', 'sp_catComponentJS' ) );
 			wp_enqueue_script( 'sp_catAttachmentsJS' );

@@ -56,7 +56,7 @@ if (!class_exists("sp_postContent")) {
          * @return mixed|void
          */
         static function init(){
-            require_once('ajax/sp_postContentAJAX.php');
+            require_once( dirname( __FILE__ ) . '/ajax/sp_postContentAJAX.php');
             sp_postContentAJAX::init();
             self::enqueueJS();
         }

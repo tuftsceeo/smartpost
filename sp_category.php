@@ -79,7 +79,7 @@ if (!class_exists("sp_category")) {
          * Initializes scripts, actions, hooks, variables for the sp_category class.
          */
         public static function init(){
-            require_once('ajax/sp_categoryAJAX.php');
+            require_once( dirname( __FILE__ ) . '/ajax/sp_categoryAJAX.php');
             if( class_exists( 'SP_Category_AJAX' ) ){
                 SP_Category_AJAX::init();
             }

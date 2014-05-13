@@ -16,7 +16,7 @@ if ( !class_exists("sp_admin") ) {
          * @params none
          */
         static function init(){
-            require_once('ajax/sp_adminAJAX.php');
+            require_once( dirname( __FILE__ ) . '/ajax/sp_adminAJAX.php');
             sp_adminAJAX::init();
             add_action( 'admin_menu', array('sp_admin', 'sp_admin_add_template_page') );
             add_action( 'admin_menu', array('sp_admin', 'sp_admin_add_category_page') );

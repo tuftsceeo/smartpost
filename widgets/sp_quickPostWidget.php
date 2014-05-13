@@ -10,7 +10,7 @@ class sp_quickPostWidget extends WP_Widget {
     }
 
     static function init(){
-        require_once('ajax/sp_quickPostWidgetAJAX.php');
+        require_once( dirname( __FILE__ ) . '/ajax/sp_quickPostWidgetAJAX.php');
         sp_quickPostWidgetAJAX::init();
         self::enqueueCSS();
         self::enqueueJS();

@@ -77,7 +77,7 @@ if (!class_exists("sp_post")) {
         }
 
         static function init(){
-            require_once('ajax/sp_postAJAX.php');
+            require_once( dirname( __FILE__ ) . '/ajax/sp_postAJAX.php');
             sp_postAJAX::init();
             add_filter( 'the_content', array('sp_post', 'renderPost'));
             add_filter( 'category_save_pre', array('sp_post', 'validatePostCatSave'), 10);
@@ -121,12 +121,12 @@ if (!class_exists("sp_post")) {
         static function update_sp_posts( $sp_site_version ){
 
             /**
-             * Conversion from 2.2 to 2.3+. Introduction of the [sp-components][/sp-components] shortcode.
+             * Conversion from 2.x to 2.3+. Introduction of the [sp-components][/sp-components] shortcode.
              * This update wraps all [sp_component] shortcodes with the [sp-components] tag.
              * e.g. [sp_component id="1"][sp_component id="2"] becomes [sp-components][sp_component id="1"][sp_component id="2"][/sp-components].
              * The [sp-components] shortcode wraps the components in a sortable div, allowing users to add new components, and re-order them.
              */
-            if( $sp_site_version == "2.2" ){
+            if( $sp_site_version == "2.2" || $sp_site_version === false ){
                 $sp_cat_ids = get_option( 'sp_categories' );
                 foreach($sp_cat_ids as $cat_id){
                     $sp_posts = get_posts( array( 'category' => $cat_id, 'numberposts' => -1, 'post_status' => 'publish|draft|trash' ) );
@@ -305,7 +305,7 @@ if (!class_exists("sp_post")) {
                     //!To-do: lookup annonymous author ID via save option instead of hardcoding
                     $anonymousUser = 'siteuser';
                     $anonymousUser = get_user_by('login', $anonymousUser);
-                    $anonymousUser = !$anyonymousUser ? 1 : $anonymousUser;
+                    $anonymousUser = !$anonymousUser ? 1 : $anonymousUser;
 
                     //Remove post content/title
                     $wpPost->post_content = 'This post has been deleted.';
@@ -420,25 +420,6 @@ if (!class_exists("sp_post")) {
 
                     //Add an errors div and display errors if necessary
                     $content = '<div id="component_errors"' . (!empty($errors) ? ' style="display: block;"' : '') . '>' . $errors . '<span id="clearErrors" class="sp_xButton"></span></div>' . $content;
-
-                    /*
-                    $pattern = '/\[sp_component id=\"[0-9]+\"\]/';
-                    preg_match_all( $pattern, $content, $matches, PREG_OFFSET_CAPTURE);
-
-                    $first_match = $matches[0][0];
-                    $first_match_start = $first_match[1]; // Start position of the first match
-
-                    $last_match = $matches[0][ count($matches[0]) - 1 ];
-                    $last_match_start = $last_match[1];
-                    $last_match_end = $last_match_start + strlen($last_match[0]);
-
-                    $before_html = substr($content, 0, $first_match_start); // Get all the content before the first match of [sp_component]
-                    $component_shortcodes = substr($content, $first_match_start, $last_match_end - $first_match_start ); // Get everything in between the first [sp_component] and the last
-                    $after_html = substr($content, $last_match_end ); // Get everything after the last [sp_component] match
-
-                    $content = $before_html . '[sp-sortable]' . $component_shortcodes . '[/sp-sortable]' . $after_html;
-                    $content = do_shortcode( $content );
-                    */
                 }
 
                 if( !is_singular() || is_home() ){

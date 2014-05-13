@@ -83,7 +83,7 @@ if (!class_exists("sp_install")) {
 		
 		function installComponents($folder){
 			foreach (glob($folder . "/sp_*.php") as $filename){
-                require_once($filename);
+                require_once( $filename );
                 $component = basename($filename, ".php");
 
                 // ignore sp_catComponent as it's an abstract class

@@ -30,22 +30,22 @@ if ( !class_exists("smartpost") ){
          * Calls necessary initialization methods to initialize the plugin.
          */
         function __construct(){
-            require_once( 'core/sp_core.php' );
-            require_once( 'sp_install.php' );
-            require_once( 'sp_updates.php' );
+            require_once( dirname( __FILE__ ) . '/core/sp_core.php' );
+            require_once( dirname( __FILE__ ) . '/sp_install.php' );
+            require_once( dirname( __FILE__ ) . '/sp_updates.php' );
 
             $this->sp_init();
 
-            require_once( 'components/component/sp_catComponent.php' );
-            require_once( 'components/component/sp_postComponent.php' );
+            require_once( dirname( __FILE__ ) . '/components/component/sp_catComponent.php' );
+            require_once( dirname( __FILE__ ) . '/components/component/sp_postComponent.php' );
             sp_catComponent::init_cat_component();
             sp_postComponent::init_post_component();
 
             self::find_sp_classes( dirname(__FILE__) . "/components/" );
 
-            require_once( 'sp_category.php' );
-            require_once( 'sp_admin.php' );
-            require_once( 'sp_post.php' );
+            require_once( dirname( __FILE__ ) . '/sp_category.php' );
+            require_once( dirname( __FILE__ ) . '/sp_admin.php' );
+            require_once( dirname( __FILE__ ) . '/sp_post.php' );
 
             self::init_sp_classes( dirname(__FILE__) . "/widgets" );
 

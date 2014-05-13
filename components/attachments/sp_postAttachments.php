@@ -36,7 +36,7 @@ if (!class_exists("sp_postAttachments")) {
          * @see parent::init()
          */
         static function init(){
-            require_once('ajax/sp_postAttachmentsAJAX.php');
+            require_once( dirname( __FILE__ ) . '/ajax/sp_postAttachmentsAJAX.php');
             sp_postAttachmentsAJAX::init();
             self::enqueueCSS();
             self::enqueueJS();

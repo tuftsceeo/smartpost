@@ -193,8 +193,8 @@ if (!class_exists("sp_postLink")) {
         }
 
         static function init(){
-            require_once('ajax/sp_postLinkAJAX.php');
-            require_once('simple_html_dom.php');
+            require_once( dirname( __FILE__ ) . '/ajax/sp_postLinkAJAX.php');
+            require_once( dirname( __FILE__ ) . '/simple_html_dom.php');
             sp_postLinkAJAX::init();
             self::enqueueCSS();
             self::enqueueJS();

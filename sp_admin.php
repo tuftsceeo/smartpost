@@ -145,6 +145,7 @@ if ( !class_exists("sp_admin") ) {
                             </td>
                         </tr>
                         <?php } ?>
+                        <!--
                         <tr>
                             <td>
                                 <input type="checkbox" <?php echo $sp_widget_instances < 2 ? 'checked="checked"' : '' ?> id="add_widget" name="add_widget" /><label for="add_widget" id="add_widget_label" class="tooltip" title="Select the sidebar you'd like to add the SP QuickPost widget to.<br />This widget makes this template accessible to users on the front-end of the site.">Add SP widget</label>
@@ -168,6 +169,7 @@ if ( !class_exists("sp_admin") ) {
                                 </select>
                             </td>
                         </tr>
+                        -->
                     </table>
                     <p style="color: red">* Required</p>
                     <button type="submit" class="button button-large" id="save_template">Save Template</button>
@@ -215,6 +217,10 @@ if ( !class_exists("sp_admin") ) {
             <?php
                 if( !is_null($sp_category) ){
                 ?>
+                    <p>To start using this template, add the shortcode: <code>[sp-quickpost template_ids="<?php echo $catID ?>"]</code> to a post, page, etc.</p>
+
+                    <br />
+
                     <input type="checkbox" id="sp_enabled" checked /> <label for="sp_enabled">Uncheck to disable SmartPost for this category.</label>
                 <?php
                 } else {

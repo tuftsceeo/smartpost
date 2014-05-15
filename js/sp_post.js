@@ -271,6 +271,9 @@
             // Turn off automatic editor creation first.
             CKEDITOR.disableAutoInline = true;
 
+            // Turn off HTML entities
+            CKEDITOR.config.entities = false;
+
             // Remove silly title attribute
             CKEDITOR.on('instanceCreated', function(event) {
                 var editor = event.editor;

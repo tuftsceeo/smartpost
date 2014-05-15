@@ -170,6 +170,7 @@ if (!class_exists("sp_postComponent")) {
         function spShortCodeComponent($atts, $content = ""){
             global $post;
             if( sp_post::is_sp_post( $post->ID ) ){
+                $id = 0;
                 extract( shortcode_atts( array(
                     'id' => 0,
                 ), $atts ) );

@@ -38,7 +38,7 @@ if (!class_exists("sp_postContent")) {
          */
         function renderViewMode(){
             $html = '<div id="sp_content" style="margin: 20px">';
-                $html .= $this->value;
+                $html .= do_shortcode( $this->value );
             $html .= '</div>';
             return $html;
         }
@@ -73,8 +73,8 @@ if (!class_exists("sp_postContent")) {
          * @see parent::update();
          */
         function update($content = ''){
-            $this->value = (string) $content;
-            return sp_core::updateVar('sp_postComponents', $this->ID, 'value', $content, '%s');
+            $this->value = (string) stripslashes_deep( $content );
+            return sp_core::updateVar('sp_postComponents', $this->ID, 'value', $this->value, '%s');
         }
 
         /**

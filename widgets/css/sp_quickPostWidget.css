@@ -6,7 +6,7 @@
     margin-top: 15px;
     margin-bottom: 15px;
 }
-.sp_qp_component{
+.sp-qp-component{
     display: inline-block;
     cursor: pointer;
     margin: 5px;
@@ -14,47 +14,42 @@
     padding: 10px;
     border: 1px solid #ededed;
 }
-.sp_qp_component:hover{
+.sp-qp-component:hover{
     background: #ededed;
 }
 .quickPostComps{
 	min-height: inherit !important;
 }
-.sp_add_post{
+.sp-add-post{
     padding: 5px;
     cursor: pointer;
     margin-top: 0px;
 }
-.sp_new_title{
-    margin-bottom: 5px;
-}
-.sp_new_title{
+.new-sp-post-title{
 	height: 35px;
 	width: 100%;
     font-size: 24px;
+    margin-bottom: 5px;
 }
 .sp-settings-icon{
     float: right;
 }
-button.sp_qp_button{
+button.sp-qp-new-post,
+button.sp-qp-button{
 	cursor: pointer;
     font-size: 15px;
     padding: 10px;
 }
-#sp_qp_response{
-	color: green;
-	cursor: pointer;
-}
-#sp_qp_responseDialog{
-	max-height: 400px;
-}
-#sp_quickpost_form{
+.sp-quickpost-form{
 	display: none; padding: 5px; 
 	border-bottom: 1px solid silver;
 	margin-bottom: 10px;
 }
+.sp-qp-post-buttons{
+    margin-top: 1.714285714rem;
+}
 @media screen and (max-width: 700px){
-    .sp_qp_component{
+    .sp-qp-component{
         display: block;
         clear: both;
     }

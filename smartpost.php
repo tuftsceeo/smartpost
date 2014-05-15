@@ -117,14 +117,12 @@ if ( !class_exists("smartpost") ){
          * Places globally used SmartPost CSS on the page.
          */
         static function enqueue_sp_css(){
-            wp_register_style( 'jquery-ui-theme', plugins_url('/css/jquery-ui-theme/jquery-ui-1.10.3.custom.css', __FILE__));
             wp_register_style( 'jquery-dynatree-css', plugins_url('js/dynatree/skin/ui.dynatree.css', __FILE__) );
             wp_register_style( 'tooltipster-css', plugins_url('js/tooltipster/css/tooltipster.css', __FILE__) );
             wp_register_style( 'smartpost-css', plugins_url('css/smartpost.css', __FILE__) );
 
             wp_enqueue_style( 'dashicons' );
             wp_enqueue_style( 'jquery-dynatree-css' );
-            wp_enqueue_style( 'jquery-ui-theme' );
             wp_enqueue_style( 'tooltipster-css' );
             wp_enqueue_style( 'smartpost-css' );
         }

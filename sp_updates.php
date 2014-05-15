@@ -12,10 +12,10 @@ if ( !class_exists("sp_updates") ){
          * Checks for any updates to run.
          */
         public static function check_for_updates(){
-            $site_sp_version = get_site_option('sp_plugin_version');
+            $site_sp_version = get_option('sp_plugin_version');
             if( $site_sp_version != SP_VERSION ){
                 do_action('sp_updates', $site_sp_version); // Calls all upgrade functions hooked into this action
-                update_site_option('sp_plugin_version', SP_VERSION);
+                update_option('sp_plugin_version', SP_VERSION);
             }
         }
 

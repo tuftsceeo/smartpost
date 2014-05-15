@@ -201,7 +201,7 @@ if ( !class_exists("sp_admin") ) {
             <h2 class="category_title">
                 <a href="<?php echo admin_url('edit-tags.php?action=edit&taxonomy=category&tag_ID=' . $catID . '&post_type=post') ?>"><?php echo $icon . ' ' . $title ?></a>
                 |
-                <a href="<?php echo get_category_link( $catID ) ?>" target="_blank"><small>View Template</small></a>
+                <a href="<?php echo get_category_link( $catID ) ?>" target="_blank">View Template</a>
             </h2>
             <?php
                 echo sp_core::sp_editor(

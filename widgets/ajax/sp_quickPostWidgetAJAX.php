@@ -24,22 +24,31 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
                 exit;
             }
 
-            global $current_user;
+            if( empty( $_POST['widgetID'] ) ){
+                header("HTTP/1.0 409 Could not find widgetID.");
+                exit;
+            }
+
+            $widget_id = $_POST['widgetID'];
+
             if( !empty( $_POST['parentID'] ) ){
                 $post['post_parent'] = (int) $_POST['parentID'];
             }
+
+            global $current_user;
 
             // Create a new blank draft
             $post['post_status'] = 'draft';
             $post['post_title']  = 'New draft ' . date('d-m-y');
             $post['post_author'] = $current_user->ID;
             $post['comment_status'] = 'open';
+            $post['post_content'] = '[sp-components][/sp-components]';
 
             // Set the category of the post
             $catID = (int) $_POST['catID'];
             $post['post_category'] = array( $catID );
 
-            // Create the draft post
+           // Create the draft post
             $id = wp_insert_post($post, true);
             if( is_wp_error($id) ){
                 header("HTTP/1.0 409 " . $id->get_error_message());
@@ -48,7 +57,7 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
 
             // Add any default/required components
             $post_comps = sp_post::get_components_from_ID($id);
-            $html = '<div id="spComponents" class="sortableSPComponents quickPostComps">';
+            $html = '<div id="sp-components-' . $widget_id . '" class="sortableSPComponents quickPostComps">';
             if( !empty( $post_comps ) ){
                 global $wp_query;
                 $wp_query->is_single = true;
@@ -70,12 +79,12 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
                     $typeID = $component->getTypeID();
                     $desc = $component->getDescription();
                     $icon = $component->getIcon();
-
+                    $icon_img = "";
                     if( !empty($icon) ){
                         $icon_img = '<img src="' . $component->getIcon() . '" />';
                     }
 
-                    $html .= '<span id="' . $$catCompID . '" data-compid="' . $catCompID . '" data-typeid="' . $typeID . '" title="' . $desc . '" alt="' . $desc . '" class="sp_qp_component">';
+                    $html .= '<span id="' . $catCompID . '" class="sp-qp-component" data-compid="' . $catCompID . '" data-typeid="' . $typeID . '" title="' . $desc . '" alt="' . $desc . '">';
                     $html .= 	$icon_img . ' Add ' . $component->getName();
                     $html .= '</span> ';
                 }
@@ -83,7 +92,7 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
             }
 
             // Add the post ID
-            $html .= '<input type="hidden" id="sp_qpPostID" name="sp_qpPostID" value="' . $id . '" />';
+            $html .= '<input type="hidden" id="sp-qp-post-id-' . $widget_id . '" name="sp-qp-post-id-' . $widget_id . '" value="' . $id . '" />';
             echo $html;
             exit;
 		}
@@ -116,7 +125,7 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
 		}
 		
 		/**
-		 * Publish the post (as a response if necessary)
+		 * Publish the post
 		 */
 		function publishPostAJAX(){
 			$nonce = $_POST['nonce'];
@@ -139,11 +148,6 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
 			$post['post_title']  = (string) $_POST['post_title'];
 			$post['post_status'] = 'publish';
 			
-			$parentID = (int) $_POST['post_parent'];
-			if( $parentID > 0 ){
-				$post['post_parent'] = $parentID;
-			}
-			
 			$success = wp_update_post($post);
 			
 			if($success === 0){
@@ -151,7 +155,7 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
 				exit;
 			}
 			
-			echo json_encode( array('success' => true, 'postID' => $post['ID']));
+			echo json_encode( array( 'success' => true, 'postID' => $post['ID'], 'permalink' => get_permalink( $post['ID'] ) ) );
 			exit;
 		}
 		

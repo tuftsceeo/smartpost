@@ -135,8 +135,6 @@ if (!class_exists("sp_postPhotoAJAX")) {
                     exit;
                 }
 
-
-
                 $name = '';
                 if ( isset( $_REQUEST["name"] ) ) {
                     $name = $_REQUEST["name"];

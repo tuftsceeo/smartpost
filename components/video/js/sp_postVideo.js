@@ -31,22 +31,14 @@
 
         /**
          * Initializes HTML5 filedrop for the media component
-         * @param object component The video compoennt
-         * @param int    postID    The PostID
+         * @param component - The video compoennt
          * @see $plupload_init array in /wp-admin/includes/media.php
          */
-        initFileDrop: function(component, postID){
+        initFileDrop: function( component ){
             var self = this;
             var compID    = component.attr('data-compid');
             var browse_id = 'sp_videoBrowse-' + compID;
             var prev_onbeforeunload = window.onbeforeunload;
-
-            if(postID == undefined){
-                postID = jQuery('#postID').val();
-                if(postID == undefined){
-                    postID = jQuery('#sp_qpPostID').val();
-                }
-            }
 
             var videoFilters;
             if( sp_postVideoJS.SP_VIDEO_HTML5 ){
@@ -77,8 +69,7 @@
                 multipart_params: {
                     action  : 'videoUploadAJAX',
                     nonce   : SP_NONCE,
-                    compID  : compID,
-                    postID  : postID
+                    compID  : compID
                 },
                 max_file_size : '1gb',
                 filters : videoFilters,
@@ -222,7 +213,7 @@
             });
 
             $('.sp_video').each(function(){
-                self.initFileDrop($(this));
+                self.initFileDrop( $(this) );
             });
         }
     }

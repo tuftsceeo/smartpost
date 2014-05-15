@@ -101,11 +101,6 @@ if (!class_exists("sp_postVideoAJAX")) {
                 exit;
             }
 
-            if( empty($_POST['postID']) ){
-                header("HTTP/1.0 409 Could find post ID.");
-                exit;
-            }
-
             if(empty($_FILES)){
                 header("HTTP/1.0 409 Files uploaded are empty!");
                 exit;

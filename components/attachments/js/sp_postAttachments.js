@@ -45,7 +45,7 @@
          * @param component The attachments compoennt
          * @param postID
          */
-        initFileDrop: function(component, postID){
+        initFileDrop: function( component ){
             var self = this;
             var compID = component.data('compid');
 
@@ -54,13 +54,6 @@
 
             // Get a handle onto the previous unload event as our message will change throughout upload
             var prev_onbeforeunload = window.onbeforeunload;
-
-            if(postID == undefined){
-                postID = jQuery('#postID').val(); // Single post
-                if(postID == undefined){
-                    postID = jQuery('#sp_qpPostID').val(); // Using the quickpost widget
-                }
-            }
 
             var uploader = new plupload.Uploader({
                 runtimes      : 'html5,silverlight,flash,html4',
@@ -77,8 +70,7 @@
                 multipart_params: {
                     action  : 'attachmentsUploadAJAX',
                     nonce   : SP_NONCE,
-                    compID  : compID,
-                    postID  : postID
+                    compID  : compID
                 },
                 max_file_size : '1gb',
                 init: {
@@ -195,7 +187,7 @@
 
             // Init plupload file drop for the drop zones
             $( '.sp-attachments-uploads-row' ).each(function(){
-                self.initFileDrop( $(this), null );
+                self.initFileDrop( $(this) );
             });
 
             // Click the browse button when clicking on the "+" image

@@ -83,8 +83,8 @@
                             ID: postID,
                             post_title: title
                         },
+                        dataType: 'json',
                         success: function(response, statusText, jqXHR){
-                            //Refresh the page
                             if( response.permalink ){
                                 window.location.replace( response.permalink );
                             }else{

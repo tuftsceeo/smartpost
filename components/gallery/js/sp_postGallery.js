@@ -43,18 +43,11 @@
          * Initializes HTML5 filedrop for the media component
          * @param object component The gallery component
          */
-        initFileDrop: function(component, postID){
+        initFileDrop: function( component ){
             var self = this;
             var compID = component.data('compid');
             var browse_id = 'sp-gallery-upload-' + compID;
             var prev_onbeforeunload = window.onbeforeunload;
-
-            if(postID == undefined){
-                postID = jQuery('#postID').val();
-                if(postID == undefined){
-                    postID = jQuery('#sp_qpPostID').val();
-                }
-            }
 
             var uploader = new plupload.Uploader({
                 runtimes      : 'html5,silverlight,flash,html4',
@@ -71,8 +64,7 @@
                 multipart_params: {
                     action  : 'galleryUploadAJAX',
                     nonce   : SP_NONCE,
-                    compID  : compID,
-                    postID  : postID
+                    compID  : compID
                 },
                 max_file_size : '1gb',
                 filters : [

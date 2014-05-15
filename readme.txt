@@ -101,6 +101,10 @@ to delete the following:
 
 == Changelog ==
 
+= 2.3.2 =
+* Fixed an update bug that did not update WPMU sites correctly
+* New [sp-quickpost] shortcode allows users to place a SP Template form anywhere on the site!
+
 = 2.3.1 =
 * Fixed a bug where older versions of required_once() could not resolve relative paths properly
 * Fixed bug with exif_read_data() being called on incompatible file formats
@@ -123,6 +127,10 @@ to delete the following:
 * Initial release into to the WordPress plugin repository.
 
 == Upgrade Notice ==
+
+= 2.3.2 =
+* Fixed an update bug that did not update WPMU sites correctly
+* New [sp-quickpost] shortcode allows users to place a SP Template form anywhere on the site!
 
 = 2.3.1 =
 * Users with older versions of PHP should update to 2.3.1 as require_once() may not resolve relative paths properly

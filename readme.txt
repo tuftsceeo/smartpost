@@ -8,7 +8,8 @@ Tested up to: 3.9.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-SmartPost is a powerful authoring tool that makes it quick and easy to generate posts on the front-end of your WordPress site.
+SmartPost builds beautiful form templates that makes it quick and easy to generate posts on the front-end of your WordPress site.
+Templates can be saved for later, and can be copied to create new templates
 
 == Description ==
 
@@ -47,14 +48,26 @@ pictures and videos to your post.
 2. Uncompress the smartpost.zip file.
 3. Move the `smartpost` directory under the `/wp-content/plugins/` directory in your WordPress instance.
 4. Activate the plugin through the 'Plugins' menu in WordPress
+5. Go to the SmartPost admin page and create a new template (or use the default SP QuickPost template)
+6. Add the `[sp-quickpost]` shortcode to a page or add the "SP QuickPost" widget to a widget area
+7. Go to the front end of your site and create beautiful, clean looking posts with instant feedback
 
 == Frequently Asked Questions ==
 
 = How do I create posts on the front-end like the plugin says it does?  =
 
-You need to add the "SP QuickPost" widget to one of your widget areas / sidebars. The widget works better if you have
-a "category header" widget area where you can place the SP QuickPost widget. If your theme doesn't have a "category header"
-widget area, then generating new posts on the front-end may look broken as the form itself is squeezed into narrow sidebars.
+The easiest way to start using the templates is to embed the `[sp-quickpost]` shortcode in a post, page, or some place
+that is able to parse WordPress shortcodes. The shortcode looks something like `[sp-quickpost template_ids="1"]` or
+ `[sp-quickpost template_ids="1,2,3"]`. The `template_ids` attribute allows the shortcode to know which template form should be used.
+In the SmartPost admin page, the shortcode for each template is provided with the template's associated ID, however, you can
+allow your users to pick from a selection of templates by providing the shortcode with multiple template ids separated by commas as it
+is shown in the example above. The IDs in the shortcode have to be associated with SmartPost templates, otherwise the shortcode will
+not render properly.
+
+The second way to start create posts on the front end is by adding the "SP QuickPost" widget to one of your widget areas / sidebars.
+The widget works better if you have a "category header" widget area where you can place the SP QuickPost widget.
+If your theme doesn't have a "category header" widget area, then generating new posts on the front-end may look broken as the form
+itself is squeezed into narrow sidebars.
 
 However, it's fairly easy to create a category widget-area for you to place your SP QuickPost widget in:
 

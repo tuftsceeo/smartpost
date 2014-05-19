@@ -1,84 +1,36 @@
 <?php
 /**
- * User: ryagudin
- * Date: 8/14/13
- * Time: 1:17 PM
  * Converts a video file to .webm and .mp4 formats using ffmpeg.
+ * Assumes that the server can
  */
 
-// Collect video info arguments
-$ARGS = array(
-    'BASE_PATH' => $argv[1], // Base directory of WordPress
-    'POST_ID'   => $argv[2], // The post ID of where the video was uploaded
-    'VID_FILE'  => $argv[3], // Path of the file to be converted
-    'COMP_ID'   => $argv[4], // The SmartPost component ID
-    'AUTH_ID'   => $argv[5], // The author ID
-    'WIDTH'     => $argv[6], // scaled video width
-    'HEIGHT'    => $argv[7]  // scaled video height
-);
+// Collect
+define( 'DB_NAME', $argv[1] );
+define( 'DB_USER', $argv[2] );
+define( 'DB_HOST', $argv[3] );
+define( 'DB_PASS', $argv[4] );
+define( 'WP_DB_PREFIX', $argv[5] );
+define( 'VID_FILE', $argv[6] );
+define( 'COMP_ID', $argv[7] );
+define( 'WIDTH', $argv[8] );
+define( 'HEIGHT', $argv[9] );
+define( 'FFMPEG_PATH', $argv[10] );
 
-// Collect info on wpmu
-$WPMU_ARGS = array(
-    'HTTP_HOST' => $argv[8],
-    'BLOG_ID'   => $argv[9],
-    'IS_WPMU'   => $argv[10]
-);
+$errors = array();
+$video_file_info = pathinfo( VID_FILE );
+$video_encoded_name = $video_file_info['dirname'] . DIRECTORY_SEPARATOR . $video_file_info['filename'] . '_encoded';
 
-// If this is a WPMU instance, switch to the blog we're on
-if( !empty( $WPMU_ARGS['IS_WPMU'] ) ){
-
-    $_SERVER['HTTP_HOST'] = $WPMU_ARGS['HTTP_HOST'];
-    ini_set('display_errors', true);
-    define( 'BASE_PATH', $ARGS['BASE_PATH'] );
-    global $wp, $wp_query, $wp_the_query, $wp_rewrite, $wp_did_header;
-    require( BASE_PATH . 'wp-load.php' );
-    switch_to_blog( $WPMU_ARGS['BLOG_ID'] );
-
-} else {
-    require_once( $ARGS['BASE_PATH'] . 'wp-load.php' );
-}
-
-// Get full ffmpeg path
-$sp_ffmpeg_path = get_site_option('sp_ffmpeg_path');
-
-// Check that everything is in order before we start converting..
-if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && !is_wp_error( $sp_ffmpeg_path ) ){
-
-    $file_info = pathinfo( $ARGS['VID_FILE'] );
-    $name = $file_info['filename'];
-    $path = dirname( $ARGS['VID_FILE'] );
-
-    $filename = $path . DIRECTORY_SEPARATOR . $name;
-    $filename_encoded = $path . DIRECTORY_SEPARATOR . $name . '_encoded';
-
-    if(DEBUG_SP_VIDEO){
-        echo 'ABSPATH: ' . $base_path . PHP_EOL;
-        echo 'name: ' . $name . PHP_EOL;
-        echo 'path: ' . $path . PHP_EOL;
-        echo 'filename: ' . $filename . PHP_EOL;
-        echo 'postID: ' . $ARGS['POST_ID'] . PHP_EOL;
-        echo 'compID: ' . $ARGS['COMP_ID'] . PHP_EOL;
-    }
-
-    $mp4_filename  = $filename . '.mp4';
-    $mp4_filename_encoded = $filename_encoded . '.mp4';
-    $png_filename  = $filename . '.png';
-    $content = $filename;
-
-    $videoComponent = new sp_postVideo( $ARGS['COMP_ID'] );
-
-    if( is_wp_error($videoComponent->errors) ){
-        echo 'Could not instantiate sp_postVideo with component ID: ' . $ARGS['COMP_ID'] . ', ' . $videoComponent->errors->get_error_message();
-        exit();
-    }
-
-    /**
-     * Get the correct orientation of the quick time video if it exists
-     * @todo Check if ffprobe and grep are callable on the operating system
-     */
-    $rotation = exec( $sp_ffmpeg_path . 'ffprobe -v quiet -show_streams ' . $ARGS['VID_FILE'] . ' | grep -o "rotate=[-]\?[0-9]\+" | grep -o "[-]\?[0-9]\+"' );
+/**
+ * Get the correct orientation of the quick time video if it exists
+ */
+$ffprobe_cmd = FFMPEG_PATH . 'ffprobe -v quiet -show_streams ' . VID_FILE . ' | grep -o "rotate=[-]\?[0-9]\+" | grep -o "[-]\?[0-9]\+"';
+$rotation = exec( $ffprobe_cmd, $ffprobe_output, $ffprobe_result );
+if( $result !== 0 ){
+    $ffprobe_error = 'ffprobe exited with an error: ' . print_r($ffprobe_output, true) . PHP_EOL;
+    echo $ffprobe_error;
+}else{
     $rotationFilter = '';
-    if( !empty($rotation) ){
+    if( !empty( $rotation ) ){
         switch( $rotation ){
             case '-270':
                 $rotationFilter = 'transpose=2, transpose=2, transpose=2, ';
@@ -103,46 +55,75 @@ if( $ARGS['VID_FILE'] && $ARGS['POST_ID'] && !is_wp_error( $sp_ffmpeg_path ) ){
                 break;
         }
     }
+}
 
-    /**
-     * -q:v - Use video quality 2 (where 0 is equivalent to input video, and 31 is worst quality).
-     * -vf  - Scaling and padding for videos that are not in 16:9 ratios
-     * -y - automatically overwrite files
-     * -metadata:s:v:0 rotate=0 - Makes sure iOS/Mac devices don't unnecessarily rotate the video
-     */
-    $filter = '"' . $rotationFilter . 'scale=iw*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih):ih*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih), pad=' . $ARGS['WIDTH'] . ':' . $ARGS['HEIGHT'] . ':(' . $ARGS['WIDTH'] . '-iw*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih))/2:(' . $ARGS['HEIGHT'] . '-ih*min(' . $ARGS['WIDTH'] . '/iw\,' . $ARGS['HEIGHT'] . '/ih))/2"';
-    system( $sp_ffmpeg_path . 'ffmpeg -i ' . $ARGS['VID_FILE'] . ' -qscale 2 -filter:v ' . $filter . ' -metadata:s:v:0 rotate=0 ' . $filename_encoded . '.mp4' ); // .mp4 conversion
-    $uploads = wp_upload_dir();
+/**
+ * -q:v - Use video quality 2 (where 0 is equivalent to input video, and 31 is worst quality).
+ * -vf  - Scaling and padding for videos that are not in 16:9 ratios
+ * -y - automatically overwrite files
+ * -metadata:s:v:0 rotate=0 - Makes sure iOS/Mac devices don't unnecessarily rotate the video
+ */
+$filter = '"' . $rotationFilter . 'scale=iw*min(' . WIDTH . '/iw\,' . HEIGHT . '/ih):ih*min(' . WIDTH . '/iw\,' . HEIGHT . '/ih), pad=' . WIDTH . ':' . HEIGHT . ':(' . WIDTH . '-iw*min(' . WIDTH . '/iw\,' . HEIGHT . '/ih))/2:(' . HEIGHT . '-ih*min(' . WIDTH . '/iw\,' . HEIGHT . '/ih))/2"';
+$ffmpeg_cmd = FFMPEG_PATH . 'ffmpeg -i ' . VID_FILE . ' -qscale 2 -filter:v ' . $filter . ' -metadata:s:v:0 rotate=0 ' . $video_encoded_name . '.mp4';
 
-    // Create a .mp4 attachment and a .png file based off the .mp4 file in case it got rotated
-    if( file_exists( $mp4_filename_encoded ) ){
-        system( $sp_ffmpeg_path . 'ffmpeg -i ' . $mp4_filename_encoded . ' -f image2 -vframes 1 ' . $filename  .'.png'); // Video thumb creation
-        $videoComponent->videoAttachmentIDs['mp4'] = sp_core::create_attachment( $mp4_filename_encoded, $ARGS['POST_ID'], $mp4_filename_encoded, $ARGS['AUTH_ID'] );
-    }else{
-        $videoComponent->errors['mp4'] = 'Could not find ' . $mp4_filename . '!' . PHP_EOL;
-        echo $videoComponent->errors['mp4'];
-    }
+exec( $ffmpeg_cmd, $ffmpeg_output, $ffmpeg_result ); // .mp4 conversion
 
-    // Add a featured image if one doesn't already exist
-    if( file_exists( $png_filename ) ){
-        $videoComponent->videoAttachmentIDs['img'] = sp_core::create_attachment( $png_filename, $ARGS['POST_ID'], $content, $ARGS['AUTH_ID'] );
-        if( !has_post_thumbnail( $ARGS['POST_ID'] ) ){
-            set_post_thumbnail( $ARGS['POST_ID'], $videoComponent->videoAttachmentIDs['img']);
-        }
-    }else{
-        $videoComponent->errors['img'] = 'Could not find ' . $png_filename . '!' . PHP_EOL;
-        echo $videoComponent->errors['img'];
-    }
-
-    unlink( $ARGS['VID_FILE'] ); // Remove the original .mov or .avi files
-    $videoComponent->beingConverted = false;
-    $success = $videoComponent->update();
-
-    exit(0);
-} else {
-    if( empty( $ARGS['COMP_ID'] ) ){ echo 'COMP_ID argument not provided' . PHP_EOL; }
-    if( empty( $ARGS['VID_FILE'] ) ){ echo 'VID_FILE argument not provided' . PHP_EOL; }
-    if( empty( $ARGS['POST_ID'] ) ){ echo 'POST_ID argument not provided' . PHP_EOL; }
-    if( empty( $sp_ffmpeg_path ) ){ echo 'FFmpeg path not found' . PHP_EOL; }
+if( $ffmpeg_result !== 0 ){
+    $ffmpeg_error = 'ffmpeg exited with an error: ' . print_r($ffmpeg_output, true) . PHP_EOL;
+    echo $ffmpeg_error;
     exit(1);
 }
+
+// If we've successfully converted the video, then try and create a .png video thumbnail
+if( file_exists($video_encoded_name . '.mp4' ) ){
+    $png_filename = $video_encoded_name . '.png';
+    $ffmpeg_png_cmd = FFMPEG_PATH . 'ffmpeg -i ' . $video_encoded_name . '.mp4' . ' -f image2 -vframes 1 ' . $png_filename;
+    exec( $ffmpeg_png_cmd, $ffmpeg_png_output, $ffmpeg_png_status );
+
+    if( $ffmpeg_png_status !== 0 ){
+        echo 'Error: ffmpeg exited with an error: ' . print_r( $ffmpeg_png_output, true) . '. Command: ' . $ffmpeg_png_cmd;
+    }
+}else{
+    echo 'Error: converted vidoe file not found! Path: ' . $video_encoded_name . '.mp4';
+}
+
+
+
+// Connect to the DB to update the user that conversion is complete
+$mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
+if ($mysqli->connect_error) {
+    echo 'Connect Error (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error;
+    exit(1);
+}
+
+/*
+ * Use this instead of $connect_error if you need to ensure
+ * compatibility with PHP versions prior to 5.2.9 and 5.3.0.
+ */
+if (mysqli_connect_error()) {
+    echo 'Connect Error (' . mysqli_connect_errno() . ') ' . mysqli_connect_error();
+    exit(1);
+}
+
+$post_component_result = $mysqli->query( 'SELECT * FROM ' . WP_DB_PREFIX . 'sp_postComponents  WHERE id=' . COMP_ID . ';' );
+
+if( $post_component_result->num_rows === 1 ){
+    $post_component_obj = $post_component_result->fetch_object();
+
+    $video_data = unserialize( $post_component_obj->value );
+    $video_data->beingConverted = false;
+    $video_data->just_converted = true;
+    $video_data->videoAttachmentIDs['encoded_video'] = $video_encoded_name . '.mp4';
+    $video_data->videoAttachmentIDs['png_file'] = $video_encoded_name . '.png';
+
+    $update_sql = "UPDATE " . WP_DB_PREFIX . "sp_postComponents SET value='" . serialize( $video_data ) . "'  WHERE id=" . COMP_ID . ";";
+    $update_result = $mysqli->query( $update_sql );
+    if( $update_result === false ){
+        echo 'Query could not be run: ' .$update_sql;
+        exit(1);
+    }
+}
+
+$mysqli->close();
+
+exit(0);

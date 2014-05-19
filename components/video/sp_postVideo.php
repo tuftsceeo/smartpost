@@ -9,8 +9,8 @@ if (!class_exists("sp_postVideo")) {
 	class sp_postVideo extends sp_postComponent{
 
         public $beingConverted = false;
+        public $just_converted = false; // Flag signifying the conversion script just finished running
         public $videoAttachmentIDs = array(); // An array of video attachment IDs, format: array('{video format}' => {attachment ID})
-        public $errors = array();
         public $description;
 
         function __construct($compID = 0, $catCompID = 0, $compOrder = 0,
@@ -27,10 +27,13 @@ if (!class_exists("sp_postVideo")) {
             $this->initComponent($compInfo);
 
             // Update any post component options
-            $this->beingConverted     = $this->value->beingConverted;
+            $this->beingConverted = $this->value->beingConverted;
             $this->videoAttachmentIDs = $this->value->videoAttachmentIDs;
+            $this->just_converted = $this->value->just_converted;
             $this->description = $this->value->description;
             $this->convertToHTML5  = get_site_option( 'sp_html5_encoding' );
+
+            $this->check_converted_video();
         }
 
         static function init(){
@@ -145,7 +148,7 @@ if (!class_exists("sp_postVideo")) {
          * @see parent::renderViewMode()
          */
         function renderViewMode(){
-            $html .= '<div id="sp_video-' . $this->ID . '" class="sp_video" data-compid="' . $this->ID . '">';
+            $html = '<div id="sp_video-' . $this->ID . '" class="sp_video" data-compid="' . $this->ID . '">';
                 $html .= '<div id="sp-video-desc-' . $this->ID . '" class="sp-video-desc">' . $this->description . '</div>';
                 $html .= $this->renderPlayer();
             $html .= '</div>';
@@ -153,7 +156,6 @@ if (!class_exists("sp_postVideo")) {
         }
 
         /**
-         * !TODO: Use ffmpeg to create video thumbs
          * @return string
          */
         function renderPreview(){
@@ -168,24 +170,14 @@ if (!class_exists("sp_postVideo")) {
          */
         function delete(){
             global $wpdb;
-
             if( !empty($this->videoAttachmentIDs) ){
                foreach($this->videoAttachmentIDs as $attach_id){
                     wp_delete_attachment($attach_id, true);
                }
             }
-
             $tableName = $wpdb->prefix . 'sp_postComponents';
             return $wpdb->query($wpdb->prepare( "DELETE FROM $tableName WHERE id = %d", $this->ID ) );
         }
-
-        /**
-         * @see parent::addMenuOptions()
-         */
-        protected function addMenuOptions(){
-            return array();
-        }
-
 
         /**
          * Writes member variables to the database:
@@ -195,11 +187,11 @@ if (!class_exists("sp_postVideo")) {
          */
         function update(){
             $videoData = new stdClass();
-            $videoData->beingConverted     = (bool) $this->beingConverted;
+            $videoData->beingConverted = (bool) $this->beingConverted;
             $videoData->videoAttachmentIDs = $this->videoAttachmentIDs;
             $videoData->description = $this->description;
-            $videoData->errors = $this->errors;
-            $videoData = maybe_serialize($videoData);
+            $videoData->just_converted = $this->just_converted;
+            $videoData = maybe_serialize( $videoData );
             return sp_core::updateVar('sp_postComponents', $this->ID, 'value', $videoData, '%s');
         }
 
@@ -210,5 +202,36 @@ if (!class_exists("sp_postVideo")) {
             return empty($this->value);
         }
 
+        /**
+         * Checks if an uploaded video was just converted and
+         * 1) Adds the converted video as an attachment
+         * 2) Adds the video thumb .png as an attachment
+         * 3) Deletes the original file
+         * 4) Sets the video thumb .png as the featured image if one was not already set
+         */
+        function check_converted_video(){
+            if( $this->just_converted ){
+
+                // Add the encoded video as a new attachment
+                $encoded_video = $this->videoAttachmentIDs['encoded_video'];
+                $video_path_info = pathinfo( $encoded_video );
+                $this->videoAttachmentIDs['mp4'] = sp_core::create_attachment( $encoded_video, $this->postID, $video_path_info['filename'] . '.mp4' );
+
+                // Add the png as a new attachment
+                $png_filename = $this->videoAttachmentIDs['png_file'];
+                if( file_exists( $png_filename ) ){
+                    $this->videoAttachmentIDs['img'] = sp_core::create_attachment( $png_filename, $this->postID, $video_path_info['filename'] . '.png' );
+                    if( !has_post_thumbnail( $this->postID ) ){
+                        set_post_thumbnail( $this->postID, $this->videoAttachmentIDs['img']);
+                    }
+                }
+
+                // Get rid of original uploaded file
+                unlink( $this->videoAttachmentIDs['uploaded_video'] );
+
+                $this->just_converted = false;
+                $this->update();
+            }
+        }
 	}
 }

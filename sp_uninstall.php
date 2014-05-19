@@ -35,8 +35,6 @@ if ( !class_exists("sp_uninstall") ) {
          * Saves component data to posts
          */
         public static function uninstall_sp_data(){
-            error_log( 'uninstall_sp_data' );
-
             global $wpdb;
             // Save all SmartPost posts into HTML format
             $sp_cat_ids = get_option( 'sp_categories' );

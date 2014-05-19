@@ -72,17 +72,27 @@ if (!class_exists("sp_postVideoAJAX")) {
 
             $compID = (int) $_POST['compID'];
             $videoComponent = new sp_postVideo($compID);
-            if( $videoComponent->beingConverted ){
-                echo json_encode( array( 'converted' => false ) );
+
+            // Check to if video conversion is over
+            if( !$videoComponent->beingConverted ){
+
+                $video_info = $videoComponent->videoAttachmentIDs;
+                if( empty( $video_info ) ){
+                    header("HTTP/1.0 409 Could find uploaded video!");
+                    exit;
+                }
+
+                if( file_exists( $video_info['encoded_video'] ) ){
+                    echo json_encode( array( 'converted' => true ) );
+                }
             }else{
-                echo json_encode( array( 'converted' => true ) );
+                echo json_encode( array( 'converted' => false ) );
             }
             exit;
         }
 
         /**
          * Handles video uploads using chunking.
-         * @todo Do the conversion to mp4 and get rid of the original mov (?)
          */
         static function videoUploadAJAX(){
             $nonce = $_POST['nonce'];
@@ -106,9 +116,9 @@ if (!class_exists("sp_postVideoAJAX")) {
                 exit;
             }
 
-            $videoFilePath = sp_core::chunked_plupload( "sp_videoUpload" );
+            $uploaded_video = sp_core::chunked_plupload( "sp_videoUpload" );
 
-            if( file_exists( $videoFilePath ) ){
+            if( file_exists( $uploaded_video ) ){
 
                 $compID = (int) $_POST['compID'];
                 $videoComponent = new sp_postVideo($compID);
@@ -123,28 +133,30 @@ if (!class_exists("sp_postVideoAJAX")) {
                     }
                 }
 
+                $sp_ffmpeg_path = get_site_option('sp_ffmpeg_path');
                 $html5_encoding = (bool) get_site_option( 'sp_html5_encoding' );
-                $sp_ffmpeg_path = get_site_option( 'sp_ffmpeg_path' );
 
                 if( $html5_encoding && !is_wp_error( $sp_ffmpeg_path ) ){
-
-                    $videoComponent->beingConverted = true;
-                    $videoComponent->update();
-
+                    global $wpdb;
                     $script_path = dirname(dirname(__FILE__)) . '/html5video.php';
 
+                    $videoComponent->beingConverted = true;
+                    $videoComponent->videoAttachmentIDs['uploaded_video'] = $uploaded_video;
+                    $videoComponent->update();
+
                     $script_args = array(
-                        'BASE_PATH' => ABSPATH,
-                        'POST_ID'   => $postID,
-                        'VID_FILE'  => $videoFilePath,
-                        'COMP_ID'   => $compID,
-                        'AUTH_ID'   => get_current_user_id(),
-                        'WIDTH'     => get_site_option('sp_player_width'),
-                        'HEIGHT'    => get_site_option('sp_player_height'),
-                        'HTTP_HOST' => $_SERVER['HTTP_HOST'],
-                        'BLOG_ID'   => get_current_blog_id(),
-                        'IS_WPMU'   => is_multisite()
+                        'DB_NAME' => DB_NAME,
+                        'DB_USER' => DB_USER,
+                        'DB_HOST' => DB_HOST,
+                        'DB_PASS'  => DB_PASSWORD,
+                        'WP_DB_PREFIX' => $wpdb->prefix,
+                        'VID_FILE' => $uploaded_video,
+                        'COMP_ID' => $compID,
+                        'WIDTH'  => get_site_option('sp_player_width'),
+                        'HEIGHT' => get_site_option('sp_player_height'),
+                        'FFMPEG_PATH' => $sp_ffmpeg_path
                     );
+
 
                     if(DEBUG_SP_VIDEO){
                         error_log( 'SCRIPT ARGS: ' . print_r($script_args, true) );
@@ -157,21 +169,20 @@ if (!class_exists("sp_postVideoAJAX")) {
                 }else{
 
                     // Check to see that it's mp4 format
-                    $ext = pathinfo($videoFilePath, PATHINFO_EXTENSION);
+                    $ext = pathinfo($uploaded_video, PATHINFO_EXTENSION);
                     if( $ext !== 'mp4' ){
-                        unlink($videoFilePath);
+                        unlink($uploaded_video);
                         header( "HTTP/1.0 409 Error: only mp4 files are allowed to be uploaded when HTML5 encoding is not enabled!" );
                         exit;
                     }else{
                         // Create the attachment
-                        $videoComponent->videoAttachmentIDs['mp4'] = sp_core::create_attachment( $videoFilePath, $postID, '', get_current_user_id() );
+                        $videoComponent->videoAttachmentIDs['mp4'] = sp_core::create_attachment( $uploaded_video, $postID, '', get_current_user_id() );
                         $videoComponent->update();
                     }
-
                 }
                 echo $videoComponent->renderPlayer();
 
-            }else if( $videoFilePath !== false && !file_exists( $videoFilePath )  ){
+            }else if( $uploaded_video !== false && !file_exists( $uploaded_video )  ){
                 header( "HTTP/1.0 409 There was an error with uploading the video. The video file could not be found." );
             }
             exit;

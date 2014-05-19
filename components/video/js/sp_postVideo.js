@@ -71,7 +71,7 @@
                     nonce   : SP_NONCE,
                     compID  : compID
                 },
-                max_file_size : '1gb',
+                max_file_size : '2gb',
                 filters : videoFilters,
                 init: {
 
@@ -112,6 +112,7 @@
                     },
 
                     FileUploaded: function(up, files, response) {
+                        console.log( response );
                         if(response){
                             $('#videoProgBarContainer-' + compID).hide();
                             $('#videoProgressMsg-' + compID).html( response.response );

@@ -48,9 +48,12 @@ if (!class_exists("sp_postAttachmentsAJAX")) {
                 }
             }
             exit;
-		}		
-		
-		static function attachmentsDeleteAttachmentAJAX(){
+		}
+
+        /**
+         * Deletes an attachment component
+         */
+        static function attachmentsDeleteAttachmentAJAX(){
             $nonce = $_POST['nonce'];
             if( !wp_verify_nonce($nonce, 'sp_nonce') ){
                 header("HTTP/1.0 403 Security Check.");

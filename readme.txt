@@ -9,7 +9,6 @@ License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 SmartPost builds beautiful form templates that makes it quick and easy to generate posts on the front-end of your WordPress site.
-Templates can be saved for later, and can be copied to create new templates
 
 == Description ==
 
@@ -143,6 +142,9 @@ to delete the following:
 * Initial release into to the WordPress plugin repository.
 
 == Upgrade Notice ==
+
+= 2.3.3 =
+* Removes an include on wp-load.php for the video conversion script
 
 = 2.3.2 =
 * Fixed an update bug that did not update WPMU sites correctly

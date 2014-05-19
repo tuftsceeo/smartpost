@@ -1,5 +1,5 @@
 <?php
-/*
+/**
  * AJAX-Related functions for all
  * sp_postAttachments components. Functions are used
  * in front end posts.

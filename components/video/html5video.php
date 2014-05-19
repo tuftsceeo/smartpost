@@ -1,10 +1,10 @@
 <?php
 /**
  * Converts a video file to .webm and .mp4 formats using ffmpeg.
- * Assumes that the server can
+ * Assumes that the server can use exec()
  */
 
-// Collect
+// Collect args
 define( 'DB_NAME', $argv[1] );
 define( 'DB_USER', $argv[2] );
 define( 'DB_HOST', $argv[3] );

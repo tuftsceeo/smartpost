@@ -15,7 +15,7 @@ define("SP_PLUGIN_NAME", "SmartPost");
 define("SP_IMAGE_PATH", plugins_url('/images', __FILE__));
 define("SP_PLUGIN_PATH", plugins_url('/', __FILE__));
 define("SP_DEBUG", true); // Turns on useful errors that are dumped into the php error log for debugging
-define("SP_VERSION", "2.3.2");
+define("SP_VERSION", "2.3.3");
 
 if ( !class_exists("smartpost") ){
 

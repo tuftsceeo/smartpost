@@ -2,7 +2,7 @@
 Contributors: rafdizzle86
 Donate link: http://rafilabs.com/
 Tags: templates, forms, front end editor, video, ffmpeg, picture gallery, media, uploader
-Stable tag: 2.3.2
+Stable tag: 2.3.3
 Requires at least: 3.8
 Tested up to: 3.9.1
 License: GPLv2 or later
@@ -113,6 +113,9 @@ to delete the following:
 3. How a post looks after submitting it via a SmartPost template.
 
 == Changelog ==
+
+= 2.3.3 =
+* Removes an include on wp-load.php for the video conversion script
 
 = 2.3.2 =
 * Fixed an update bug that did not update WPMU sites correctly

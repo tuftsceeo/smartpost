@@ -567,7 +567,7 @@
     $(document).ready(function(){
         $('.tooltip').tooltipster({
             delay: 0,
-            interactive: true
+            interactive: false
         });
         sp_admin.adminpage.init();
     });

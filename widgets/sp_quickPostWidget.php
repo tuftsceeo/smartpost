@@ -69,6 +69,7 @@ class sp_quickPostWidget extends WP_Widget {
                 $sp_qp_shortcode_id++;
             }
 
+
             ob_start(); // Capture the echo output of the widget() method
 
             $sp_qp_widget = new self(); // Create a new quickpost instance
@@ -76,8 +77,6 @@ class sp_quickPostWidget extends WP_Widget {
             $sp_qp_widget->widget( array(), $instance, $sp_qp_shortcode_id );
 
             $output = ob_get_clean(); // Store the output in a variable
-            ob_end_clean();
-
             return $output;
         }
         return '';

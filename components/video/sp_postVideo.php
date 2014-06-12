@@ -11,6 +11,7 @@ if (!class_exists("sp_postVideo")) {
         public $beingConverted = false;
         public $just_converted = false; // Flag signifying the conversion script just finished running
         public $videoAttachmentIDs = array(); // An array of video attachment IDs, format: array('{video format}' => {attachment ID})
+        public $error = false;
         public $description;
 
         function __construct($compID = 0, $catCompID = 0, $compOrder = 0,
@@ -31,8 +32,10 @@ if (!class_exists("sp_postVideo")) {
             $this->videoAttachmentIDs = $this->value->videoAttachmentIDs;
             $this->just_converted = $this->value->just_converted;
             $this->description = $this->value->description;
+            $this->error = $this->value->error;
             $this->convertToHTML5  = get_site_option( 'sp_html5_encoding' );
 
+            // Check first if the video was just converted
             $this->check_converted_video();
         }
 
@@ -74,6 +77,12 @@ if (!class_exists("sp_postVideo")) {
                 array('data-action' => 'saveVideoDescAJAX', 'data-compid' => $this->ID, 'data-postid' => $this->postID )
             );
 
+            if( $this->error ){
+                $html .= '<div class="sp-comp-errors" style="padding:10px; margin:20px; text-align: left; display: inherit;">';
+                $html .= $this->error;
+                $html .= '</div>';
+            }
+
             if( !$this->beingConverted ) {
 
                     $html .= $this->renderPlayer();
@@ -102,6 +111,32 @@ if (!class_exists("sp_postVideo")) {
         }
 
         /**
+         * @see parent::renderViewMode()
+         */
+        function renderViewMode(){
+            $html = '';
+
+            // Don't display anything if there is an error
+            if( $this->error ){
+                return $html;
+            }
+
+            $html = '<div id="sp_video-' . $this->ID . '" class="sp_video" data-compid="' . $this->ID . '">';
+                $html .= '<div id="sp-video-desc-' . $this->ID . '" class="sp-video-desc">' . $this->description . '</div>';
+                $html .= $this->renderPlayer();
+            $html .= '</div>';
+
+            return $html;
+        }
+
+        /**
+         * @return string
+         */
+        function renderPreview(){
+            return $this->description;
+        }
+
+        /**
          * Renders an HTML5 video player for the video associated with the component instance.
          * If a video is not found, it will return an empty string;
          * @return string
@@ -114,15 +149,6 @@ if (!class_exists("sp_postVideo")) {
                 return $html;
             }
 
-            if( $this->errors ){
-                $html .= '<div class="error">';
-                foreach( $this->errors as $error){
-                    $html .= $error;
-                }
-                $html .= '</div>';
-                return $html;
-            }
-
             $width  = get_site_option( 'sp_player_width' );
             $height = get_site_option( 'sp_player_height' );
 
@@ -131,35 +157,11 @@ if (!class_exists("sp_postVideo")) {
                 $mp4_vid  = wp_get_attachment_url( $this->videoAttachmentIDs['mp4'] );
                 $html .= '<div id="playerContainer-' . $this->ID . '" style="width: ' . $width . 'px; max-width: 100%; margin-right: auto; margin-left: auto;">';
                     $html .= '<video class="wp-video-shortcode sp-video-player" width="' . $width . '" height="' . $height . '" preload="metadata" controls>';
-                        $html .= '<source type="video/mp4" src="' . $mp4_vid . '">';
-                    $html .= '</video>';
-                $html .= '</div>';
-            }else if( $this->videoAttachmentIDs['mov'] ){ // Otherwise just render the original
-                $html .= '<div id="playerContainer-' . $this->ID . '" style="width: ' . $width . 'px; max-width: 100%; margin-right: auto; margin-left: auto;">';
-                    $html .= '<video class="wp-video-shortcode sp-video-player" width="' . $width . '" height="' . $height . '" preload="metadata" controls>';
-                        $html .= '<source src="' . wp_get_attachment_url( $this->videoAttachmentIDs['mov'] ) . '" type="video/mp4">';
+                    $html .= '<source type="video/mp4" src="' . $mp4_vid . '">';
                     $html .= '</video>';
                 $html .= '</div>';
             }
             return $html;
-        }
-
-        /**
-         * @see parent::renderViewMode()
-         */
-        function renderViewMode(){
-            $html = '<div id="sp_video-' . $this->ID . '" class="sp_video" data-compid="' . $this->ID . '">';
-                $html .= '<div id="sp-video-desc-' . $this->ID . '" class="sp-video-desc">' . $this->description . '</div>';
-                $html .= $this->renderPlayer();
-            $html .= '</div>';
-            return $html;
-        }
-
-        /**
-         * @return string
-         */
-        function renderPreview(){
-            return $this->description;
         }
 
         /**
@@ -199,7 +201,7 @@ if (!class_exists("sp_postVideo")) {
          * @see parent::isEmpty();
          */
         function isEmpty(){
-            return empty($this->value);
+            return !isset( $this->videoAttachmentIDs['mp4'] );
         }
 
         /**
@@ -210,7 +212,13 @@ if (!class_exists("sp_postVideo")) {
          * 4) Sets the video thumb .png as the featured image if one was not already set
          */
         function check_converted_video(){
+
             if( $this->just_converted ){
+
+                // Get rid of original uploaded file
+                unlink( $this->videoAttachmentIDs['uploaded_video'] );
+                $this->just_converted = false;
+                $this->update();
 
                 // Add the encoded video as a new attachment
                 $encoded_video = $this->videoAttachmentIDs['encoded_video'];
@@ -226,10 +234,6 @@ if (!class_exists("sp_postVideo")) {
                     }
                 }
 
-                // Get rid of original uploaded file
-                unlink( $this->videoAttachmentIDs['uploaded_video'] );
-
-                $this->just_converted = false;
                 $this->update();
             }
         }

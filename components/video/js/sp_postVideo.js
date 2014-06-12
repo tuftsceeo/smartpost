@@ -45,7 +45,8 @@
                 videoFilters = [
                     {title : "MOV files", extensions : "mov, MOV"},
                     {title : "AVI files", extensions : "avi, AVI"},
-                    {title : "MP4 files", extensions : "mp4, MP4"}
+                    {title : "MP4 files", extensions : "mp4, MP4"},
+                    {title : "M4V files", extensions : "m4v, M4V"}
                 ]
             }else{
                 videoFilters = [
@@ -143,17 +144,20 @@
                 dataType : 'json',
                 success  : function(response, statusText, jqXHR){
                     if( response.converted ){
-                        if( $('#sp_qp_stack').exists() ){
+                        if( $('.sp-qp-comp-stack').exists() ){
                             messageElem.html( 'The video processed successfully! Submit your post to view the video.' );
                         }else{
-                            messageElem.html( 'The video processed successfully! Refresh the page to view it.' );
+                            messageElem.html( 'The video processed successfully! <a href="#" onclick="window.location.reload( true );">Refresh</a> the page to view it.' );
                         }
                     }else{
                         setTimeout( function(){ self.checkVideoStatus(compID) }, 5000 );
                     }
                 },
                 error : function(jqXHR, statusText, errorThrown){
-                    console.log(errorThrown);
+                    messageElem.html('<p class="sp-comp-errors" style="display: inherit;">There was an error with uploading your video! <a href="#" onclick="window.location.reload( true );">Refresh</a> the page and try to re-upload your video again.</p>')
+                    if(smartpost.sp_postComponent){
+                        smartpost.sp_postComponent.showError(errorThrown);
+                    }
                 }
             });
         },

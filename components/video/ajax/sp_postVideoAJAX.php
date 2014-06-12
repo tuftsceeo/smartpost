@@ -73,6 +73,12 @@ if (!class_exists("sp_postVideoAJAX")) {
             $compID = (int) $_POST['compID'];
             $videoComponent = new sp_postVideo($compID);
 
+            // Display error if there is one
+            if( !empty($videoComponent->error) ){
+                header( "HTTP/1.0 409 " . $videoComponent->error );
+                exit;
+            }
+
             // Check to if video conversion is over
             if( !$videoComponent->beingConverted ){
 
@@ -131,6 +137,7 @@ if (!class_exists("sp_postVideoAJAX")) {
                             wp_delete_attachment( $attach_id, true );
                         }
                     }
+                    $videoComponent->videoAttachmentIDs = array(); // reset attachment IDs
                 }
 
                 $sp_ffmpeg_path = get_site_option('sp_ffmpeg_path');

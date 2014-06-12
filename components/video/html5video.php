@@ -25,8 +25,8 @@ $video_encoded_name = $video_file_info['dirname'] . DIRECTORY_SEPARATOR . $video
  */
 $ffprobe_cmd = FFMPEG_PATH . 'ffprobe -v quiet -show_streams ' . VID_FILE . ' | grep -o "rotate=[-]\?[0-9]\+" | grep -o "[-]\?[0-9]\+"';
 $rotation = exec( $ffprobe_cmd, $ffprobe_output, $ffprobe_result );
-if( $result !== 0 ){
-    $ffprobe_error = 'ffprobe exited with an error: ' . print_r($ffprobe_output, true) . PHP_EOL;
+if( $ffprobe_result !== 0 ){
+    $ffprobe_error = 'ffprobe command: "' . $ffprobe_cmd . '" exited with an error: ' . print_r($ffprobe_output, true) . PHP_EOL;
     echo $ffprobe_error;
 }else{
     $rotationFilter = '';
@@ -68,28 +68,7 @@ $ffmpeg_cmd = FFMPEG_PATH . 'ffmpeg -i ' . VID_FILE . ' -qscale 2 -filter:v ' . 
 
 exec( $ffmpeg_cmd, $ffmpeg_output, $ffmpeg_result ); // .mp4 conversion
 
-if( $ffmpeg_result !== 0 ){
-    $ffmpeg_error = 'ffmpeg exited with an error: ' . print_r($ffmpeg_output, true) . PHP_EOL;
-    echo $ffmpeg_error;
-    exit(1);
-}
-
-// If we've successfully converted the video, then try and create a .png video thumbnail
-if( file_exists($video_encoded_name . '.mp4' ) ){
-    $png_filename = $video_encoded_name . '.png';
-    $ffmpeg_png_cmd = FFMPEG_PATH . 'ffmpeg -i ' . $video_encoded_name . '.mp4' . ' -f image2 -vframes 1 ' . $png_filename;
-    exec( $ffmpeg_png_cmd, $ffmpeg_png_output, $ffmpeg_png_status );
-
-    if( $ffmpeg_png_status !== 0 ){
-        echo 'Error: ffmpeg exited with an error: ' . print_r( $ffmpeg_png_output, true) . '. Command: ' . $ffmpeg_png_cmd;
-    }
-}else{
-    echo 'Error: converted vidoe file not found! Path: ' . $video_encoded_name . '.mp4';
-}
-
-
-
-// Connect to the DB to update the user that conversion is complete
+// Connect to the DB to update the user of the status of the video conversion
 $mysqli = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 if ($mysqli->connect_error) {
     echo 'Connect Error (' . $mysqli->connect_errno . ') ' . $mysqli->connect_error;
@@ -109,9 +88,51 @@ $post_component_result = $mysqli->query( 'SELECT * FROM ' . WP_DB_PREFIX . 'sp_p
 
 if( $post_component_result->num_rows === 1 ){
     $post_component_obj = $post_component_result->fetch_object();
-
     $video_data = unserialize( $post_component_obj->value );
+
+    echo print_r($video_data, true);
+}
+
+// Case where ffmpeg could not convert the file properly
+if( $ffmpeg_result !== 0 ){
+
+    unlink( VID_FILE ); // delete the uploaded file
+
+    $ffmpeg_error = 'ffmpeg exited with an error: ' . print_r($ffmpeg_output, true) . PHP_EOL;
+    echo $ffmpeg_error;
+
+    if( isset($video_data) ){
+        $video_data->beingConverted = false;
+        $video_data->error = 'There was an error while trying to process your video! There could be a few reasons why this happened:<br /><br />';
+        $video_data->error .= '- The video upload was interrupted. In this case, please re-upload the video and wait until it is fully uploaded!<br />';
+        $video_data->error .= '- The video file is corrupt or incomplete. Please make sure the video works properly on your computer before uploading it!<br /><br />';
+        $video_data->error .= '<a href="#" onclick="window.location.reload( true );">Refresh</a> the page and try and re-upload your video again!<br />';
+        $update_sql = "UPDATE " . WP_DB_PREFIX . "sp_postComponents SET value='" . serialize( $video_data ) . "'  WHERE id=" . COMP_ID . ";";
+        $update_result = $mysqli->query( $update_sql );
+        if( $update_result === false ){
+            echo 'Query could not be run: ' .$update_sql;
+            exit(1);
+        }
+    }
+    exit(1);
+}
+
+// If we've successfully converted the video, then try and create a .png video thumbnail
+if( file_exists($video_encoded_name . '.mp4' ) ){
+    $png_filename = $video_encoded_name . '.png';
+    $ffmpeg_png_cmd = FFMPEG_PATH . 'ffmpeg -i ' . $video_encoded_name . '.mp4' . ' -f image2 -vframes 1 ' . $png_filename;
+    exec( $ffmpeg_png_cmd, $ffmpeg_png_output, $ffmpeg_png_status );
+
+    if( $ffmpeg_png_status !== 0 ){
+        echo 'Error: ffmpeg exited with an error: ' . print_r( $ffmpeg_png_output, true) . '. Command: ' . $ffmpeg_png_cmd;
+    }
+}else{
+    echo 'Error: converted vidoe file not found! Path: ' . $video_encoded_name . '.mp4';
+}
+
+if( isset($video_data) ){
     $video_data->beingConverted = false;
+    $video_data->error = false; // reset error if there was a previous one
     $video_data->just_converted = true;
     $video_data->videoAttachmentIDs['encoded_video'] = $video_encoded_name . '.mp4';
     $video_data->videoAttachmentIDs['png_file'] = $video_encoded_name . '.png';

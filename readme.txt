@@ -148,6 +148,8 @@ to delete the following:
 * Initial release into to the WordPress plugin repository.
 
 == Upgrade Notice ==
+= 2.3.4 =
+* Better video handling and fixes a compatibility bug with the Relevanssi plugin
 
 = 2.3.3 =
 * Removes an include on wp-load.php for the video conversion script

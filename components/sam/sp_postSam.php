@@ -88,6 +88,8 @@ if (!class_exists("sp_postSam")) {
             //  else
             //    return video;
             $html = '<div id="sp_sam-'. $this->ID .'" style="margin: 20px">';
+                $html .= '<p>' . $this->description . '</p>';
+                $html .= '<p> Number of frames this should show: ' . count($this->imgs) . '</p>';
                 $html .= '<div id="samPlaybackContainer-'. $this->ID .'" class="samPlaybackContainer">';
                     $html .= '<canvas id="samPlaybackCanvas-'. $this->ID .'" width="440" height="330" class="samPlaybackCanvas"';
                     $html .= 'style="border:1px solid black"> </canvas>';
@@ -149,6 +151,7 @@ if (!class_exists("sp_postSam")) {
          */
         function update(){
             $samData = new stdClass();
+            $samData->description = $this->description;
             $samData->fps = $this->fps;
             $samData->imgs = $this->imgs;
             $samData = maybe_serialize( $samData );
@@ -159,11 +162,7 @@ if (!class_exists("sp_postSam")) {
          * @see parent::isEmpty();
          */
         function isEmpty(){
-            // FOR TESTING CHANGE THIS
-            return false;
-            // END TESTING
-            $strippedContent = trim(strip_tags($this->value));
-            return empty($strippedContent);
+            return empty($this->imgs);
         }
     }
 }

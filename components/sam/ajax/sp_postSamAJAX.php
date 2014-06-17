@@ -23,7 +23,7 @@ if (!class_exists("sp_postSamAJAX")) {
                 die('Security Check');
             }
 
-            if( !class_exists( 'sp_postVideo' ) ){
+            if( !class_exists( 'sp_postSam' ) ){
                 header("HTTP/1.0 409 Could not instantiate sp_postMedia class.");
                 exit;
             }
@@ -35,15 +35,15 @@ if (!class_exists("sp_postSamAJAX")) {
 
             // Update video description
             $compID = (int) $_POST['compid'];
-            $videoComponent = new sp_postSam($compID);
+            $samComponent = new sp_postSam($compID);
 
-            if( !empty($videoComponent->errors) ){
-                header( "HTTP/1.0 409 Error: " . $videoComponent->errors->get_error_message() );
+            if( !empty($samComponent->errors) ){
+                header( "HTTP/1.0 409 Error: " . $samComponent->errors->get_error_message() );
                 exit;
             }
 
-            $videoComponent->description = stripslashes_deep( $_POST['content'] );
-            $videoComponent->update();
+            $samComponent->description = stripslashes_deep( $_POST['content'] );
+            $samComponent->update();
             echo json_encode( array('success' => true) );
             exit;
         }
@@ -96,7 +96,9 @@ if (!class_exists("sp_postSamAJAX")) {
             
             // get path for upload
             $uploads  = wp_upload_dir();
-            $filename = $uploads['path'] . '/img' . $frameNum . '.png';
+            $frameString = sprintf( '%03d', $frameNum);
+            $idString = sprintf( '%d', $compID);
+            $filename = $uploads['path'] . '/' . $idString . 'img' . $frameString . '.png';
 
             // create a png image at location
             $conv = imagepng($im, $filename, 0);

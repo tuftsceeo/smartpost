@@ -287,7 +287,7 @@
                     var frame = convertImageDataToURL(frames[frames.length-1]);
                     content = {'fps': fps, 'frame': frame, 'frameNum': submittedFrames};
                     obj.saveSamContent(content, compId);
-                    submittedFrames++
+                    submittedFrames++;
                 }
             });
             

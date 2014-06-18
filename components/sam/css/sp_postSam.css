@@ -1,0 +1,217 @@
+/* clear floats */
+.samClear:after {
+	content: "";
+    display: table;
+    clear: both;
+}
+
+.samContainer {
+    width: 440px;
+    border-spacing: 0px;
+    border: none;
+}
+
+.samContainer:after {
+    clear: both
+}
+
+/* remove blue outline from button clicks */
+.samContainer button:focus {
+    outline:0 
+    !important;
+    background-color: transparent;
+}
+
+.samContainer button:hover{
+    background-color: transparent;
+}
+
+.samContainer button,
+.samVideoContainer button{
+    padding:0px;
+}
+
+/*.samContainer .samLabel button:hover{
+    background-color: rgba(255, 255, 255, 0.2);
+}*/
+
+.samContainer td{
+    padding: 0px;
+    border: 0px;
+}
+
+.samEmptyVideo {
+    background-color: black;
+    color: white;
+    width: 440px;
+    height: 330px;
+    text-align: center;
+    font-family: sans-serif;
+    display: table;
+}
+
+.samEmptyVideo span {
+    vertical-align: middle;
+    display: table-cell
+}
+
+.samVideoContainer {
+    position: relative;
+    width: 440px;
+    height: 330px;
+}
+
+.samVideoContainer td {
+    position: relative;
+    width: 440px;
+    height: 330px;
+}
+
+.samVideoContainer td * {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.samRecordFrame,
+.samPlayButton {
+    background-image: url(../images/recordbutton.png);
+    background-color: transparent;
+    background-size: 40px;
+    background-repeat: no-repeat;
+    position: absolute;
+    z-index: 2;
+    bottom: 15px;
+    left: 165px;
+    opacity: 0;
+    width: 40px;
+    height: 40px;
+    border: none;
+    cursor: pointer;
+}
+
+.samCanvas,
+.samOverlay {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+}
+
+.samToggleOverlay {
+    background-image: url(../images/onion_on.png);
+    background-size: 20px;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    border: none;
+    width: 20px;
+    height: 20px;
+    float: right;
+    margin-top: 5px;
+}
+
+.samPlayButton { 
+    left: 245px;
+    background-image: url(../images/playbutton.png);
+}
+
+.samVideo{
+    margin: 0px;
+}
+
+.samVideo:hover{
+    cursor: default;
+}
+
+.samTimeline,
+.samTimeline *{
+    height: 15px;
+}
+
+.samTimeline td {
+    position: relative;
+}
+
+.samTimeline .samEmptyTime {
+    position: absolute;
+    width: 400px;
+    right: 40px;
+    background-color: white;
+    display: inline-block;
+}
+
+.samTimeline .samFilledTime {
+    position: absolute;
+    width: 400px;
+    left: 0px;
+    background-image: url(../images/progressbar.jpg);
+    background-color: transparent;
+    background-size: 400px 15px;
+    background-repeat: no-repeat;
+    display: inline-block;
+}
+
+
+.samTimeline .samFramesIndicator {
+    position: absolute;
+    right: 0px;
+    width: 40px;
+    display: inline-block;
+    font-family: sans-serif;
+    font-size: 12px;
+    text-align: center;
+}
+
+.samTimeline .samFramesIndicator:hover {
+    cursor: default;
+}
+
+.samTimeline span,
+.samLabel span {
+    display: table-cell;
+}
+
+.samLabel {
+    height: 30px;
+}
+
+.samLabel td{
+    position: relative;
+    padding: 0px;
+}
+
+.samLabel button {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: transparent;
+    background-size: 20px;
+    background-repeat: no-repeat;
+    border: none;
+}
+
+.samLogo {
+    position: absolute;
+    left: 0px;
+    width: 440px;
+    height: 30px;
+    background-image: url(../images/SAMbar.jpg);
+    background-color: transparent;
+    background-size: 440px 30px;
+    background-repeat: no-repeat;
+}
+
+.samRedoButton {
+    left: 5px;
+    top: 5px;
+    background-image: url(../images/restartbutton.png);
+}
+
+.samRedoButton:hover {
+    background-image: url(../images/restartbuttonhover.png);
+}
+
+.samSaveButton {
+    right: 5px;
+    top: 5px;
+    background-image: url(../images/savebutton.png);
+}
+

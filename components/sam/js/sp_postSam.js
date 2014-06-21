@@ -56,7 +56,6 @@
          * @param string    contentID The DOMElem id of the content's container
          */
         saveSamContent: function(content, contentID){
-            var thisObj = this;
             console.log(content);
             var compID = contentID.split('-')[1];
             var postID = $("#sp_sam-"+compID);
@@ -279,7 +278,7 @@
                     var numFrames = String(frames.length) + "/" + String(maxFrames);
                     framesIndicator.innerHTML = numFrames;
             
-                    setProgressBar();
+                    //setProgressBar();
                     renderOverlay(false);
                     
                     // send frame to server
@@ -331,13 +330,16 @@
             });
             
             //clear all frames taken so far
-            redoButton.on("click", function() {
+            function redoMovie(){
                 playing = false;
                 frames = [];
-                setProgressBar();
                 submittedFrames = 0;
                 framesIndicator.innerText = "0/"+String(maxFrames);
                 overlay.getContext("2d").clearRect( 0, 0, width, height );
+            }
+
+            redoButton.on("click", function() {
+                redoMovie();
             });
             
             // we want to turn off webcam stream if this is the last one
@@ -360,9 +362,42 @@
                 c.remove();
                 return c.toDataURL();
             };
-            
+
+            var downloadButton = $(component).find('.download-sam-movie-button');
             var editor = $(component).find( '.sp-editor-content' );
-            smartpost.sp_post.initCkEditors(editor);
+            this.downloadSamMov( downloadButton, redoMovie );
+            smartpost.sp_post.initCkEditors( editor );
+        },
+
+        downloadSamMov: function(downloadButton, cl){
+            downloadButton.click(function(){
+                var compID = $(this).data('compid');
+                $.ajax({
+                    url  : SP_AJAX_URL,
+                    type : 'POST',
+                    data : {
+                        action: 'downloadSamMov',
+                        nonce: SP_NONCE,
+                        compid: compID
+                    },
+                    dataType : 'json',
+                    success: function(data) {
+                        console.log(data);
+
+                        window.location = data.dl_url + '?sam_mov=' + data.file_path;
+
+                        console.log( data.dl_url );
+                        console.log( data.file_path );
+                        console.log(  data.dl_url + '?sam_mov=' + data.file_path );
+
+                        cl();
+                    },
+                    error    : function(jqXHR, statusText, errorThrown){
+                        if(smartpost.sp_postComponent)
+                            smartpost.sp_postComponent.showError( errorThrown );
+                    }
+                });
+            });
         },
 
         /**
@@ -370,11 +405,9 @@
          */
         init: function(){
             this.setTypeID();
-            
-            
-            
+            this.downloadSamMov( $('.download-sam-movie-button') );
         }
-    }
+    };
 
     $(document).ready(function(){
         smartpost.sp_postSam.init();

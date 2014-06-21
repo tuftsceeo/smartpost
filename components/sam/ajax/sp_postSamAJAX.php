@@ -11,6 +11,7 @@ if (!class_exists("sp_postSamAJAX")) {
 		static function init(){
 			add_action('wp_ajax_saveSamAJAX', array('sp_postSamAJAX', 'saveSamAJAX'));
 			add_action('wp_ajax_saveSamDescAJAX', array('sp_postSamAJAX', 'saveSamDescAJAX'));
+            add_action('wp_ajax_downloadSamMov', array('sp_postSamAJAX', 'downloadSamMov'));
 		}
 
         /**
@@ -45,6 +46,89 @@ if (!class_exists("sp_postSamAJAX")) {
             $samComponent->description = stripslashes_deep( $_POST['content'] );
             $samComponent->update();
             echo json_encode( array('success' => true) );
+            exit;
+        }
+
+        /**
+         * Create a .mp4 out of the saved image, then destroys the images?
+         */
+        function downloadSamMov(){
+            $nonce = $_POST['nonce'];
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
+                header("HTTP/1.0 403 Security Check.");
+                die('Security Check');
+            }
+
+            if( !class_exists( 'sp_postSam' ) ){
+                header("HTTP/1.0 409 Could not instantiate sp_postMedia class.");
+                exit;
+            }
+
+            if( empty( $_POST['compid'] ) ){
+                header("HTTP/1.0 409 Could find component ID to udpate.");
+                exit;
+            }
+
+            $compID = (int) $_POST['compid'];
+            $samComponent = new sp_postSam($compID);
+
+            // Check to make sure there are images to stitch together.
+            $imgs = $samComponent->imgs;
+            if( !is_array( $imgs ) ){
+                header("HTTP/1.0 409 Could not create movie. Please make sure you've saved images before attempting to download a movie.");
+                exit;
+            }else{
+
+                // Check again to make sure there are images
+                if( count( $samComponent->imgs ) === 0 ){
+                    header("HTTP/1.0 409 Please make sure you've recorded a few images before attempting to create your SAM movie!");
+                    exit;
+                }
+
+                // Delete old SAM movie if a previous exists
+                if( file_exists( $samComponent->movie ) ){
+                    unlink( $samComponent->movie );
+                    $samComponent->update();
+                }
+
+                // Works only if ffmpeg is enabled
+                $sp_ffmpeg_path = get_site_option('sp_ffmpeg_path');
+                if( isset( $sp_ffmpeg_path ) && !is_wp_error( $sp_ffmpeg_path ) ){
+
+                    $dl_url = plugins_url( 'download_sam_mov.php', dirname(__FILE__) );
+                    $uploads  = wp_upload_dir();
+                    $sam_mov_name = $uploads['path'] . DIRECTORY_SEPARATOR . 'my-sp-sam-mov-' . uniqid();
+
+                    $ffmpeg_cmd = $sp_ffmpeg_path . 'ffmpeg -r 5 -i ' . $uploads['path'] . DIRECTORY_SEPARATOR . $samComponent->getID() . 'img%03d.png -c:v libx264 -r 30 -pix_fmt yuv420p ' . $sam_mov_name . '.mp4 2>&1';
+
+                    exec( $ffmpeg_cmd, $ffmpeg_output, $ffmpeg_status );
+
+                    if( $ffmpeg_status !== 0 ){
+                        header("HTTP/1.0 409 Could not create movie. Please try again or contact your site administrator if the problem persists.");
+                        exit;
+                    }
+
+                    if( file_exists( $sam_mov_name . '.mp4' ) ){
+
+                        // Get rid of all the images once the video is made
+                        foreach( $samComponent->imgs as $img ){
+                            if( file_exists( $img ) ){
+                                unlink($img);
+                            }
+                        }
+                        $samComponent->imgs = array();
+                        $samComponent->movie = $sam_mov_name . '.mp4';
+                        //$sam_id = sp_core::create_attachment( $samComponent->movie, $samComponent->getPostID(), 'SAM Movie' );
+                        //$samComponent->movie_id = $sam_id;
+                        $samComponent->update();
+
+                        echo json_encode( array( 'file_path' =>  $sam_mov_name . '.mp4', 'dl_url' => $dl_url )  );
+                    }else{
+                        header("HTTP/1.0 409 Could not create movie. Please try again or contact your site administrator if the problem persists.");
+                        exit;
+                    }
+                }
+            }
             exit;
         }
 
@@ -103,20 +187,6 @@ if (!class_exists("sp_postSamAJAX")) {
             // create a png image at location
             $conv = imagepng($im, $filename, 0);
 
-            //Create an attachment!
-            $wp_filetype = wp_check_filetype(basename($filename), null );
-            $attachment = array(
-                'guid'           => $uploads['baseurl'] . _wp_relative_upload_path( $filename ),
-                'post_mime_type' => $wp_filetype['type'],
-                'post_title'     => preg_replace('/\.[^.]+$/', '', basename($filename)),
-                'post_content'   => 'SAM_Image',
-                'post_status'    => 'inherit'
-            );
-            $img_id = wp_insert_attachment( $attachment, $filename,  $postID );
-            require_once(ABSPATH . 'wp-admin/includes/image.php');
-            $img_data = wp_generate_attachment_metadata( $img_id, $filename );
-            wp_update_attachment_metadata( $img_id, $img_data );
-
             // get images this component already has
             $imgs = $SamComp->getImgs();
             
@@ -133,16 +203,11 @@ if (!class_exists("sp_postSamAJAX")) {
                 }
             }
             // insert new img into the array
-            array_push($imgs, $img_id);
+            array_push($imgs, $filename);
             
             $SamComp->fps = $fps;
             $SamComp->imgs = $imgs;
             $success = $SamComp->update();
-
-            /**
-                    WE STILL NEED TO CONVERT IT INTO A VIDEO
-                    which should happen once the post has been submitted
-            **/
 
             if( $success === false ){
                 header("HTTP/1.0 409 Could not save content.");

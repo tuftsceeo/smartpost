@@ -464,8 +464,7 @@ if ( !class_exists("sp_admin") ) {
                                 ?>
                             <?php else: ?>
                                 <h2>SmartPost Settings</h2>
-                                <p>SmartPost has a slew of features that make it more customizable.</p>
-                                <p>On the right hand side bar title "SmartPost Components", you can navigate between the components and customize SmartPost further.</p>
+                                <p>On the right hand side bar title "SmartPost Components", you can navigate between the components to configure SmartPost.</p>
                             <?php endif; ?>
                             </div>
 

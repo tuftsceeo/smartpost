@@ -22,6 +22,7 @@ if (!class_exists("sp_postSam")) {
                 $this->description = $this->value->description;
                 $this->fps = $this->value->fps;
                 $this->imgs = $this->value->imgs;
+                $this->movie = $this->value->movie;
             }
         }
 
@@ -39,42 +40,36 @@ if (!class_exists("sp_postSam")) {
                 'Create a description for your stop action movie...',
                 array('data-action' => 'saveSamDescAJAX', 'data-compid' => $this->ID, 'data-postid' => $this->postID )
             );
-            
-            $html .= '<span class="samClear">';
+
             $html .= '<table id="samContainer-'. $this->ID .'" class="samContainer" cellpadding="0" style="float:left">';
-                $html .= '<tr id="samLabel-'. $this->ID .'" class="samLabel">';
-                    $html .= '<td style="padding:0px"> <span style="height:30px">';
-                        $html .= '<div id="samLogo-'. $this->ID .'" class="samLogo"></div>';
-                        $html .= '<button id="samRedoButton-'. $this->ID .'" class="samRedoButton"/>';        
-                        //$html .= '<button id="samSaveButton-'. $this->ID .'" class="samSaveButton"/>';
-                    $html .= '</td>';
-                $html .= '</tr>';
-                $html .= '<tr id="samTimeline-'. $this->ID .'" class="samTimeline">';
-                    $html .= '<td style="padding:0px"><span style="height:15px">';
-                        $html .= '<div id="samFilledTime-'. $this->ID .'" class="samFilledTime"> </div>';
-                        $html .= '<div id="samEmptyTime-'. $this->ID .'" class="samEmptyTime"> </div>';
-                        $html .= '<div id="samFramesIndicator-'. $this->ID .'" class="samFramesIndicator"> 0/60 </div>';
-                    $html .= '</span></td>';
-                $html .= '</tr>';
                 $html .= '<tr id="samVideoContainer-'. $this->ID .'" class="samVideoContainer">';
                     $html .= '<td style="padding:0px">';
-                        $html .= '<div id="samEmptyVideo-'. $this->ID .'" class="samEmptyVideo"> <span>';
-                            $html .= '<div> We need access to your webcam! </div>';
-                            $html .= '<div> (should be in the top right) </div>';
-                        $html .= '</span> </div>';
+                            $html .= '<div id="samEmptyVideo-'. $this->ID .'" class="samEmptyVideo">';
+                                $html .= '<span>';
+                                $html .= '<div> We need access to your webcam! </div>';
+                                $html .= '<div> (should be in the top right) </div>';
+                            $html .= '</span>';
+                        $html .= '</div>';
                         $html .= '<canvas id="samCanvas-'. $this->ID .'" width="440" height="330" style="display:none" class="samCanvas"> </canvas>';
                         $html .= '<canvas id="samOverlay-'. $this->ID .'" width="440" height="330" style="display:none" class="samOverlay"> </canvas>';
-                        $html .= '<button id="samRecordFrame-'. $this->ID .'" class="samRecordFrame"/>';
-                        $html .= '<button id="samPlayButton-'. $this->ID .'" class="samPlayButton"/>';
+                        $html .= '<div id="samFrameControls">';
+                            $html .= '<button id="samRecordFrame-'. $this->ID .'" class="samRecordFrame"/>';
+                            $html .= '<button id="samPlayButton-'. $this->ID .'" class="samPlayButton"/>';
+                        $html .= '</div>';
                     $html .= '</td>';
                 $html.= '</tr>';
                 $html .= '<tr id="samExtraControls">';
                     $html .= '<td>';
+                        $html .= '<p id="samFramesIndicator-'. $this->ID .'" class="samFramesIndicator" style="text-align: center;"> 0/60 </p>';
                         $html .= '<button id="samToggleOverlay-'. $this->ID .'" class="samToggleOverlay"/>';
+                        $html .= '<button id="samRedoButton-'. $this->ID .'" class="samRedoButton">Redo</button>';
+                        $html .= '<p id="download-sam-movie-' . $this->ID . '" class="download-sam-movie">';
+                            $html .= '<button id="download-sam-movie-button-' . $this->ID . '" class="download-sam-movie-button" data-compid="' . $this->ID .'">Download SAM Movie</button>';
+                        $html .= '</p>';
                     $html .= '</td>';
                 $html .= '</tr>';
-            $html .='</table></span>';
-            
+            $html .='</table>';
+
             $html .= '</div>';
             return $html;
         }
@@ -154,8 +149,30 @@ if (!class_exists("sp_postSam")) {
             $samData->description = $this->description;
             $samData->fps = $this->fps;
             $samData->imgs = $this->imgs;
+            $samData->movie = $this->movie;
             $samData = maybe_serialize( $samData );
             return sp_core::updateVar('sp_postComponents', $this->ID, 'value', $samData, '%s');
+        }
+
+        function delete(){
+            global $wpdb;
+
+            // Clean up movie
+            if( file_exists($this->movie) ){
+                unlink($this->movie);
+            }
+
+            // Clean up images
+            if( is_array( $this->imgs) && count( $this->imgs ) > 0 ){
+                foreach( $this->imgs as $img ){
+                    if( file_exists( $img ) ){
+                        unlink( $img );
+                    }
+                }
+            }
+
+            $tableName = $wpdb->prefix . 'sp_postComponents';
+            return $wpdb->query( $wpdb->prepare( "DELETE FROM $tableName WHERE id = %d", $this->ID ) );
         }
 
         /**

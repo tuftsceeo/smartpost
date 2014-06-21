@@ -72,6 +72,15 @@
     margin-right: auto;
 }
 
+#samFrameControls{
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    height: 330px;
+    width: 440px;
+}
+
 .samRecordFrame,
 .samPlayButton {
     background-image: url(../images/recordbutton.png);
@@ -92,8 +101,10 @@
 .samCanvas,
 .samOverlay {
     position: absolute;
-    left: 0px;
-    top: 0px;
+    left: 0;
+    right: 0;
+    top: 10px;
+    margin: 0 auto;
 }
 
 .samToggleOverlay {
@@ -199,19 +210,29 @@
     background-repeat: no-repeat;
 }
 
+.samRedoButton{
+    padding: 5px !important;
+}
+/*
 .samRedoButton {
     left: 5px;
     top: 5px;
     background-image: url(../images/restartbutton.png);
 }
-
 .samRedoButton:hover {
     background-image: url(../images/restartbuttonhover.png);
 }
+*/
 
 .samSaveButton {
     right: 5px;
     top: 5px;
     background-image: url(../images/savebutton.png);
 }
+.download-sam-movie button{
+    padding: 5px !important;
+}
 
+.download-sam-movie{
+    text-align: center;
+}

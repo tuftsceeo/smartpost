@@ -224,8 +224,6 @@
                 type:'image'
             });
 
-            // jQuery UI resizable
-            //$('.sp-photo-image').resizable();
         }
     };
 

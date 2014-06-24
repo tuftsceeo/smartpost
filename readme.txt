@@ -2,7 +2,7 @@
 Contributors: rafdizzle86
 Donate link: http://rafilabs.com/
 Tags: templates, forms, front end editor, video, ffmpeg, picture gallery, media, uploader
-Stable tag: 2.3.4
+Stable tag: 2.3.5
 Requires at least: 3.8
 Tested up to: 3.9.1
 License: GPLv2 or later
@@ -14,14 +14,14 @@ SmartPost builds beautiful form templates that makes it quick and easy to genera
 
 = What is SmartPost? =
 
-It is a powerful template builder and intuitive authoring tool that is user centered. No programming or coding knowledge required.
+It is a template builder and authoring tool that is user centered. No programming or coding knowledge required.
 
 = Why use SmartPost? =
 
 *   Create new posts on the front-end, get instant feedback to the look and feel of your post.
-*   Use post components to define post templates and to build your posts one component at a time.
-*   SmartPost can automatically convert .avi and .mov video files to work on the web using ffmpeg.
-*   SmartPost Templates comes with a powerful API that makes it easy for developers to customize the plugin even more.
+*   Break up your posts into different sections - i.e. a picture gallery, a video, and richtext sections.
+*   SmartPost can use ffmpeg to rotate and compress uploaded video files for a better video-streaming experience.
+*   Extend the capabilities of SmartPost by developing your own post section.
 
 = How does SmartPost Work? =
 
@@ -112,6 +112,13 @@ to delete the following:
 3. How a post looks after submitting it via a SmartPost template.
 
 == Changelog ==
+= 2.3.5 =
+* Better/more hardened SQL statements using wpdb->prepare()
+* Fixed an issue with EXIF function reading PNGs
+* More renaming of functions to wp-style conventions
+* Fixes an error that's thrown when the plugin is installed
+* Fixes other minor problems such as foreach() array checks
+
 = 2.3.4 =
 * Fixes a compatibility issue with the Relevanssi plugin
 * Fixes an issue with video rotation

@@ -93,6 +93,10 @@ if (!class_exists("sp_adminAJAX")) {
             $catID   = (int) $_POST['catID'];
             $sp_categories = get_option('sp_categories');
 
+            if( !is_array($sp_categories) || empty( $sp_categories ) ){
+                $sp_categories = array();
+            }
+
             if( !in_array($catID, $sp_categories) ){
                 array_push($sp_categories, $catID);
                 update_option('sp_categories', $sp_categories);

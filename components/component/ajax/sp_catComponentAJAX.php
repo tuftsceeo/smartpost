@@ -229,7 +229,7 @@ if (!class_exists("sp_catComponentAJAX")) {
 
             //If name not given, go with default component type
             if(empty($name)){
-                $name = sp_core::getTypeName($typeID);
+                $name = sp_core::get_type_name($typeID);
             }
 
             //Upload Component Icon
@@ -287,7 +287,7 @@ if (!class_exists("sp_catComponentAJAX")) {
                 $compID = (int) $_POST['compID'];
                 $typeID = (int) $_POST['typeID'];
                 $catID  = (int) $_POST['catID'];
-                $type   = 'sp_cat' . sp_core::getTypeName($typeID);
+                $type   = 'sp_cat' . sp_core::get_type_name($typeID);
                 $component = new $type($compID);
                 $component->componentOptions();
             }
@@ -305,7 +305,7 @@ if (!class_exists("sp_catComponentAJAX")) {
             }else{
                 $compID = (int) $_POST['compID'];
                 $typeID = (int) $_POST['typeID'];
-                $type   = 'sp_cat' . sp_core::getTypeName($typeID);
+                $type   = 'sp_cat' . sp_core::get_type_name($typeID);
                 $component = new $type($compID);
                 sp_admin::loadCompForm($component->getCatID(), $component);
             }

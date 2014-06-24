@@ -57,10 +57,11 @@ if (!class_exists("sp_category")) {
 
                     // load category/template components
                     $sp_catComponentsTable = $wpdb->prefix . "sp_catComponents";
-                    $componentResults = $wpdb->get_results( "SELECT * FROM $sp_catComponentsTable where catID = $catID order by compOrder ASC;" );
+                    $component_sql = $wpdb->prepare( "SELECT * FROM $sp_catComponentsTable where catID = %d order by compOrder ASC;", $catID );
+                    $componentResults = $wpdb->get_results( $component_sql );
                     if( !empty($componentResults) ){
                         foreach($componentResults as $componentRow){
-                            $type = 'sp_cat' . sp_core::getTypeName( $componentRow->typeID );
+                            $type = 'sp_cat' . sp_core::get_type_name( $componentRow->typeID );
                             if( class_exists( $type ) ){
                                 $component = new $type($componentRow->id);
                                 array_push($this->catComponents, $component);
@@ -264,7 +265,7 @@ if (!class_exists("sp_category")) {
          */
         function addCatComponent($name, $description, $typeID, $isDefault, $isRequired){
             $compOrder = self::getNextOrder();
-            $type = 'sp_cat' . sp_core::getTypeName($typeID);
+            $type = 'sp_cat' . sp_core::get_type_name($typeID);
 
             if(!class_exists($type)){
                 return new WP_Error('broke', ('Could not find ' . $type . ' class!'));
@@ -347,7 +348,7 @@ if (!class_exists("sp_category")) {
         private function getNextOrder(){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
-            $sql = "SELECT MAX(compOrder) FROM $tableName where catID = " . $this->ID;
+            $sql = $wpdb->prepare( "SELECT MAX(compOrder) FROM $tableName where catID = %d;", $this->ID ) ;
             $nextOrder = (int) $wpdb->get_var( $sql ) + 1;
             return $nextOrder;
         }
@@ -355,7 +356,7 @@ if (!class_exists("sp_category")) {
         private function getCompCount(){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
-            $sql = "SELECT COUNT(*) FROM $tableName where catID = $this->ID";
+            $sql = $wpdb->prepare( "SELECT COUNT(*) FROM $tableName where catID = %d", $this->ID );
             return $wpdb->get_var( $sql );
         }
 
@@ -367,7 +368,7 @@ if (!class_exists("sp_category")) {
          */
         public function setCompOrder($compOrder){
             $numOfComps = (int) self::getCompCount();
-            if(count($compOrder) !== $numOfComps){
+            if( count($compOrder) !== $numOfComps ){
                 return new WP_Error('broke', ('Number of components do not match.'));
             }else{
                 $newOrder = array_values($compOrder);

@@ -4,7 +4,7 @@
  * -Upload files
  * -Access table data
  */
-if (!class_exists("sp_core")) {
+if ( !class_exists("sp_core") ) {
 
     class sp_core{
         /**
@@ -19,13 +19,13 @@ if (!class_exists("sp_core")) {
         /**
          * returns a formatted array of array('typeName' => 'typeID')
          */
-        static function getTypesAndIDs(){
+        static function get_types_and_ids(){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_compTypes';
             $types = $wpdb->get_results("SELECT * FROM $tableName;");
 
             $typesAndIDs = array();
-            foreach($types as $type){
+            foreach( $types as $type ){
                 $typesAndIDs[$type->name] = $type->id;
             }
             return $typesAndIDs;
@@ -42,11 +42,11 @@ if (!class_exists("sp_core")) {
          * @param int $typeID The typeID of the component
          * @return string The component type name, otherwise an empty string
          */
-        static function getTypeName($typeID){
-            if(!empty($typeID)){
+        static function get_type_name($typeID){
+            if( !empty($typeID) ){
                 global $wpdb;
                 $tableName = $wpdb->prefix . 'sp_compTypes';
-                return $wpdb->get_var( "SELECT name FROM $tableName where id = $typeID;" );
+                return $wpdb->get_var( $wpdb->prepare( "SELECT name FROM $tableName where id = %d;", $typeID ) );
             }else{
                 return "";
             }
@@ -61,7 +61,7 @@ if (!class_exists("sp_core")) {
             if( !empty( $typeID ) ){
                 global $wpdb;
                 $tableName = $wpdb->prefix . 'sp_compTypes';
-                $results = $wpdb->get_results( "SELECT * FROM $tableName where id = $typeID;" );
+                $results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $tableName where id = %d;", $typeID ) );
                 return $results[0];
             }else{
                 return new WP_Error('broke', ('ID not given.'));
@@ -77,7 +77,7 @@ if (!class_exists("sp_core")) {
             if(!empty($name)){
                 global $wpdb;
                 $tableName = $wpdb->prefix . 'sp_compTypes';
-                return $wpdb->get_var("SELECT id FROM $tableName where name = '$name';");
+                return $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $tableName where name = %s;", $name ) );
             }else{
                 return new WP_Error('broke', ('Name not supplied.'));
             }
@@ -92,7 +92,7 @@ if (!class_exists("sp_core")) {
             if( !empty( $cat_comp_id ) ){
                 global $wpdb;
                 $tableName = $wpdb->prefix . 'sp_postComponents';
-                $results = $wpdb->get_results( "SELECT * FROM $tableName where catCompID = $cat_comp_id;" );
+                $results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $tableName where catCompID = %d;", $cat_comp_id) );
                 return $results;
             }else{
                 return new WP_Error('broke', ('Category Component ID not given.'));
@@ -108,7 +108,7 @@ if (!class_exists("sp_core")) {
             if( !empty( $component_type_id ) ){
                 global $wpdb;
                 $tableName = $wpdb->prefix . 'sp_catComponents';
-                $results = $wpdb->get_results( "SELECT * FROM $tableName where typeID = $component_type_id;" );
+                $results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $tableName where typeID = %d;", $component_type_id) );
                 return $results;
             }else{
                 return new WP_Error('broke', ('Component type ID not given.'));
@@ -124,7 +124,7 @@ if (!class_exists("sp_core")) {
             if( !empty( $component_type_id ) ){
                 global $wpdb;
                 $tableName = $wpdb->prefix . 'sp_postComponents';
-                $results = $wpdb->get_results( "SELECT * FROM $tableName where typeID = $component_type_id;" );
+                $results = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $tableName where typeID = %d;", $component_type_id ) );
                 return $results;
             }else{
                 return new WP_Error('broke', ('Component type ID not given.'));
@@ -349,6 +349,11 @@ if (!class_exists("sp_core")) {
                 return new WP_Error( 'broke', ( 'wp_get_image_editor() is not callable.' ) );
             }
 
+            $img_info = pathinfo( $img_path );
+            if( $img_info['extension'] != 'jpg' || $img_info['extension'] != 'JPG' || $img_info['extension'] != 'jpeg' || $img_info['extension'] != 'JEPG' ){
+                return new WP_Error( 'broke', ( 'Could not find any EXIF data.' ) );
+            }
+
             // Get a handle on the image file
             $img = wp_get_image_editor( $img_path );
 
@@ -404,7 +409,7 @@ if (!class_exists("sp_core")) {
          * @return string  url of the icon image
          */
         static function getIcon($typeID){
-            $component_name = strtolower( self::getTypeName( $typeID ) );
+            $component_name = strtolower( self::get_type_name( $typeID ) );
             //look for the right extension
             $img_url = '';
             $icon_ext = array('.png', '.jpg', '.jpeg');

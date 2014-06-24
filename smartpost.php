@@ -2,8 +2,8 @@
 /*
 Plugin Name: SmartPost
 Plugin URI: http://sptemplates.org
-Description: SmartPost is a dynamic templating and authoring tool that brings a lot of the features of the WordPress dashboard to the front end. SmartPost allows you to create category specific post templates that are then used by users on the front end to generates posts and content. Templates are broken down by post components such as pictures galleries, videos, and content blocks.
-Version: 2.3.4
+Description: SmartPost is a templating and authoring tool that brings a lot of the features of the WordPress dashboard to the front end. SmartPost allows you to create category specific post templates that are then used by users on the front end to generates posts and content. Templates are broken down by post components such as pictures galleries, videos, and content blocks.
+Version: 2.3.5
 Author: RafiLabs
 Author URI: http://www.rafilabs.com/
 License: GPLv2 or later
@@ -14,8 +14,8 @@ require_once( ABSPATH . 'wp-includes/pluggable.php' );
 define("SP_PLUGIN_NAME", "SmartPost");
 define("SP_IMAGE_PATH", plugins_url('/images', __FILE__));
 define("SP_PLUGIN_PATH", plugins_url('/', __FILE__));
-define("SP_DEBUG", true); // Turns on useful errors that are dumped into the php error log for debugging
-define("SP_VERSION", "2.3.4");
+define("SP_DEBUG", false); // Turns on useful errors that are dumped into the php error log for debugging
+define("SP_VERSION", "2.3.5");
 
 if ( !class_exists("smartpost") ){
 
@@ -30,10 +30,15 @@ if ( !class_exists("smartpost") ){
          * Calls necessary initialization methods to initialize the plugin.
          */
         function __construct(){
-            require_once( dirname( __FILE__ ) . '/core/sp_core.php' );
+
+            // Install/update the plugin on activation
             require_once( dirname( __FILE__ ) . '/sp_install.php' );
             require_once( dirname( __FILE__ ) . '/sp_updates.php' );
+            require_once( dirname( __FILE__ ) . '/core/sp_core.php' );
 
+            register_activation_hook( __FILE__, array( 'sp_install','smartpost_install' ) );
+
+            // Initialize the plugin
             $this->sp_init();
 
             require_once( dirname( __FILE__ ) . '/components/component/sp_catComponent.php' );
@@ -170,39 +175,38 @@ if ( !class_exists("smartpost") ){
             wp_enqueue_script( 'jquery-dynatree' );
             wp_enqueue_script( 'tooltipster' );
 
-            $typesAndIDs = sp_core::getTypesAndIDs();
-            wp_localize_script( 'sp_globals', 'sp_globals', array(
-                'SP_TYPES'               => $typesAndIDs,
-                'SP_ADMIN_URL'           => admin_url( 'admin.php' ),
-                'SP_AJAX_URL'            => admin_url( 'admin-ajax.php' ),
-                'SP_NONCE'	             => wp_create_nonce( 'sp_nonce' ),
-                'SP_PLUGIN_PATH'         => SP_PLUGIN_PATH,
-                'SP_IMAGE_PATH'          => SP_IMAGE_PATH,
-                'MAX_UPLOAD_SIZE'        => WP_MEMORY_LIMIT,
-                'UPLOAD_SWF_URL'         => includes_url( 'js/plupload/plupload.flash.swf' ),
-                'UPLOAD_SILVERLIGHT_URL' => includes_url( 'js/plupload/plupload.silverlight.xap' )
-                )
-            );
+            // Check is required for first-time activation b/c sp_compTypes table hasn't been made yet!
+            if( get_option( 'sp_db_version' ) ){
+                $types_and_ids = sp_core::get_types_and_ids();
+                wp_localize_script( 'sp_globals', 'sp_globals', array(
+                    'SP_TYPES'               => $types_and_ids,
+                    'SP_ADMIN_URL'           => admin_url( 'admin.php' ),
+                    'SP_AJAX_URL'            => admin_url( 'admin-ajax.php' ),
+                    'SP_NONCE'	             => wp_create_nonce( 'sp_nonce' ),
+                    'SP_PLUGIN_PATH'         => SP_PLUGIN_PATH,
+                    'SP_IMAGE_PATH'          => SP_IMAGE_PATH,
+                    'MAX_UPLOAD_SIZE'        => WP_MEMORY_LIMIT,
+                    'UPLOAD_SWF_URL'         => includes_url( 'js/plupload/plupload.flash.swf' ),
+                    'UPLOAD_SILVERLIGHT_URL' => includes_url( 'js/plupload/plupload.silverlight.xap' )
+                    )
+                );
+            }
         }
-
     } // End class smartpost
 }
 
-if(class_exists('smartpost')){
+
+if( class_exists('smartpost') ){
     $new_smartpost = new smartpost();
 }
 
 /**
- * Register actions and hooks.
  * Register SmartPost widgets.
  */
-if(isset($new_smartpost)){
-
+if( isset($new_smartpost) ){
     //Register SmartPost Widgets
     add_action('widgets_init', create_function('', 'return register_widget("sp_postTreeWidget");'));
     add_action('widgets_init', create_function('', 'return register_widget("sp_postWidget");'));
     add_action('widgets_init', create_function('', 'return register_widget("sp_quickPostWidget");'));
     add_action('widgets_init', create_function('', 'return register_widget("sp_myPostsWidget");'));
-
-    register_activation_hook( __FILE__, array('sp_install','smartpost_install') );
 }

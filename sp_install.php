@@ -6,28 +6,28 @@ if (!class_exists("sp_install")) {
 	
 	class sp_install{
 		
-		function smartpost_install(){
-			global $sp_db_version;
+		static function smartpost_install(){
+
+            global $sp_db_version;
 			$db_version = get_option('sp_db_version');	
 
 			if($db_version != $sp_db_version){
 				self::create_sp_compTypes();
-				update_option('sp_db_version', $sp_db_version);				
+				update_option('sp_db_version', $sp_db_version);
 			}
 
-			add_action('admin_notices', array($this, 'findComponents'));
-			self::findComponents(dirname(__FILE__) . "/components/");
-			self::addDefaultSPCategory();
+			self::find_components( dirname(__FILE__) . "/components/" );
+			self::add_default_sp_category();
 		}
 
         /*
-         * On a new install, we add the 'SP QuickPost' category
+         * On a new install, we add the 'SmartPost' category
          * as a new default category that users can use immediately.
          */
-		static function addDefaultSPCategory(){
-			$category = get_term_by('name', 'SP QuickPost', 'category', OBJECT);
+		static function add_default_sp_category(){
+			$category = get_term_by('name', 'SmartPost', 'category', OBJECT);
 			if( empty($category) ){
-				$defaultSPCat = new sp_category('SP QuickPost', 'Default category for QuickPosts');
+				$defaultSPCat = new sp_category('SmartPost', 'A default SmartPost template.');
 				
 				$types = sp_core::get_component_types();
 				foreach($types as $type){
@@ -43,14 +43,14 @@ if (!class_exists("sp_install")) {
 		 *	Description: contains the 'base-package' types for SmartPost.
 		 *	Is extendable to future types.
 		 */		
-		function tableExists($tableName){
+		function tableExists( $table_name ){
 			global $wpdb;
-			$sql = "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = '$tableName'";
+			$sql = $wpdb->prepare( "SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = %s;", $table_name );
 			$row = $wpdb->get_row($sql);
 			return is_null($row);
 		}
 		
-		function create_sp_compTypes(){
+		private static function create_sp_compTypes(){
 			global $wpdb;
 			$table_name = $wpdb->prefix . "sp_compTypes";
 			$sql = "CREATE TABLE $table_name (
@@ -68,26 +68,26 @@ if (!class_exists("sp_install")) {
 		/* Dynamically install all Component classes
 		 * Precondition: call create_sp_compTypes
 		 */
-		function findComponents($dir){
-			if (is_dir($dir)) {	
-                if ($dh = opendir($dir)) {
-                    while (($file = readdir($dh)) !== false) {
-                        if(is_dir($dir . $file) && ($file != "." && $file != ".." && $file != ".git" && $file != ".idea")){
-                            self::installComponents($dir . $file);
+		private static function find_components($dir){
+			if ( is_dir( $dir ) ) {
+                if ( $dh = opendir( $dir ) ) {
+                    while ( ( $file = readdir($dh) ) !== false ) {
+                        if( is_dir( $dir . $file ) && ( $file != "." && $file != ".." && $file != ".git" && $file != ".idea" ) ){
+                            self::install_components( $dir . $file );
                         }
                     }
-                    closedir($dh);
+                    closedir( $dh );
                 }
 		    }
 		}
 		
-		function installComponents($folder){
-			foreach (glob($folder . "/sp_*.php") as $filename){
+		private static function install_components($folder){
+			foreach ( glob($folder . "/sp_*.php") as $filename ){
                 require_once( $filename );
-                $component = basename($filename, ".php");
+                $component = basename( $filename, ".php" );
 
                 // ignore sp_catComponent as it's an abstract class
-                if( method_exists($component, 'install') && $component != 'sp_catComponent' ){
+                if( method_exists( $component, 'install' ) && $component != 'sp_catComponent' ){
                     call_user_func( array($component, 'install') );
                 }
 			}
@@ -99,7 +99,7 @@ if (!class_exists("sp_install")) {
 		 * sp_catComponents.type == sp_compTypes.id
 		 * 
 		 */
-		function create_sp_catComponents(){
+		private static function create_sp_catComponents(){
 			global $wpdb;
 			$table_name = $wpdb->prefix . "sp_catComponents";
 			$sql = "CREATE TABLE $table_name (
@@ -125,7 +125,7 @@ if (!class_exists("sp_install")) {
 		 * sp_postComponents.compCatID == sp_catComponents.id
 		 * sp_postComponents.type     == sp_catComponents.type
 		 */
-		function create_sp_postComponents(){
+		private static function create_sp_postComponents(){
 			global $wpdb;
 			$table_name = $wpdb->prefix . "sp_postComponents";	
 			$sql = "CREATE TABLE $table_name (
@@ -145,4 +145,3 @@ if (!class_exists("sp_install")) {
 	
 	}
 }
-?>

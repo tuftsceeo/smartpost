@@ -53,7 +53,7 @@ if ( !class_exists("sp_admin") ) {
             wp_enqueue_script( 'postbox' );
             wp_enqueue_script( 'sp_admin_js' );
 
-            $typesAndIDs = sp_core::getTypesAndIDs();
+            $typesAndIDs = sp_core::get_types_and_ids();
             wp_localize_script( 'sp_admin_js', 'sp_admin', array(
                 'SP_TYPES' => $typesAndIDs,
             ));
@@ -190,11 +190,13 @@ if ( !class_exists("sp_admin") ) {
             $title = null;
             $icon  = null;
 
-            if( in_array($catID, $sp_categories) ){
-                $sp_category = new sp_category(null, null, $catID);
-                $title = $sp_category->getTitle();
-                $icon  = wp_get_attachment_image($sp_category->getIconID(), null, null, array('class' => 'category_icon'));
-                $cat_desc = $sp_category->getDescription();
+            if( is_array( $sp_categories ) && !empty( $sp_categories ) ){
+                if( in_array($catID, $sp_categories) ){
+                    $sp_category = new sp_category(null, null, $catID);
+                    $title = $sp_category->getTitle();
+                    $icon  = wp_get_attachment_image($sp_category->getIconID(), null, null, array('class' => 'category_icon'));
+                    $cat_desc = $sp_category->getDescription();
+                }
             }else{
                 $category = get_category($catID);
                 $title = $category->cat_name;
@@ -388,14 +390,16 @@ if ( !class_exists("sp_admin") ) {
                         </div><!-- end #postbox-container-1 -->
 
                         <?php
-                        if( in_array($catID, $sp_categories) ){
-                        ?>
-                        <div id="postbox-container-2" class="postbox-container">
-                            <?php self::render_component_meta_boxes($sp_category) ?>
-                        </div><!-- end #postbox-container-2 -->
-                        <?php
-                            //handle toggling for meta boxes
-                            wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false );
+                        if( is_array( $sp_categories ) && !empty( $sp_categories ) ){
+                            if( in_array($catID, $sp_categories) ){
+                            ?>
+                            <div id="postbox-container-2" class="postbox-container">
+                                <?php self::render_component_meta_boxes($sp_category) ?>
+                            </div><!-- end #postbox-container-2 -->
+                            <?php
+                                //handle toggling for meta boxes
+                                wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false );
+                            }
                         }
                         ?>
                     </div><!-- end #post-body -->

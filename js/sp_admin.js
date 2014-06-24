@@ -341,9 +341,9 @@
          */
         copyTemplate: function(srcCatID, destCatID, cl){
             $.ajax({
-                url		 : SP_AJAX_URL,
-                type     : 'POST',
-                data	 : {
+                url	 : SP_AJAX_URL,
+                type : 'POST',
+                data : {
                     action : 'copyTemplateAJAX',
                     nonce  : SP_NONCE,
                     srcCatID  : srcCatID,

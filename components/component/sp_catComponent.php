@@ -132,8 +132,7 @@ if (!class_exists("sp_catComponent")) {
                 $this-> errors = new WP_Error ('broke', __("Invalid Component ID"));
             }else{
                 $sp_catComponentsTable = $wpdb->prefix . "sp_catComponents";
-                $component = $wpdb->get_row("SELECT * FROM $sp_catComponentsTable " .
-                "WHERE id = $compID;");
+                $component = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $sp_catComponentsTable WHERE id = %d;", $compID ) );
                 if( !empty($component) ){
                     $this->ID          = $component->id;
                     $this->catID       = $component->catID;
@@ -276,7 +275,7 @@ if (!class_exists("sp_catComponent")) {
                 $compID = $this->ID;
             }
             $tableName = $wpdb->prefix . 'sp_postComponents';
-            $sql = "SELECT COUNT(*) FROM $tableName where postID = $postID AND catCompID = $compID";
+            $sql = $wpdb->prepare( "SELECT COUNT(*) FROM $tableName where postID = %d AND catCompID = %d;", $postID, $compID );
             return $wpdb->get_var( $sql );
         }
 
@@ -332,7 +331,7 @@ if (!class_exists("sp_catComponent")) {
         static function componentExists($name, $catID){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
-            $nameExists = $wpdb->get_var( "SELECT COUNT(*) FROM $tableName WHERE catID = $catID AND name = $name;" );
+            $nameExists = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $tableName WHERE catID = %d AND name = %s;", $catID, $name) );
             return ($nameExists > 0);
         }
 
@@ -344,9 +343,7 @@ if (!class_exists("sp_catComponent")) {
          */
         static function getIDFromName($name, $catID){
             global $wpdb;
-            return $wpdb->get_var($wpdb->prepare(
-                "SELECT id FROM 'sp_catComponents' WHERE name = '" . $name . "'".
-                " AND catID = " . $catID . ";" ));
+            return $wpdb->get_var( $wpdb->prepare( "SELECT id FROM 'sp_catComponents' WHERE name = %s AND catID = %d;", $name, $catID ) );
         }
 
         /**
@@ -358,7 +355,7 @@ if (!class_exists("sp_catComponent")) {
         static function getNameFromID($compID){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
-            $name 	   = (string) $wpdb->get_var( "SELECT name FROM $tableName where id = $compID;" );
+            $name 	   = (string) $wpdb->get_var( $wpdb->prepare( "SELECT name FROM $tableName where id = %d;", $compID ) );
             return $name;
         }
 
@@ -371,8 +368,8 @@ if (!class_exists("sp_catComponent")) {
         static function getCompTypeFromID($compID){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
-            $typeID    = $wpdb->get_var( "SELECT typeID FROM $tableName where id = $compID;" );
-            return sp_core::getTypeName($typeID);
+            $typeID    = $wpdb->get_var( $wpdb->prepare( "SELECT typeID FROM $tableName where id = %d;", $compID ) );
+            return sp_core::get_type_name( $typeID );
         }
 
         /**
@@ -384,7 +381,7 @@ if (!class_exists("sp_catComponent")) {
         static function getCompTypeIDFromID($compID){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
-            $typeID    = $wpdb->get_var( "SELECT typeID FROM $tableName where id = $compID;" );
+            $typeID    = $wpdb->get_var( $wpdb->prepare( "SELECT typeID FROM $tableName where id = %d;", $compID ) );
             return $typeID;
         }
 
@@ -398,7 +395,7 @@ if (!class_exists("sp_catComponent")) {
             if( !empty($compID) ){
                 global $wpdb;
                 $tableName  = $wpdb->prefix . 'sp_catComponents';
-                $isDefault = (int) $wpdb->get_var( "SELECT is_default FROM $tableName WHERE id = $compID;" );
+                $isDefault = (int) $wpdb->get_var( $wpdb->prepare( "SELECT is_default FROM $tableName WHERE id = %d;", $compID ) );
                 return (bool) $isDefault;
             }else{
                 return false;
@@ -415,7 +412,7 @@ if (!class_exists("sp_catComponent")) {
             if( !empty($compID) ){
                 global $wpdb;
                 $tableName  = $wpdb->prefix . 'sp_catComponents';
-                $isRequired = (int) $wpdb->get_var( "SELECT is_required FROM $tableName WHERE id = $compID;" );
+                $isRequired = (int) $wpdb->get_var( $wpdb->prepare( "SELECT is_required FROM $tableName WHERE id = %d;", $compID ) );
                 return (bool) $isRequired;
             }else{
                 return false;
@@ -431,7 +428,7 @@ if (!class_exists("sp_catComponent")) {
         static function getOptionsFromID($compID){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
-            $options   = $wpdb->get_var( "SELECT options FROM $tableName where id = $compID;" );
+            $options   = $wpdb->get_var( $wpdb->prepare( "SELECT options FROM $tableName where id = %d;", $compID ) );
             return maybe_unserialize($options);
         }
 
@@ -559,7 +556,7 @@ if (!class_exists("sp_catComponent")) {
         }
 
         function getCompType(){
-            return sp_core::getTypeName($this->typeID);
+            return sp_core::get_type_name($this->typeID);
         }
 
     }

@@ -128,6 +128,12 @@ if (!class_exists("sp_post")) {
              */
             if( $sp_site_version == "2.2" || $sp_site_version === false ){
                 $sp_cat_ids = get_option( 'sp_categories' );
+
+                // exist if no sp_cat_ids exist
+                if( !is_array( $sp_cat_ids ) || empty( $sp_cat_ids ) ){
+                    return;
+                }
+
                 foreach($sp_cat_ids as $cat_id){
                     $sp_posts = get_posts( array( 'category' => $cat_id, 'numberposts' => -1, 'post_status' => 'publish|draft|trash' ) );
                     if( !empty( $sp_posts ) ){
@@ -481,7 +487,7 @@ if (!class_exists("sp_post")) {
                 $tableName = $wpdb->prefix . 'sp_postComponents';
                 foreach($reqdComps as $reqdComp){
                     $catCompID = $reqdComp->getID();
-                    $requiredCount += $wpdb->get_var( "SELECT COUNT(*) FROM $tableName WHERE postID = $postID AND catCompID = $catCompID;" );
+                    $requiredCount += $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $tableName WHERE postID = %d AND catCompID = %d;", $postID, $catCompID ) );
                 }
                 return $requiredCount;
             }else{
@@ -505,7 +511,7 @@ if (!class_exists("sp_post")) {
             if( !empty($defaultComps)){
                 foreach($defaultComps as $defaultComp){
                     $catCompID = $defaultComp->getID();
-                    $defaultCount += $wpdb->get_var( "SELECT COUNT(*) FROM $tableName WHERE postID = $postID AND catCompID = $catCompID;" );
+                    $defaultCount += $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $tableName WHERE postID = %d AND catCompID = %d;", $postID, $catCompID ) );
                 }
                 return $defaultCount;
             }else{
@@ -518,7 +524,7 @@ if (!class_exists("sp_post")) {
             if(!empty($catCompID)){
                 $postID = $this->wpPost->ID;
                 $tableName = $wpdb->prefix . 'sp_postComponents';
-                $compCount = (int) $wpdb->get_var( "SELECT COUNT(*) FROM $tableName	WHERE postID = $postID AND catCompID = $catCompID;" );
+                $compCount = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $tableName	WHERE postID = %d AND catCompID = %d;", $postID, $catCompID ) );
                 return $compCount;
             }else{
                 return 0;
@@ -623,13 +629,13 @@ if (!class_exists("sp_post")) {
             global $wpdb;
             $postComponents = array();
             $tableName = $wpdb->prefix . 'sp_postComponents';
-            $componentResults = $wpdb->get_results( "SELECT * FROM $tableName WHERE postID = $postID order by compOrder ASC;" );
+            $componentResults = $wpdb->get_results( $wpdb->prepare( "SELECT * FROM $tableName WHERE postID = %d order by compOrder ASC;", $postID ) );
 
             if( !empty($componentResults) ){
                 $postComponents = array();
                 $i = 0;
                 foreach( $componentResults as $rawComponent ){
-                    $post_comp_type = 'sp_post' . sp_core::getTypeName($rawComponent->typeID);
+                    $post_comp_type = 'sp_post' . sp_core::get_type_name($rawComponent->typeID);
                     if( class_exists( $post_comp_type) ){
                         $sp_postComponent = new $post_comp_type($rawComponent->id);
                         $postComponents[$i++] = $sp_postComponent;
@@ -667,8 +673,8 @@ if (!class_exists("sp_post")) {
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_postComponents';
             $postID = $this->wpPost->ID;
-            $sql = "SELECT MAX(compOrder) FROM $tableName where postID = $postID";
-            $nextOrder = (int) $wpdb->get_var($sql) + 1;
+            $sql = $wpdb->prepare( "SELECT MAX(compOrder) FROM $tableName where postID = %d", $postID );
+            $nextOrder = (int) $wpdb->get_var( $sql ) + 1;
             return $nextOrder;
         }
 
@@ -679,8 +685,8 @@ if (!class_exists("sp_post")) {
          * @return bool|object Returns a WP_Error object on failure, otherwise true on success
          */
         function setCompOrder($compOrder){
-            global $wpdb;
             $numOfComps = (int) $this->getCompCount();
+
             if(count($compOrder) !== $numOfComps){
                 return new WP_Error('broke', ('Number of components do not match.'));
             }else{
@@ -709,7 +715,7 @@ if (!class_exists("sp_post")) {
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_postComponents';
             $postID = $this->wpPost->ID;
-            return $wpdb->get_var( "SELECT COUNT(*) FROM $tableName where postID = $postID" );
+            return $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $tableName where postID = %d;", $postID ) );
         }
 
         function getwpPost(){

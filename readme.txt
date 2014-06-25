@@ -113,6 +113,7 @@ to delete the following:
 
 == Changelog ==
 = 2.3.5 =
+* Added "button_txt" attribute to the sp-quickpost shortcode
 * Better/more hardened SQL statements using wpdb->prepare()
 * Fixed an issue with EXIF function reading PNGs
 * More renaming of functions to wp-style conventions

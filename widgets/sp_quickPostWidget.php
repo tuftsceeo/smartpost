@@ -37,13 +37,18 @@ class sp_quickPostWidget extends WP_Widget {
      */
     static function sp_qp_shortcode( $atts ){
         $template_ids = array();
+        $button_txt= "";
         extract( shortcode_atts( array(
             'template_ids' => array(),
+            'button_txt' => '',
         ), $atts ) );
 
         $template_ids = explode(',', $template_ids);
 
-        if( !empty( $template_ids ) ){
+        // If nothing is left, don't render anything!
+        if( empty( $template_ids ) ){
+            return '';
+        }else{
             global $sp_qp_shortcode_id;
 
             // Clean up any bad template ids
@@ -57,11 +62,6 @@ class sp_quickPostWidget extends WP_Widget {
                 }
             }
 
-            // If nothing is left, don't render anything!
-            if( empty( $template_ids ) ){
-                return '';
-            }
-
             // Gives each shortcode a unique id.
             if( empty( $sp_qp_shortcode_id ) ){
                 $sp_qp_shortcode_id = 1;
@@ -69,21 +69,19 @@ class sp_quickPostWidget extends WP_Widget {
                 $sp_qp_shortcode_id++;
             }
 
-
             ob_start(); // Capture the echo output of the widget() method
 
             $sp_qp_widget = new self(); // Create a new quickpost instance
             $instance = array( 'categoryMode' => false, 'displayCats' => $template_ids );
-            $sp_qp_widget->widget( array(), $instance, $sp_qp_shortcode_id );
+            $sp_qp_widget->widget( array(), $instance, $sp_qp_shortcode_id, $button_txt );
 
             $output = ob_get_clean(); // Store the output in a variable
             return $output;
         }
-        return '';
     }
 
     /** @see WP_Widget::widget */
-    function widget($args, $instance, $shortcode_id = 0) {
+    function widget($args, $instance, $shortcode_id = 0, $shortcode_button_txt = "") {
         extract( $args );
         $category_mode = $instance['categoryMode'];
         $current_category = get_category( get_query_var('cat'), false);
@@ -141,14 +139,17 @@ class sp_quickPostWidget extends WP_Widget {
                 $sp_cat  = new sp_category(null, null, $catID);
 
                 $post_button_open  = '<button type="button" id="sp-qp-new-post-' . $widget_id . '" class="sp-qp-new-post" data-widgetid="' . $widget_id . '" data-catid="' . $catID . '">';
-                $post_button_txt   = 'Submit a ' . $sp_cat->getTitle();
+                $post_button_txt   = 'Submit a ' . $sp_cat->getTitle() . ' post';
                 $post_button_close = '</button>';
             }
 
             // Add an errors div in case we get any errors.
             $html .= '<div id="component_errors" style="display: none;"><span id="clearErrors" class="sp_xButton"></span></div>';
 
-            $html .= $render_button ? $post_button_open . $post_button_txt . ' post' . $post_button_close : '<h4 id="sp-add-post-' . $widget_id .'" class="sp-add-post"> Add a new ' . $select_box . ' post</h4>';
+            // Override button text if it's set via shortcode
+            $post_button_txt = !empty( $shortcode_button_txt ) ? $shortcode_button_txt : $post_button_txt;
+
+            $html .= $render_button ? $post_button_open . $post_button_txt . $post_button_close : '<h4 id="sp-add-post-' . $widget_id .'" class="sp-add-post"> Add a new ' . $select_box . ' post</h4>';
             $html .= '<div id="sp-quickpost-form-' . $widget_id . '" class="sp-quickpost-form">';
                 $html .= '<p> Title <span style="color: red;">*</span></p>';
                 $html .= '<input type="text" id="new-sp-post-title-' . $widget_id . '" class="new-sp-post-title" placeholder="Type in a post title here ..." />';

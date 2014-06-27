@@ -12,7 +12,46 @@ if (!class_exists("sp_postSamAJAX")) {
 			add_action('wp_ajax_saveSamAJAX', array('sp_postSamAJAX', 'saveSamAJAX'));
 			add_action('wp_ajax_saveSamDescAJAX', array('sp_postSamAJAX', 'saveSamDescAJAX'));
             add_action('wp_ajax_downloadSamMov', array('sp_postSamAJAX', 'downloadSamMov'));
+            add_action('wp_ajax_redoSamMovieAJAX', array('sp_postSamAJAX', 'redoSamMovieAJAX'));
 		}
+
+        /**
+         * Clears all saved images on redo click
+         */
+        static function redoSamMovieAJAX(){
+            $nonce = $_POST['nonce'];
+            if( !wp_verify_nonce($nonce, 'sp_nonce') ){
+                header("HTTP/1.0 403 Security Check.");
+                die('Security Check');
+            }
+
+            if( !class_exists( 'sp_postSam' ) ){
+                header("HTTP/1.0 409 Could not instantiate sp_postMedia class.");
+                exit;
+            }
+
+            if( empty( $_POST['compid'] ) ){
+                header("HTTP/1.0 409 Could find component ID to udpate.");
+                exit;
+            }
+
+            // Get a handle on the sam component
+            $compID = (int) $_POST['compid'];
+            $samComponent = new sp_postSam($compID);
+
+            $imgs = $samComponent->imgs;
+            if( is_array( $imgs ) && !empty( $imgs ) ){
+                foreach( $imgs as $img ){
+                    if( file_exists( $img) ){
+                        unlink( $img );
+                    }
+                }
+                $samComponent->imgs = array();
+                $samComponent->update();
+            }
+            echo json_encode( array( 'success' => true ) );
+            exit;
+        }
 
         /**
          * AJAX function that saves the video caption/description.
@@ -118,11 +157,13 @@ if (!class_exists("sp_postSamAJAX")) {
                         }
                         $samComponent->imgs = array();
                         $samComponent->movie = $sam_mov_name . '.mp4';
-                        //$sam_id = sp_core::create_attachment( $samComponent->movie, $samComponent->getPostID(), 'SAM Movie' );
-                        //$samComponent->movie_id = $sam_id;
+
+                        $sam_mov_id = sp_core::create_attachment( $samComponent->movie, $samComponent->getPostID(), 'SAM Movie' );
+                        $samComponent->movie_id = $sam_mov_id;
+
                         $samComponent->update();
 
-                        echo json_encode( array( 'file_path' =>  $sam_mov_name . '.mp4', 'dl_url' => $dl_url )  );
+                        echo json_encode( array( 'file_path' =>  $sam_mov_name . '.mp4', 'dl_url' => $dl_url ) );
                     }else{
                         header("HTTP/1.0 409 Could not create movie. Please try again or contact your site administrator if the problem persists.");
                         exit;

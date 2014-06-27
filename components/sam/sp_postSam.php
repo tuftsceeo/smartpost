@@ -23,6 +23,7 @@ if (!class_exists("sp_postSam")) {
                 $this->fps = $this->value->fps;
                 $this->imgs = $this->value->imgs;
                 $this->movie = $this->value->movie;
+                $this->movie_id = $this->value->movie_id;
             }
         }
 
@@ -40,6 +41,10 @@ if (!class_exists("sp_postSam")) {
                 'Create a description for your stop action movie...',
                 array('data-action' => 'saveSamDescAJAX', 'data-compid' => $this->ID, 'data-postid' => $this->postID )
             );
+
+            if( file_exists( $this->movie ) ){
+                $html .= '<p style="text-align: center;"><b>Note:</b> You have a previously saved SAM movie, <a href="' . get_permalink( $this->postID ) . '">click here</a> to view it!</p>';
+            }
 
             $html .= '<table id="samContainer-'. $this->ID .'" class="samContainer" cellpadding="0" style="float:left">';
                 $html .= '<tr id="samVideoContainer-'. $this->ID .'" class="samVideoContainer">';
@@ -62,14 +67,13 @@ if (!class_exists("sp_postSam")) {
                     $html .= '<td>';
                         $html .= '<p id="samFramesIndicator-'. $this->ID .'" class="samFramesIndicator" style="text-align: center;"> 0/60 </p>';
                         $html .= '<button id="samToggleOverlay-'. $this->ID .'" class="samToggleOverlay"/>';
-                        $html .= '<button id="samRedoButton-'. $this->ID .'" class="samRedoButton">Redo</button>';
+                        $html .= '<button id="samRedoButton-'. $this->ID .'" class="samRedoButton" data-compid="' . $this->ID . '">Redo</button>';
                         $html .= '<p id="download-sam-movie-' . $this->ID . '" class="download-sam-movie">';
-                            $html .= '<button id="download-sam-movie-button-' . $this->ID . '" class="download-sam-movie-button" data-compid="' . $this->ID .'">Download SAM Movie</button>';
+                            $html .= '<button id="download-sam-movie-button-' . $this->ID . '" class="download-sam-movie-button" data-compid="' . $this->ID .'">Save SAM Movie</button>';
                         $html .= '</p>';
                     $html .= '</td>';
                 $html .= '</tr>';
             $html .='</table>';
-
             $html .= '</div>';
             return $html;
         }
@@ -78,18 +82,17 @@ if (!class_exists("sp_postSam")) {
          * @see parent::renderViewMode()
          */
         function renderViewMode(){
-            //  is video empty??
-            //    return "";
-            //  else
-            //    return video;
             $html = '<div id="sp_sam-'. $this->ID .'" style="margin: 20px">';
                 $html .= '<p>' . $this->description . '</p>';
-                $html .= '<p> Number of frames this should show: ' . count($this->imgs) . '</p>';
-                $html .= '<div id="samPlaybackContainer-'. $this->ID .'" class="samPlaybackContainer">';
-                    $html .= '<canvas id="samPlaybackCanvas-'. $this->ID .'" width="440" height="330" class="samPlaybackCanvas"';
-                    $html .= 'style="border:1px solid black"> </canvas>';
-                    $html .= '<button id="samPlayButton-'. $this->ID .'" class="samPlayButton"/>';
-                $html.= '</div>';
+
+                if( file_exists( $this->movie ) ){
+                    $html .= '<div id="samPlayerContainer-' . $this->ID . '" style="width: 440px; max-width: 100%; margin-right: auto; margin-left: auto;">';
+                        $html .= '<video class="wp-video-shortcode sp-video-player" width="440" height="330" preload="metadata" controls>';
+                            $html .= '<source type="video/mp4" src="' . wp_get_attachment_url( $this->movie_id )  . '">';
+                        $html .= '</video>';
+                    $html .= '</div>';
+                }
+
             $html .= '</div>';
             
             return $html;
@@ -150,6 +153,7 @@ if (!class_exists("sp_postSam")) {
             $samData->fps = $this->fps;
             $samData->imgs = $this->imgs;
             $samData->movie = $this->movie;
+            $samData->movie_id = $this->movie_id;
             $samData = maybe_serialize( $samData );
             return sp_core::updateVar('sp_postComponents', $this->ID, 'value', $samData, '%s');
         }
@@ -159,7 +163,7 @@ if (!class_exists("sp_postSam")) {
 
             // Clean up movie
             if( file_exists($this->movie) ){
-                unlink($this->movie);
+                wp_delete_attachment( $this->movie_id );
             }
 
             // Clean up images
@@ -179,7 +183,7 @@ if (!class_exists("sp_postSam")) {
          * @see parent::isEmpty();
          */
         function isEmpty(){
-            return empty($this->imgs);
+            return empty($this->movie);
         }
     }
 }

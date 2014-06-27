@@ -133,7 +133,7 @@
                         setTimeout( function() { checkspacing(i); }, 200);
                 }
             })(0);
-                
+
             // make sure visibility is correct, show live stream
             var initVideoStream = function() {
                 canvas.style.display = "block";
@@ -146,23 +146,36 @@
                 var start = new Date().getTime();
                 
                 // Every interval, copy the video image to the canvas
+
+                if (video.videoWidth > 0) height = video.videoHeight / (video.videoWidth / width);
+                canvas.setAttribute('width', width);
+                canvas.setAttribute('height', height);
+                // Reverse the canvas image
+                context.translate(width, 0);
+                context.scale(-1, 1);
+
                setInterval(function() {
-                  if (video.paused || video.ended || playing) return;
-                  context.fillRect(0, 0, width, height);
-                  context.drawImage(video, 0, 0, width, height);
-               }, interval-((new Date().getTime()-start)%interval));
+
+                if (video.paused || video.ended || playing){
+                    return;
+                }
+                  context.fillRect( 0, 0, width, height );
+                  context.drawImage( video, 0, 0, width, height );
+
+               }, interval-((new Date().getTime()-start)%interval) );
             };
             
             // get video object -- only one per page
             // each individual sam object pulls from video to its own canvas
             var video = $.find( '#samVideo' )[0];
+
             if (video === undefined) {
                 // create element in parent if it doesn't exist
                 self.parents( '.sp-quickpost-form' ).append('<video id="samVideo" width="440" height="330" autoplay style="display:none"></video>');
                 video = $.find( '#samVideo' )[0];
                 
                 // get access to web cam, store reference to stream so we can stop it later
-                if(navigator.getUserMedia) { // Standard
+                if( navigator.getUserMedia ) { // Standard
                     console.log('standard');
                     navigator.getUserMedia(videoObj, function(stream) {
                         initVideoStream();
@@ -170,8 +183,7 @@
                         video.src = stream;
                         video.play();
                     }, errBack);
-                } 
-                else if(navigator.webkitGetUserMedia) { // WebKit-prefixed
+                } else if ( navigator.webkitGetUserMedia ) { // WebKit-prefixed
                     console.log('webkit');
                     navigator.webkitGetUserMedia(videoObj, function(stream){
                         initVideoStream();
@@ -179,8 +191,7 @@
                         video.src = window.webkitURL.createObjectURL(stream);
                         video.play();
                     }, errBack);
-                }
-                else if(navigator.mozGetUserMedia) { // Firefox-prefixed
+                } else if ( navigator.mozGetUserMedia ) { // Firefox-prefixed
                     console.log('firefox');
                     navigator.mozGetUserMedia(videoObj, function(stream){
                         initVideoStream();
@@ -189,8 +200,7 @@
                         video.play();
                     }, errBack);
                 }
-            }
-            else if ( video.readyState ) {
+            } else if ( video.readyState ) {
                 // if video already existed, start showing it
                 initVideoStream();
             }
@@ -328,9 +338,8 @@
                     playing = false;
                 }
             });
-            
-            //clear all frames taken so far
-            function redoMovie(){
+
+            function resetFrames(){
                 playing = false;
                 frames = [];
                 submittedFrames = 0;
@@ -338,8 +347,27 @@
                 overlay.getContext("2d").clearRect( 0, 0, width, height );
             }
 
-            redoButton.on("click", function() {
-                redoMovie();
+            //clear all frames and images taken so far
+            redoButton.click(function(){
+                resetFrames();
+                var compID = $(this).data('compid');
+                $.ajax({
+                    url  : SP_AJAX_URL,
+                    type : 'POST',
+                    data : {
+                        action: 'redoSamMovieAJAX',
+                        nonce: SP_NONCE,
+                        compid: compID
+                    },
+                    dataType : 'json',
+                    success: function(data) {
+                        console.log( data );
+                    },
+                    error : function(jqXHR, statusText, errorThrown){
+                        if(smartpost.sp_postComponent)
+                            smartpost.sp_postComponent.showError( errorThrown );
+                    }
+                });
             });
             
             // we want to turn off webcam stream if this is the last one
@@ -365,10 +393,15 @@
 
             var downloadButton = $(component).find('.download-sam-movie-button');
             var editor = $(component).find( '.sp-editor-content' );
-            this.downloadSamMov( downloadButton, redoMovie );
+            this.downloadSamMov( downloadButton, resetFrames );
             smartpost.sp_post.initCkEditors( editor );
         },
 
+        /**
+         * Forces download of SAM movie
+         * @param downloadButton
+         * @param cl
+         */
         downloadSamMov: function(downloadButton, cl){
             downloadButton.click(function(){
                 var compID = $(this).data('compid');
@@ -382,15 +415,11 @@
                     },
                     dataType : 'json',
                     success: function(data) {
-                        console.log(data);
-
-                        window.location = data.dl_url + '?sam_mov=' + data.file_path;
-
-                        console.log( data.dl_url );
-                        console.log( data.file_path );
-                        console.log(  data.dl_url + '?sam_mov=' + data.file_path );
-
+                        if( data.dl_url && data.file_path){
+                            window.location = data.dl_url + '?sam_mov=' + data.file_path;
+                        }
                         cl();
+
                     },
                     error    : function(jqXHR, statusText, errorThrown){
                         if(smartpost.sp_postComponent)

@@ -280,9 +280,7 @@ if (!class_exists("sp_core")) {
 
             // replace the shortcode with replacement
             $pattern = get_shortcode_regex();
-            $content = preg_replace_callback( "/$pattern/s", function($m) use($replacement) {
-                // error_log( "made it " );
-                // error_log( print_r($m, true) );
+            $content = preg_replace_callback( "/$pattern/s", function($m) use ($replacement) {
                 return $replacement;
             }, $content );
 

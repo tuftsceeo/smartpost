@@ -149,12 +149,23 @@ if (!class_exists("sp_postSamAJAX")) {
 
                     if( file_exists( $sam_mov_name . '.mp4' ) ){
 
+                        // Make the first image the featured image if one isn't set already
+                        if( !has_post_thumbnail( $samComponent->getPostID() ) ){
+                            if( file_exists( $samComponent->imgs[0] ) ){
+                                $pic_id = sp_core::create_attachment( $samComponent->imgs[0], $samComponent->getPostID() );
+                                set_post_thumbnail( $samComponent->getPostID(), $pic_id );
+                                $samComponent->thumb_id = $pic_id;
+                                unset( $samComponent->imgs[0] );
+                            }
+                        }
+
                         // Get rid of all the images once the video is made
                         foreach( $samComponent->imgs as $img ){
                             if( file_exists( $img ) ){
                                 unlink($img);
                             }
                         }
+
                         $samComponent->imgs = array();
                         $samComponent->movie = $sam_mov_name . '.mp4';
 

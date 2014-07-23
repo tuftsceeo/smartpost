@@ -24,6 +24,7 @@ if (!class_exists("sp_postSam")) {
                 $this->imgs = $this->value->imgs;
                 $this->movie = $this->value->movie;
                 $this->movie_id = $this->value->movie_id;
+                $this->thumb_id = $this->value->thumb_id;
             }
         }
 
@@ -154,6 +155,7 @@ if (!class_exists("sp_postSam")) {
             $samData->imgs = $this->imgs;
             $samData->movie = $this->movie;
             $samData->movie_id = $this->movie_id;
+            $samData->thumb_id = $this->thumb_id;
             $samData = maybe_serialize( $samData );
             return sp_core::updateVar('sp_postComponents', $this->ID, 'value', $samData, '%s');
         }
@@ -164,6 +166,10 @@ if (!class_exists("sp_postSam")) {
             // Clean up movie
             if( file_exists($this->movie) ){
                 wp_delete_attachment( $this->movie_id );
+            }
+
+            if( isset( $this->thumb_id ) ){
+                wp_delete_attachment( $this->thumb_id );
             }
 
             // Clean up images

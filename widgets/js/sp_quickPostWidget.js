@@ -7,9 +7,11 @@
 
         /**
          * Creates a draft post whenever "Add a new post" is clicked
+         * @param catID - the category ID
+         * @param widgetID - the widget ID
+         * @param slideDown - whether to slide the form down or to just show it
          */
-        loadSmartPostTemplate: function(catID, widgetID){
-            var self = this;
+        loadSmartPostTemplate: function(catID, widgetID, slideDown){
             var sp_qp_stack = $( '#sp-qp-comp-stack-' + widgetID );
 
             $.ajax({
@@ -51,7 +53,15 @@
                     // Make them sortable
                     smartpost.sp_postComponent.makeSortable(componentStack, postID);
 
-                    $('#sp-quickpost-form-' + widgetID).slideDown();
+                    if( slideDown == undefined ){
+                       slideDown = true;
+                    }
+
+                    if( slideDown ){
+                        $('#sp-quickpost-form-' + widgetID).slideDown();
+                    }else{
+                        $('#sp-quickpost-form-' + widgetID).show();
+                    }
                 },
                 error: function(jqXHR, statusText, errorThrown){
                     if(smartpost.sp_postComponent){
@@ -64,7 +74,7 @@
         /**
          * Publishes the quickpost
          */
-        publishSPPost: function( widgetID ){
+        publishSPPost: function( widgetID, redirect_url, submit_msg ){
             var postID = $( '#sp-qp-post-id-' + widgetID ).val();
             var title = $( '#new-sp-post-title-' + widgetID ).val();
 
@@ -85,7 +95,19 @@
                         },
                         dataType: 'json',
                         success: function(response, statusText, jqXHR){
-                            if( response.permalink ){
+                            console.log( submit_msg );
+                            if( submit_msg ){
+                                $('#sp-quickpost-form-' + widgetID).slideUp(600, function(){
+                                    $(this).replaceWith( submit_msg );
+                                });
+                            }
+
+                            if( redirect_url ){
+                                if( redirect_url == '#' ){
+                                    return;
+                                }
+                                window.location.replace( redirect_url );
+                            }else if( response.permalink ){
                                 window.location.replace( response.permalink );
                             }else{
                                 window.location.reload( true );
@@ -138,11 +160,25 @@
             var self = this;
 
             // Submit button click handler
-            $('.sp-qp-new-post').click(function(){
-                var catID = $(this).data('catid');
-                var widgetID = $(this).data('widgetid');
-                self.loadSmartPostTemplate( catID, widgetID );
-                $(this).hide();
+            $('.sp-qp-new-post').each(function(){
+                var thisButton = this;
+                var showForm = Boolean( $(this).data( 'showform' ) );
+
+                var initForm = function(){
+                    var catID = $(thisButton).data('catid');
+                    var widgetID = $(thisButton).data('widgetid');
+                    self.loadSmartPostTemplate( catID, widgetID, showForm );
+                    $(thisButton).hide();
+                };
+
+                // If showform shortcode is enabled, show the form by default
+                if( showForm ){
+                    initForm();
+                }else{
+                    $(this).click(function(){
+                        initForm();
+                    });
+                }
             });
 
             // Drop drown change handler
@@ -156,7 +192,9 @@
             // Publish post click handler
             $( '.sp-qp-publish-post' ).click(function(){
                 var widgetID = $(this).data('widgetid');
-                self.publishSPPost( widgetID );
+                var redirect_url = $(this).data('redirecturl');
+                var submit_msg = $(this).data('submitmsg');
+                self.publishSPPost( widgetID, redirect_url, submit_msg );
             });
 
             // Cancel post click handler

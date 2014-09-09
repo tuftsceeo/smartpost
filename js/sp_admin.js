@@ -213,8 +213,7 @@
                 {
                     placeholder: 'Click to add a component title',
                     onblur     : 'submit',
-                    cssclass   : 'editableCatCompTitle',
-                    maxlength  : 35
+                    cssclass   : 'editableCatCompTitle'
                 }
             )
         },

@@ -37,10 +37,20 @@ class sp_quickPostWidget extends WP_Widget {
      */
     static function sp_qp_shortcode( $atts ){
         $template_ids = array();
-        $button_txt= "";
+        $button_txt = "";
+        $redirect_url = "";
+        $submit_msg = "";
+        $hide_buttons = false;
+        $title_placeholder = "";
+        $show_form = false;
         extract( shortcode_atts( array(
             'template_ids' => array(),
             'button_txt' => '',
+            'redirect_url' => '',
+            'submit_msg' => '',
+            'hide_buttons' => false,
+            'title_placeholder' => '',
+            'show_form' => false
         ), $atts ) );
 
         $template_ids = explode(',', $template_ids);
@@ -72,8 +82,17 @@ class sp_quickPostWidget extends WP_Widget {
             ob_start(); // Capture the echo output of the widget() method
 
             $sp_qp_widget = new self(); // Create a new quickpost instance
-            $instance = array( 'categoryMode' => false, 'displayCats' => $template_ids );
-            $sp_qp_widget->widget( array(), $instance, $sp_qp_shortcode_id, $button_txt );
+            $instance = array(
+                'categoryMode' => false,
+                'displayCats' => $template_ids,
+                'button_txt' => $button_txt,
+                'redirect_url' => $redirect_url,
+                'submit_msg' => $submit_msg,
+                'hide_buttons' => (bool) $hide_buttons,
+                'title_placeholder' => $title_placeholder,
+                'show_form' => (bool) $show_form
+            );
+            $sp_qp_widget->widget( array(), $instance, $sp_qp_shortcode_id );
 
             $output = ob_get_clean(); // Store the output in a variable
             return $output;
@@ -81,8 +100,9 @@ class sp_quickPostWidget extends WP_Widget {
     }
 
     /** @see WP_Widget::widget */
-    function widget($args, $instance, $shortcode_id = 0, $shortcode_button_txt = "") {
+    function widget($args, $instance, $shortcode_id = 0) {
         extract( $args );
+
         $category_mode = $instance['categoryMode'];
         $current_category = get_category( get_query_var('cat'), false);
 
@@ -138,7 +158,8 @@ class sp_quickPostWidget extends WP_Widget {
                 $catID = $catID[0];
                 $sp_cat  = new sp_category(null, null, $catID);
 
-                $post_button_open  = '<button type="button" id="sp-qp-new-post-' . $widget_id . '" class="sp-qp-new-post" data-widgetid="' . $widget_id . '" data-catid="' . $catID . '">';
+                $show_form = $instance['show_form'] ? 'data-showform="true"' : '';
+                $post_button_open  = '<button type="button" id="sp-qp-new-post-' . $widget_id . '" class="sp-qp-new-post" data-widgetid="' . $widget_id . '" data-catid="' . $catID . '" ' . $show_form . '>';
                 $post_button_txt   = 'Submit a ' . $sp_cat->getTitle() . ' post';
                 $post_button_close = '</button>';
             }
@@ -147,29 +168,55 @@ class sp_quickPostWidget extends WP_Widget {
             $html .= '<div id="component_errors" style="display: none;"><span id="clearErrors" class="sp_xButton"></span></div>';
 
             // Override button text if it's set via shortcode
-            $post_button_txt = !empty( $shortcode_button_txt ) ? $shortcode_button_txt : $post_button_txt;
+            $post_button_txt = !empty( $instance['button_txt'] ) ? $instance['button_txt'] : $post_button_txt;
 
             $html .= $render_button ? $post_button_open . $post_button_txt . $post_button_close : '<h4 id="sp-add-post-' . $widget_id .'" class="sp-add-post"> Add a new ' . $select_box . ' post</h4>';
             $html .= '<div id="sp-quickpost-form-' . $widget_id . '" class="sp-quickpost-form">';
                 $html .= '<p> Title <span style="color: red;">*</span></p>';
-                $html .= '<input type="text" id="new-sp-post-title-' . $widget_id . '" class="new-sp-post-title" placeholder="Type in a post title here ..." />';
+
+                $title_placeholder = !isset( $instance['title_placeholder'] ) ? 'Type in a post title here ...' : $instance['title_placeholder'];
+                $html .= '<input type="text" id="new-sp-post-title-' . $widget_id . '" class="new-sp-post-title" placeholder="' . $title_placeholder . '" />';
 
                 // Component Stack
                 $html .= '<div id="sp-qp-comp-stack-' . $widget_id . '" class="sp-qp-comp-stack">';
                     $html .= '<img src="' . SP_IMAGE_PATH . '/loading.gif" />';
                 $html .= '</div>';
 
-                /* Post Tags
-                $html .= '<div id="sp-tags-container-' . $widget_id . '">';
-                    $html .= '<label for="sp-add-tags-' . $widget_id . '">Tag this post: </label>';
-                    $html .= '<input type="text" id="sp-add-tags-' . $widget_id . '" placeholder="Type in a tag here ..." value="" />';
-                    $html .= '<div id="sp-tags-' . $widget_id . '"></div>';
-                $html .= '</div>';
-                */
+                if( $instance['hide_buttons'] ){
+                    $html .= '<div id="sp-quickpost-add-components-' . $widget_id . '" style="display: none">';
+                }
+
+                // Add component buttons
+                $sp_cat = new sp_category(null, null, $catID);
+                $sp_catComps = $sp_cat->getComponents();
+                if( !empty($sp_catComps) ){
+                    foreach($sp_catComps as $component){
+
+                        $catCompID = $component->getID();
+                        $typeID = $component->getTypeID();
+                        $desc = $component->getDescription();
+                        $icon = $component->getIcon();
+                        $icon_img = "";
+                        if( !empty($icon) ){
+                            $icon_img = '<img src="' . $component->getIcon() . '" />';
+                        }
+
+                        $html .= '<span id="' . $catCompID . '" class="sp-qp-component" data-compid="' . $catCompID . '" data-typeid="' . $typeID . '" title="' . $desc . '" alt="' . $desc . '">';
+                        $html .= 	$icon_img . ' Add ' . $component->getName();
+                        $html .= '</span> ';
+                    }
+                    $html .= '<div class="clear"></div>';
+                }
+
+                if( $instance['hide_buttons'] ){
+                    $html .= '</div><!-- end #sp-quickpost-add-components -->';
+                }
 
                 // New component publish/cancel buttons
+                $redirect_url = !empty( $instance['redirect_url'] ) ? 'data-redirecturl="' . $instance['redirect_url'] . '"' : '';
+                $submit_msg = !empty( $instance['submit_msg'] ) ? 'data-submitmsg="' . $instance['submit_msg'] . '"' : '';
                 $html .= '<div id="sp-qp-post-buttons-' . $widget_id . '" class="sp-qp-post-buttons">';
-                    $html .= '<button type="button" id="sp-qp-publish-post-' . $widget_id . '" class="sp-qp-button sp-qp-publish-post" data-widgetid="' . $widget_id . '">Publish Post</button> or ';
+                    $html .= '<button type="button" id="sp-qp-publish-post-' . $widget_id . '" class="sp-qp-button sp-qp-publish-post" data-widgetid="' . $widget_id . '"' . $redirect_url . ' ' . $submit_msg . '>Publish Post</button> or ';
                     $html .= '<button type="button" id="sp-qp-cancel-draft-' . $widget_id . '" class="sp-qp-button sp-qp-cancel-draft" data-widgetid="' . $widget_id . '">Cancel Post</button>';
                 $html .= '</div>';
             $html .= '</div>';

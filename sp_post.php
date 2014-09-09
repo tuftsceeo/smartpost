@@ -278,8 +278,13 @@ if (!class_exists("sp_post")) {
          */
         function newSPPost($post){
             $sp_post = null;
-            if(self::is_sp_post($post->ID) &&  !wp_is_post_revision( $post->ID )){
-                $sp_post = new sp_post($post->ID);
+            if( self::is_sp_post( $post->ID ) &&  !wp_is_post_revision( $post->ID ) ){
+
+                do_action( 'sp_before_new_sp_post' );
+
+                $sp_post = new sp_post( $post->ID );
+
+                do_action( 'sp_after_new_sp_post', $sp_post );
             }
             return $sp_post;
         }
@@ -588,21 +593,26 @@ if (!class_exists("sp_post")) {
             }
 
             $compOrder = self::getNextOrder();
-            $type      = sp_catComponent::getCompTypeFromID($catCompID);
+            $postCompType = '';
+            $type = sp_catComponent::getCompTypeFromID($catCompID);
             if( !empty($type) ){
                 $postCompType  = 'sp_post' . $type;
             }
 
             //In case the class doesn't exist or no constructor method was declared.
-            if( !class_exists($postCompType) ){
+            if( !class_exists( $postCompType ) ){
                 return new WP_Error('broke', ('Could not instantiate component. Please make sure a ' . $postCompType . ' class exists and has constructor.'));
             }
 
-            if( empty($postID) ){
+            if( empty( $postID ) ){
                 $postID = $this->wpPost->ID;
             }
 
+            do_action( 'sp_before_add_component', $catCompID, $compOrder, $name, $value, $postID);
+
             $postComponent = new $postCompType(0, $catCompID, $compOrder, $name, $value, $postID);
+
+            do_action( 'sp_after_add_component', $postComponent, $postID );
 
             if(is_wp_error($postComponent->errors)){
                 $errors = $postComponent->errors;

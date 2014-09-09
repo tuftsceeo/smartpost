@@ -69,28 +69,6 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
             }
             $html .= '</div>';
 
-            // Add component buttons
-            $sp_cat = new sp_category(null, null, $catID);
-            $sp_catComps = $sp_cat->getComponents();
-            if( !empty($sp_catComps) ){
-                foreach($sp_catComps as $component){
-
-                    $catCompID = $component->getID();
-                    $typeID = $component->getTypeID();
-                    $desc = $component->getDescription();
-                    $icon = $component->getIcon();
-                    $icon_img = "";
-                    if( !empty($icon) ){
-                        $icon_img = '<img src="' . $component->getIcon() . '" />';
-                    }
-
-                    $html .= '<span id="' . $catCompID . '" class="sp-qp-component" data-compid="' . $catCompID . '" data-typeid="' . $typeID . '" title="' . $desc . '" alt="' . $desc . '">';
-                    $html .= 	$icon_img . ' Add ' . $component->getName();
-                    $html .= '</span> ';
-                }
-                $html .= '<div class="clear"></div>';
-            }
-
             // Add the post ID
             $html .= '<input type="hidden" id="sp-qp-post-id-' . $widget_id . '" name="sp-qp-post-id-' . $widget_id . '" value="' . $id . '" />';
             echo $html;

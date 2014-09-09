@@ -100,7 +100,7 @@ input.requiredAndDefault{
     padding: inherit;
     margin: inherit;
     border: none;
-    min-width: 150px;
+    min-width: 45%;
 }
 .hndle:hover .delComp{
     visibility: visible;

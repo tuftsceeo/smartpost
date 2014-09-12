@@ -2,7 +2,7 @@
 Contributors: rafdizzle86
 Donate link: http://rafilabs.com/
 Tags: templates, forms, front end editor, video, ffmpeg, picture gallery, media, uploader
-Stable tag: 2.3.5
+Stable tag: 2.3.6
 Requires at least: 3.8
 Tested up to: 3.9.1
 License: GPLv2 or later
@@ -112,6 +112,9 @@ to delete the following:
 3. How a post looks after submitting it via a SmartPost template.
 
 == Changelog ==
+= 2.3.6 =
+* Fixed a bug with the video player not rendering properly
+
 = 2.3.5 =
 * Added "button_txt" attribute to the sp-quickpost shortcode
 * Better/more hardened SQL statements using wpdb->prepare()

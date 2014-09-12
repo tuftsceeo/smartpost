@@ -3,7 +3,7 @@
 Plugin Name: SmartPost
 Plugin URI: http://sptemplates.org
 Description: SmartPost is a templating and authoring tool that brings a lot of the features of the WordPress dashboard to the front end. SmartPost allows you to create category specific post templates that are then used by users on the front end to generates posts and content. Templates are broken down by post components such as pictures galleries, videos, and content blocks.
-Version: 2.3.5
+Version: 2.3.6
 Author: RafiLabs
 Author URI: http://www.rafilabs.com/
 License: GPLv2 or later
@@ -15,7 +15,7 @@ define("SP_PLUGIN_NAME", "SmartPost");
 define("SP_IMAGE_PATH", plugins_url('/images', __FILE__));
 define("SP_PLUGIN_PATH", plugins_url('/', __FILE__));
 define("SP_DEBUG", false); // Turns on useful errors that are dumped into the php error log for debugging
-define("SP_VERSION", "2.3.5");
+define("SP_VERSION", "2.3.6");
 
 if ( !class_exists("smartpost") ){
 

@@ -64,7 +64,7 @@ if ( !class_exists("sp_admin") ) {
          * Adds a top-level menu item to the Dashboard called SmartPost
          */
         function sp_admin_add_template_page() {
-            add_menu_page( SP_PLUGIN_NAME, 'SmartPost', 'edit_dashboard', 'smartpost', array('sp_admin', 'sp_template_page'), null, null );
+            add_menu_page( SP_PLUGIN_NAME, SP_PLUGIN_NAME, 'edit_dashboard', 'smartpost', array('sp_admin', 'sp_template_page'), 'dashicons-menu', null );
         }
 
         function sp_admin_add_category_page(){

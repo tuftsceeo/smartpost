@@ -2,7 +2,7 @@
 Contributors: rafdizzle86
 Donate link: http://rafilabs.com/
 Tags: templates, forms, front end editor, video, ffmpeg, picture gallery, media, uploader
-Stable tag: 2.3.6
+Stable tag: 2.3.7
 Requires at least: 3.8
 Tested up to: 3.9.1
 License: GPLv2 or later
@@ -112,6 +112,10 @@ to delete the following:
 3. How a post looks after submitting it via a SmartPost template.
 
 == Changelog ==
+= 2.3.7 =
+* Introduced encode_via_ffmpeg() function that single handedly handles video encoding
+* Renamed some variables and functions to fit with WordPress conventions
+
 = 2.3.6 =
 * Fixed a bug with the video player not rendering properly
 
@@ -159,6 +163,17 @@ to delete the following:
 * Initial release into to the WordPress plugin repository.
 
 == Upgrade Notice ==
+= 2.3.7 =
+* Better video encoding
+
+= 2.3.6 =
+* Fixes a bug where the video player was not rendering properly
+
+= 2.3.5 =
+* Better/hardened SQL statements
+* Introduces a "button_txt" attribute to the [sp-quickpost] shortcode
+* More stable error handling
+
 = 2.3.4 =
 * Better video handling and fixes a compatibility bug with the Relevanssi plugin
 

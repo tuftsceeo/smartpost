@@ -66,6 +66,7 @@ if (!class_exists("sp_postVideo")) {
          * @see parent::renderEditMode()
          */
         function renderEditMode($value = ""){
+
             $html = '<div id="sp_video-' . $this->ID . '" class="sp_video" data-compid="' . $this->ID . '" style="text-align: center;">';
 
             // Create an editor area for a video description
@@ -204,6 +205,59 @@ if (!class_exists("sp_postVideo")) {
          */
         function isEmpty(){
             return !isset( $this->videoAttachmentIDs['mp4'] );
+        }
+
+        /**
+         * Compresses to 560px x 320px, orients (if necessary), and encodes a video file into .mp4 (if necessary).
+         * @param $video_component
+         * @param $uploaded_video
+         */
+        static function encode_via_ffmpeg( sp_postVideo &$video_component, $uploaded_video ){
+            $sp_ffmpeg_path = get_site_option( 'sp_ffmpeg_path' );
+            $html5_encoding = (bool) get_site_option( 'sp_html5_encoding' );
+
+            if( $html5_encoding && !is_wp_error( $sp_ffmpeg_path ) ){
+                global $wpdb;
+
+                $video_component->beingConverted = true;
+                $video_component->videoAttachmentIDs['uploaded_video'] = $uploaded_video;
+                $video_component->update();
+
+                $script_args = array(
+                    'DB_NAME' => DB_NAME,
+                    'DB_USER' => DB_USER,
+                    'DB_HOST' => DB_HOST,
+                    'DB_PASS' => DB_PASSWORD,
+                    'WP_DB_PREFIX' => $wpdb->prefix,
+                    'VID_FILE' => $uploaded_video,
+                    'COMP_ID' => $video_component->getID(),
+                    'WIDTH'  => get_site_option('sp_player_width'),
+                    'HEIGHT' => get_site_option('sp_player_height'),
+                    'FFMPEG_PATH' => $sp_ffmpeg_path
+                );
+
+                if( DEBUG_SP_VIDEO ){
+                    error_log( 'SCRIPT ARGS: ' . print_r($script_args, true) );
+                    exec('php ' . SP_VIDEO_SCRIPT_PATH . ' ' . implode(' ', $script_args) . ' 2>&1', $output, $status);
+                    error_log( print_r($output, true) );
+                    error_log( print_r($status, true) );
+                }else{
+                    shell_exec('php ' . SP_VIDEO_SCRIPT_PATH . ' ' . implode(' ', $script_args) . ' &> /dev/null &');
+                }
+            }else{
+
+                // Check to see that it's mp4 format
+                $ext = pathinfo( $uploaded_video, PATHINFO_EXTENSION );
+                if( $ext !== 'mp4' ){
+                    unlink( $uploaded_video );
+                    header( "HTTP/1.0 409 Error: only mp4 files are allowed to be uploaded when HTML5 encoding is not enabled!" );
+                    exit;
+                }else{
+                    // Create the attachment
+                    $video_component->videoAttachmentIDs['mp4'] = sp_core::create_attachment( $uploaded_video, $video_component->getPostID(), '', get_current_user_id() );
+                    $video_component->update();
+                }
+            }
         }
 
         /**

@@ -42,7 +42,7 @@ if (!class_exists("sp_catComponentAJAX")) {
 
             $catID  = (int) $_POST['catID'];
             $compID = (int) $_POST['compID'];
-            $type   = 'sp_cat' . (string) sp_catComponent::getCompTypeFromID($compID);
+            $type   = 'sp_cat' . (string) sp_catComponent::get_comp_type_from_id($compID);
             $comp = new $type($compID);
             $sp_category = new sp_category(null, null, $catID);
 
@@ -127,7 +127,7 @@ if (!class_exists("sp_catComponentAJAX")) {
             }
 
             $compID = (int) $_POST['compID'];
-            $type   = (string) sp_catComponent::getCompTypeFromID($compID);
+            $type   = (string) sp_catComponent::get_comp_type_from_id($compID);
             if(empty($type)){
                 header("HTTP/1.0 409 Could not find correct component type.");
                 echo json_encode(array('error' => 'Could not find correct component type.'));
@@ -179,7 +179,7 @@ if (!class_exists("sp_catComponentAJAX")) {
             $compID		  = (int) $_POST['compID'];
             $updateAction = (string) $_POST['updateAction'];
             $value     	  = $_POST['value'];
-            $type      	  = 'sp_cat' . sp_catComponent::getCompTypeFromID($compID);
+            $type      	  = 'sp_cat' . sp_catComponent::get_comp_type_from_id($compID);
 
             if(!class_exists($type)){
                 header("HTTP/1.0 409 Could not find class " . $type);
@@ -328,7 +328,7 @@ if (!class_exists("sp_catComponentAJAX")) {
 
             $compID = (int) $_POST['compID'];
             $title  = (string) stripslashes_deep($_POST['title']);
-            $type   = sp_catComponent::getCompTypeFromID($compID);
+            $type   = sp_catComponent::get_comp_type_from_id($compID);
             $class  = 'sp_cat' . $type;
 
             $component = new $class($compID);

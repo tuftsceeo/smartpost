@@ -44,7 +44,7 @@ if (!class_exists("sp_postComponentAJAX")) {
                 exit;
             }
 
-            $postCompID = $sp_post->addComponent($catCompID);
+            $postCompID = $sp_post->add_component($catCompID);
 
             if(is_wp_error($postCompID)){
                 header("HTTP/1.0 409 " . $postCompID->get_error_message());
@@ -122,7 +122,7 @@ if (!class_exists("sp_postComponentAJAX")) {
             $compID = (int) $_POST['compID'];
             $updateAction = (string) $_POST['updateAction'];
             $value = $_POST['value'];
-            $type = 'sp_cat' . sp_catComponent::getCompTypeFromID($compID);
+            $type = 'sp_cat' . sp_catComponent::get_comp_type_from_id($compID);
 
             $component = new $type($compID);
             $success = $component->$updateAction($value);

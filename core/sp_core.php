@@ -71,13 +71,13 @@ if ( !class_exists("sp_core") ) {
         /**
          * Get the component type based off the given $name parameter.
          * @param $name
-         * @return WP_Error|Object DB Object representing the component type
+         * @return WP_Error|int the component type id
          */
         static function get_type_id_by_name($name){
             if(!empty($name)){
                 global $wpdb;
                 $tableName = $wpdb->prefix . 'sp_compTypes';
-                return $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $tableName where name = %s;", $name ) );
+                return (int) $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $tableName where name = %s;", $name ) );
             }else{
                 return new WP_Error('broke', ('Name not supplied.'));
             }

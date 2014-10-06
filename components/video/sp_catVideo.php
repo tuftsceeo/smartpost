@@ -13,6 +13,7 @@ if (!class_exists("sp_catVideo")) {
     define( 'SP_DEFAULT_VIDEO_ENCODING', true); // Encode by default
     define( 'SP_DEFAULT_PLAYER_WIDTH', 560) ; // Default player width
     define( 'SP_DEFAULT_PLAYER_HEIGHT', 320 ); // Default player height
+    define( 'SP_VIDEO_SCRIPT_PATH', dirname( __FILE__ ) . '/html5video.php' ); // Script path
 
     class sp_catVideo extends sp_catComponent{
 

@@ -296,7 +296,7 @@ if (!class_exists("sp_category")) {
             $posts = get_posts( $args );
             foreach($posts as $post){
                 $sp_post = new sp_post($post->ID, true);
-                $sp_post->addComponent($catCompID);
+                $sp_post->add_component($catCompID);
             }
         }
 
@@ -308,7 +308,7 @@ if (!class_exists("sp_category")) {
          * @return bool false if
          */
         function maybeDessiminateReqdOrDef($catCompID){
-            $type      = 'sp_cat' . sp_catComponent::getCompTypeFromID($catCompID);
+            $type      = 'sp_cat' . sp_catComponent::get_comp_type_from_id($catCompID);
             $component = new $type($catCompID);
 
             if($component->getRequired() || $component->getDefault()){
@@ -318,7 +318,7 @@ if (!class_exists("sp_category")) {
                     $sp_post = new sp_post($post->ID, true);
 
                     if($sp_post->countByCatCompID($catCompID) < 1){
-                        $sp_post->addComponent($catCompID);
+                        $sp_post->add_component($catCompID);
                     }
                 }
             }else{

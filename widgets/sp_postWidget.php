@@ -126,7 +126,7 @@ class sp_postWidget extends WP_Widget {
      */
     function renderCompBlocks(){
         global $post;
-        $sp_category = sp_post::getSPCategory($post->ID);
+        $sp_category = sp_post::get_sp_category($post->ID);
         $components  = $sp_category->getComponents();
 
         if( !empty($components) ){

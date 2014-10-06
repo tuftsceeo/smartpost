@@ -365,7 +365,7 @@ if (!class_exists("sp_catComponent")) {
          * @param int compID The ID of the category component
          * @return string The Type of the category component
          */
-        static function getCompTypeFromID($compID){
+        static function get_comp_type_from_id($compID){
             global $wpdb;
             $tableName = $wpdb->prefix . 'sp_catComponents';
             $typeID    = $wpdb->get_var( $wpdb->prepare( "SELECT typeID FROM $tableName where id = %d;", $compID ) );

@@ -27,13 +27,13 @@ if (!class_exists("sp_post")) {
                 if( !is_null($wpPost) ){
 
                     // Get the sp_category if there is one
-                    $sp_category       = self::getSPCategory($postID);
+                    $sp_category       = self::get_sp_category($postID);
                     $this->wpPost 	   = get_post($postID);
                     $this->sp_category = $sp_category;
                     $this->components  = array();
 
                     // Add any required or default components
-                    if( !is_null($this->sp_category) ){
+                    if( !is_null( $this->sp_category ) ){
                         $catComponents = $this->sp_category->getComponents();
 
                         if( !empty($catComponents) ){
@@ -41,7 +41,7 @@ if (!class_exists("sp_post")) {
                                 if($catComp->getRequired() || $catComp->getDefault()){
                                     $catCompID = $catComp->getID();
                                     // TODO: this calls save() multiple times for each component, which is inefficient
-                                    $this->addComponent($catCompID);
+                                    $this->add_component($catCompID);
                                 }
                             }
                         }
@@ -59,7 +59,7 @@ if (!class_exists("sp_post")) {
          * @return object Returns a sp_post object
          */
         function load($postID){
-            $sp_category = self::getSPCategory($postID);
+            $sp_category = self::get_sp_category($postID);
 
             //See if we succesfully loaded the sp category
             if(is_wp_error($sp_category->errors)){
@@ -453,7 +453,7 @@ if (!class_exists("sp_post")) {
             if($this->countRequired() < 1 && count($reqdComps) > 0){
                 foreach($reqdComps as $reqdComp){
                     $catCompID = $reqdComp->getID();
-                    $this->addComponent($catCompID);
+                    $this->add_component($catCompID);
                 }
             }
         }
@@ -466,7 +466,7 @@ if (!class_exists("sp_post")) {
             if($this->countDefault() < 1 && count($defaultCatComps) > 0){
                 foreach($defaultCatComps as $defaultComp){
                     $catCompID = $defaultComp->getID();
-                    $this->addComponent($catCompID);
+                    $this->add_component($catCompID);
                 }
             }
         }
@@ -538,7 +538,7 @@ if (!class_exists("sp_post")) {
          * @param $postID
          * @return null|sp_category sp_category object if it's a SP-post, otherwise null
          */
-        public static function getSPCategory($postID){
+        public static function get_sp_category($postID){
             $sp_categories = get_option('sp_categories');
             if( !empty($sp_categories) ){
                 $categories = get_the_category($postID);
@@ -571,6 +571,30 @@ if (!class_exists("sp_post")) {
         }
 
         /**
+         * @todo figure out "standalone/unrelated" components later
+         * Same as add_component(), except that the component may not exist in a
+         * parent template.
+         * @param $comp_type
+         * @param $cat_comp_id
+         * @param string $name
+         * @param string $value
+         * @param null $post_id
+        function add_unrelated_component($comp_type = '', $cat_comp_id = null, $name = '', $value = '', $post_id = null){
+
+            // check if the category component exists in a template
+            $type = sp_catComponent::get_comp_type_from_id( $cat_comp_id );
+            if( empty( $type ) ){
+                // if it doesn't exist, add it as a "standalone/unrelated" component
+
+
+            }else{
+                // if it does exist somewhere, use add_component
+                self::add_component( $cat_comp_id, $name, $value, $post_id );
+            }
+        }
+        */
+
+        /**
          * Adds a post component to the sp post based off of it's category component ID.
          * Returns the components ID on success, otherwise a WP_Error object on failure.
          *
@@ -580,29 +604,30 @@ if (!class_exists("sp_post")) {
          * @param int $postID
          * @return WP_Error|int The components ID on success, otherwise WP_Error object on failure
          */
-        function addComponent($catCompID, $name = '', $value = '', $postID = null){
+        function add_component($catCompID, $name = '', $value = '', $postID = null){
 
             //We need the catCompID or else this won't flow
             if(empty($catCompID) || $catCompID <= 0 ){
                 return new WP_Error('broke', ('Category component ID missing.'));
             }
 
+            $post_comp_type = '';
             $compOrder = self::getNextOrder();
-            $type      = sp_catComponent::getCompTypeFromID($catCompID);
-            if( !empty($type) ){
-                $postCompType  = 'sp_post' . $type;
+            $type      = sp_catComponent::get_comp_type_from_id($catCompID);
+            if( !empty( $type ) ){
+                $post_comp_type  = 'sp_post' . $type;
             }
 
             //In case the class doesn't exist or no constructor method was declared.
-            if( !class_exists($postCompType) ){
-                return new WP_Error('broke', ('Could not instantiate component. Please make sure a ' . $postCompType . ' class exists and has constructor.'));
+            if( !class_exists($post_comp_type) ){
+                return new WP_Error('broke', ('Could not instantiate component. Please make sure a ' . $post_comp_type . ' class exists and has constructor.'));
             }
 
             if( empty($postID) ){
                 $postID = $this->wpPost->ID;
             }
 
-            $postComponent = new $postCompType(0, $catCompID, $compOrder, $name, $value, $postID);
+            $postComponent = new $post_comp_type(0, $catCompID, $compOrder, $name, $value, $postID);
 
             if(is_wp_error($postComponent->errors)){
                 $errors = $postComponent->errors;

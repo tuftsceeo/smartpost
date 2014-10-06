@@ -128,11 +128,10 @@ if (!class_exists("sp_postVideoAJAX")) {
 
                 $compID = (int) $_POST['compID'];
                 $videoComponent = new sp_postVideo($compID);
-                $postID = $videoComponent->getPostID();
 
                 // Delete previous attachments if they exist
-                if( !empty($videoComponent->videoAttachmentIDs) ){
-                    foreach($videoComponent->videoAttachmentIDs as $attach_id){
+                if( !empty( $videoComponent->videoAttachmentIDs ) ){
+                    foreach( $videoComponent->videoAttachmentIDs as $attach_id ){
                         if( $attach_id ){
                             wp_delete_attachment( $attach_id, true );
                         }
@@ -140,53 +139,8 @@ if (!class_exists("sp_postVideoAJAX")) {
                     $videoComponent->videoAttachmentIDs = array(); // reset attachment IDs
                 }
 
-                $sp_ffmpeg_path = get_site_option('sp_ffmpeg_path');
-                $html5_encoding = (bool) get_site_option( 'sp_html5_encoding' );
-
-                if( $html5_encoding && !is_wp_error( $sp_ffmpeg_path ) ){
-                    global $wpdb;
-                    $script_path = dirname(dirname(__FILE__)) . '/html5video.php';
-
-                    $videoComponent->beingConverted = true;
-                    $videoComponent->videoAttachmentIDs['uploaded_video'] = $uploaded_video;
-                    $videoComponent->update();
-
-                    $script_args = array(
-                        'DB_NAME' => DB_NAME,
-                        'DB_USER' => DB_USER,
-                        'DB_HOST' => DB_HOST,
-                        'DB_PASS'  => DB_PASSWORD,
-                        'WP_DB_PREFIX' => $wpdb->prefix,
-                        'VID_FILE' => $uploaded_video,
-                        'COMP_ID' => $compID,
-                        'WIDTH'  => get_site_option('sp_player_width'),
-                        'HEIGHT' => get_site_option('sp_player_height'),
-                        'FFMPEG_PATH' => $sp_ffmpeg_path
-                    );
-
-
-                    if(DEBUG_SP_VIDEO){
-                        error_log( 'SCRIPT ARGS: ' . print_r($script_args, true) );
-                        exec('php ' . $script_path . ' ' . implode(' ', $script_args) . ' 2>&1', $output, $status);
-                        error_log( print_r($output, true) );
-                        error_log( print_r($status, true) );
-                    }else{
-                        shell_exec('php ' . $script_path . ' ' . implode(' ', $script_args) . ' &> /dev/null &');
-                    }
-                }else{
-
-                    // Check to see that it's mp4 format
-                    $ext = pathinfo($uploaded_video, PATHINFO_EXTENSION);
-                    if( $ext !== 'mp4' ){
-                        unlink($uploaded_video);
-                        header( "HTTP/1.0 409 Error: only mp4 files are allowed to be uploaded when HTML5 encoding is not enabled!" );
-                        exit;
-                    }else{
-                        // Create the attachment
-                        $videoComponent->videoAttachmentIDs['mp4'] = sp_core::create_attachment( $uploaded_video, $postID, '', get_current_user_id() );
-                        $videoComponent->update();
-                    }
-                }
+                // Attempt to encode the video
+                sp_postVideo::encode_via_ffmpeg( $videoComponent, $uploaded_video );
                 echo $videoComponent->renderPlayer();
 
             }else if( $uploaded_video !== false && !file_exists( $uploaded_video )  ){

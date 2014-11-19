@@ -19,7 +19,7 @@ if ( !class_exists("sp_admin") ) {
             require_once( dirname( __FILE__ ) . '/ajax/sp_adminAJAX.php');
             sp_adminAJAX::init();
             add_action( 'admin_menu', array('sp_admin', 'sp_admin_add_template_page') );
-            add_action( 'admin_menu', array('sp_admin', 'sp_admin_add_category_page') );
+            add_action( 'admin_menu', array('sp_admin', 'sp_admin_add_submenu_pages') );
             add_action( 'admin_enqueue_scripts', array('sp_admin', 'enqueue_admin_scripts') );
         }
 
@@ -67,8 +67,10 @@ if ( !class_exists("sp_admin") ) {
             add_menu_page( SP_PLUGIN_NAME, SP_PLUGIN_NAME, 'edit_dashboard', 'smartpost', array('sp_admin', 'sp_template_page'), 'dashicons-menu', null );
         }
 
-        function sp_admin_add_category_page(){
+        function sp_admin_add_submenu_pages(){
             add_submenu_page( 'smartpost', 'Settings', 'Settings', 'edit_dashboard', 'sp-cat-page', array('sp_admin', 'sp_settings_page') );
+
+            do_action( 'sp_add_submenus', 'smartpost' );
         }
 
         /**
@@ -437,8 +439,8 @@ if ( !class_exists("sp_admin") ) {
 
             ?>
             <div class="wrap">
-                <div class="error" <?php echo empty( $error_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_errors"></span><span class="hideMsg sp_xButton" title="Ok, got it"></span><div class="clear"></div></div>
-                <div class="updated" <?php echo empty( $update_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_update"></span><span class="hideMsg sp_xButton" title="Ok, got it"></span><div class="clear"></div></div>
+                <div class="error" <?php echo empty( $error_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_errors"><?php echo $error_msg ?></span><span class="hideMsg sp_xButton" title="Ok, got it"></span><div class="clear"></div></div>
+                <div class="updated" <?php echo empty( $update_msg ) ? 'style="display: none;"' : ''; ?>><span id="sp_update"></span><?php echo $update_msg ?><span class="hideMsg sp_xButton" title="Ok, got it"></span><div class="clear"></div></div>
             <h2><img src="<?php echo SP_IMAGE_PATH ?>/sp-icon.png" style="height: 17px;" /> <span style="color: #89b0ff;">Smart<span style="color: #07e007">Post</span> Templates</span> - Settings</h2>
             <div id="poststuff">
                 <div id="post-body" class="metabox-holder columns-2">

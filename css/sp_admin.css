@@ -184,3 +184,6 @@ input.requiredAndDefault{
     clear: both;
     text-align: right;
 }
+#sp_errors, #sp_update{
+    margin-top: .5em;
+}

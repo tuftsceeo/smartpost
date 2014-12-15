@@ -728,7 +728,7 @@ if (!class_exists("sp_post")) {
             return $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $tableName where postID = %d;", $postID ) );
         }
 
-        function getwpPost(){
+        function get_wp_post(){
             return $this->wpPost;
         }
 

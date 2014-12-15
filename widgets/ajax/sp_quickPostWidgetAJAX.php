@@ -55,6 +55,14 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
                 exit;
             }
 
+            //add origin id (i.e. where the post was generated from)
+            if( isset( $_POST['sp_origin_id'] ) ){
+                $sp_origin_id = (int) $_POST['sp_origin_id'];
+                add_post_meta( $id, 'sp_origin_id', $sp_origin_id);
+            }
+
+            do_action( 'sp_qp_widget_ajax_new_draft', $id );
+
             // Add any default/required components
             $post_comps = sp_post::get_components_from_ID($id);
             $html = '<div id="sp-components-' . $widget_id . '" class="sortableSPComponents quickPostComps">';
@@ -71,6 +79,8 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
 
             // Add the post ID
             $html .= '<input type="hidden" id="sp-qp-post-id-' . $widget_id . '" name="sp-qp-post-id-' . $widget_id . '" value="' . $id . '" />';
+            $html = apply_filters( 'sp_qp_widget_ajax_new_draft_html', $html );
+
             echo $html;
             exit;
 		}
@@ -92,7 +102,12 @@ if (!class_exists("sp_quickPostWidgetAJAX")) {
 			
 			$postID = (int) $_POST['ID'];
 
-			$success =	wp_delete_post($postID, true);			
+            add_action( 'sp_qp_widget_before_delete_post', $postID );
+
+			$success =	wp_delete_post($postID, true);
+
+            add_action( 'sp_qp_widget_before_after_post', $postID );
+
 			if($success === false){
 				header("HTTP/1.0 409 could not delete post.");
 				exit;			

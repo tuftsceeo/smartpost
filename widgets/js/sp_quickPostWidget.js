@@ -12,7 +12,9 @@
          * @param slideDown - whether to slide the form down or to just show it
          */
         loadSmartPostTemplate: function(catID, widgetID, slideDown){
+
             var sp_qp_stack = $( '#sp-qp-comp-stack-' + widgetID );
+            var sp_origin_id = $( '#sp-post-origin-id-' + widgetID).val();
 
             $.ajax({
                 url: SP_AJAX_URL,
@@ -21,7 +23,8 @@
                     action: 'newSPDraftAJAX',
                     nonce: SP_NONCE,
                     catID: catID,
-                    widgetID: widgetID
+                    widgetID: widgetID,
+                    sp_origin_id: sp_origin_id
                 },
                 dataType: 'html',
                 success: function( response, statusText, jqXHR ){
@@ -105,8 +108,12 @@
                             if( redirect_url ){
                                 if( redirect_url == '#' ){
                                     return;
+                                }else if( redirect_url == 'reload' ){
+                                    location.reload( true );
+                                }else{
+                                    window.location.replace( redirect_url );
                                 }
-                                window.location.replace( redirect_url );
+
                             }else if( response.permalink ){
                                 window.location.replace( response.permalink );
                             }else{

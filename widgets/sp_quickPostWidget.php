@@ -42,7 +42,9 @@ class sp_quickPostWidget extends WP_Widget {
         $submit_msg = "";
         $hide_buttons = false;
         $title_placeholder = "";
+        $title_html = "";
         $show_form = false;
+        $load_post = false;
         extract( shortcode_atts( array(
             'template_ids' => array(),
             'button_txt' => '',
@@ -50,7 +52,9 @@ class sp_quickPostWidget extends WP_Widget {
             'submit_msg' => '',
             'hide_buttons' => false,
             'title_placeholder' => '',
-            'show_form' => false
+            'title_html' => '',
+            'show_form' => false,
+            'load_post' => false
         ), $atts ) );
 
         $template_ids = explode(',', $template_ids);
@@ -90,8 +94,11 @@ class sp_quickPostWidget extends WP_Widget {
                 'submit_msg' => $submit_msg,
                 'hide_buttons' => (bool) $hide_buttons,
                 'title_placeholder' => $title_placeholder,
-                'show_form' => (bool) $show_form
+                'title_html' => $title_html,
+                'show_form' => (bool) $show_form,
+                'load_post' => (bool) $load_post
             );
+
             $sp_qp_widget->widget( array(), $instance, $sp_qp_shortcode_id );
 
             $output = ob_get_clean(); // Store the output in a variable
@@ -116,6 +123,20 @@ class sp_quickPostWidget extends WP_Widget {
             $widget_id = $this->id;
         }else{
             $widget_id = $shortcode_id;
+        }
+
+        // replace %widget_id% with the widget id
+        $rewritecode = array(
+            '%widget_id%'
+        );
+
+        $rewritereplace = array(
+            $widget_id
+        );
+
+        // Perform the replacement
+        foreach( $instance as $instance_key => $instance_property){
+            $instance[$instance_key] = str_replace( $rewritecode, $rewritereplace, $instance[$instance_key] );
         }
 
         // Load post components
@@ -170,16 +191,53 @@ class sp_quickPostWidget extends WP_Widget {
             // Override button text if it's set via shortcode
             $post_button_txt = !empty( $instance['button_txt'] ) ? $instance['button_txt'] : $post_button_txt;
 
-            $html .= $render_button ? $post_button_open . $post_button_txt . $post_button_close : '<h4 id="sp-add-post-' . $widget_id .'" class="sp-add-post"> Add a new ' . $select_box . ' post</h4>';
-            $html .= '<div id="sp-quickpost-form-' . $widget_id . '" class="sp-quickpost-form">';
+            if( $instance['load_post'] ){
+                $html .= '<div id="sp-quickpost-form-' . $widget_id . '" class="sp-quickpost-form" style="display: inline;">';
+            }else{
+                $html .= $render_button ? $post_button_open . $post_button_txt . $post_button_close : '<h4 id="sp-add-post-' . $widget_id .'" class="sp-add-post"> Add a new ' . $select_box . ' post</h4>';
+                $html .= '<div id="sp-quickpost-form-' . $widget_id . '" class="sp-quickpost-form">';
+            }
                 $html .= '<p> Title <span style="color: red;">*</span></p>';
 
-                $title_placeholder = !isset( $instance['title_placeholder'] ) ? 'Type in a post title here ...' : $instance['title_placeholder'];
-                $html .= '<input type="text" id="new-sp-post-title-' . $widget_id . '" class="new-sp-post-title" placeholder="' . $title_placeholder . '" />';
+                $title_placeholder = empty( $instance['title_placeholder'] ) ? 'Type in a post title here ...' : $instance['title_placeholder'];
+
+                $sp_qp_title_input_html = empty( $instance['title_html'] ) ? '<input type="text" id="new-sp-post-title-' . $widget_id . '" class="new-sp-post-title" placeholder="' . $title_placeholder . '" />' : $instance[ 'title_html' ];
+                $sp_qp_title_input = apply_filters( 'sp_qp_widget_title_input', $sp_qp_title_input_html, $widget_id, $title_placeholder );
+
+                $html .= $sp_qp_title_input;
 
                 // Component Stack
                 $html .= '<div id="sp-qp-comp-stack-' . $widget_id . '" class="sp-qp-comp-stack">';
-                    $html .= '<img src="' . SP_IMAGE_PATH . '/loading.gif" />';
+                    if( $instance['load_post'] ){
+                        /*
+                        // load the most recent post that originated from the page we're on
+                        $sp_post_query_args = array(
+                            'meta_key' => 'sp_origin_id',
+                            'meta_value' => $post->ID,
+                            'author' => get_current_user_id(),
+                            'posts_per_page' => 1
+                        );
+                        $sp_post_query = new WP_Query( $sp_post_query_args );
+                        print_r( $sp_post_query, true );
+
+
+                        // Add any default/required components
+                        $post_comps = sp_post::get_components_from_ID( $instance['load_post'] );
+                        $html = '<div id="sp-components-' . $widget_id . '" class="sortableSPComponents quickPostComps">';
+                        if( !empty( $post_comps ) ){
+                            global $wp_query;
+                            $wp_query->is_single = true;
+                            $_GET['edit_mode'] = true;
+                            foreach( $post_comps as $postComp ){
+                                $html .= $postComp->render();
+                            }
+                            $wp_query->is_single = false;
+                        }
+                        $html .= '</div>';
+                        */
+                    }else{
+                        $html .= '<img src="' . SP_IMAGE_PATH . '/loading.gif" />';
+                    }
                 $html .= '</div>';
 
                 if( $instance['hide_buttons'] ){
@@ -220,6 +278,12 @@ class sp_quickPostWidget extends WP_Widget {
                     $html .= '<button type="button" id="sp-qp-cancel-draft-' . $widget_id . '" class="sp-qp-button sp-qp-cancel-draft" data-widgetid="' . $widget_id . '">Cancel Post</button>';
                 $html .= '</div>';
             $html .= '</div>';
+
+            // Add origin of where we're coming from
+            global $post;
+            $html .= '<input type="hidden" id="sp-post-origin-id-' . $widget_id .'" name="sp-post-origin-id-' . $widget_id .'" value="' . $post->ID . '" />';
+
+            $html = apply_filters( 'sp_qp_widget_form_after', $html );
 
             echo '<div class="clear">' . $html . '</div>';
         }

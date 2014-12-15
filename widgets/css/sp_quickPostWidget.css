@@ -41,7 +41,8 @@ button.sp-qp-button{
     padding: 10px;
 }
 .sp-quickpost-form{
-	display: none; padding: 5px; 
+	display: none;
+    padding: 5px;
 	border-bottom: 1px solid silver;
 	margin-bottom: 10px;
 }

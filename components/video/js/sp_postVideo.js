@@ -72,7 +72,7 @@
                     nonce   : SP_NONCE,
                     compID  : compID
                 },
-                max_file_size : '2gb',
+                max_file_size : '5gb',
                 filters : videoFilters,
                 init: {
 

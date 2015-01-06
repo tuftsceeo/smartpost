@@ -114,6 +114,7 @@ to delete the following:
 == Changelog ==
 = 2.3.8 =
 * Fixes a bug where the SmartPost Components were not being properly installed on activation
+* Adds sp_admin_add_submenu_pages action to add submenu items to the SmartPost parent menu item
 
 = 2.3.7 =
 * Introduced encode_via_ffmpeg() function that single handedly handles video encoding

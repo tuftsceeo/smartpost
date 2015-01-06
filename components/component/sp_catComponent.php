@@ -231,7 +231,7 @@ if (!class_exists("sp_catComponent")) {
             }
 
             // Otherwise, add component to sp_compTypes
-            if( is_null($typeID) ){
+            if( is_null($typeID) || $typeID === 0 ){
                 $tableName = $wpdb->prefix . 'sp_compTypes';
                 $wpdb->insert(
                     $tableName,

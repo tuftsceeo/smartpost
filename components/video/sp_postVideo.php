@@ -97,12 +97,8 @@ if (!class_exists("sp_postVideo")) {
                     $html .= '</div>';
 
                     $html .= '<div id="sp_videoDropZone-' . $this->ID . '" class="sp_videoDropZone">';
-                        $html .= '<button type="button" data-compid="' . $this-> ID .'" id="sp-video-browse-' . $this->ID . '" class="sp-video-browse sp-browse-button button">';
-                            $html .= '<img src="' . sp_core::getIcon( $this->typeID ) . '" /> Upload a Video';
-                        $html .= '</button>';
-                        $html .= '<p>You can also drag and drop a video file here</p>';
                         $html .= !get_site_option( 'sp_html5_encoding' ) ? '<p>Note: only .mp4 files are allowed.</p>' : '';
-                        $html .= '<input id="sp_videoBrowse-' . $this->ID .'" data-compid="' . $this->ID . '" type="file" style="display:none;">';
+                        $html .= '<input id="sp_videoBrowse-' . $this->ID .'" data-compid="' . $this->ID . '" type="file">';
                     $html .= '</div>';
             }else{
                 $html .= '<p><img src="' . SP_IMAGE_PATH . '/loading.gif" /> Your video is being processed, thank you for your patience!</p>';

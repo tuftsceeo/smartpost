@@ -2,9 +2,9 @@
 Contributors: rafdizzle86
 Donate link: http://rafilabs.com/
 Tags: templates, forms, front end editor, video, ffmpeg, picture gallery, media, uploader
-Stable tag: 2.3.9
+Stable tag: 2.4.0
 Requires at least: 3.8
-Tested up to: 4.3.1
+Tested up to: 4.5.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -112,6 +112,9 @@ to delete the following:
 3. How a post looks after submitting it via a SmartPost template.
 
 == Changelog ==
+= 2.4.0 =
+* Remove deprecated get_currentuserinfo() function for compatibility with WP 4.5+
+
 = 2.3.9 =
 * Fixes mobile UI glitches with video, photo and photo gallery components not allowing to upload files
 
